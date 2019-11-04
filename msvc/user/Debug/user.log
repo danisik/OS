@@ -1,0 +1,7 @@
+﻿  api.cpp
+  rtl.cpp
+c:\users\danisik\desktop\os\src\user\rtl.cpp(20): warning C4244: =: uint64_t se převádí na size_t; může dojít ke ztrátě dat.
+c:\users\danisik\desktop\os\src\user\rtl.cpp(31): warning C4244: =: uint64_t se převádí na size_t; může dojít ke ztrátě dat.
+  shell.cpp
+  Generování kódu...
+  user.vcxproj -> C:\Users\danisik\Desktop\OS\msvc\OS\Debug\user.dll

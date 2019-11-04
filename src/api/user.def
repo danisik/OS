@@ -1,15 +1,14 @@
 LIBRARY user.dll
 
 EXPORTS
-	shell
 	type
 	md
 	rd
 	dir
 	echo
-	find
+	wc
 	sort
 	rgen
 	freq
-	tasklist
+	ps
 	shutdown

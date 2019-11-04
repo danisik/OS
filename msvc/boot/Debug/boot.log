@@ -1,0 +1,30 @@
+﻿  api.cpp
+c:\users\danisik\desktop\os\src\api\api.cpp(36): error C2653: kiv_os_rtl: není název třídy nebo oboru názvů.
+c:\users\danisik\desktop\os\src\api\api.cpp(36): error C2065: Last_Error: nedeklarovaný identifikátor
+c:\users\danisik\desktop\os\src\api\api.cpp(37): error C2653: kiv_os_rtl: není název třídy nebo oboru názvů.
+c:\users\danisik\desktop\os\src\api\api.cpp(37): error C2065: Last_Error: nedeklarovaný identifikátor
+  cmos.cpp
+  disk.cpp
+c:\users\danisik\desktop\os\src\boot\disk.cpp(53): warning C4307: *: přetečení celočíselné konstanty
+c:\users\danisik\desktop\os\src\boot\disk.cpp(95): warning C4244: =: std::streamoff se převádí na size_t; může dojít ke ztrátě dat.
+c:\users\danisik\desktop\os\src\boot\disk.cpp(135): warning C4244: argument: uint64_t se převádí na const unsigned int; může dojít ke ztrátě dat.
+c:\users\danisik\desktop\os\src\boot\disk.cpp(135): warning C4244: argument: uint64_t se převádí na size_t; může dojít ke ztrátě dat.
+c:\users\danisik\desktop\os\src\boot\disk.cpp(144): warning C4244: argument: uint64_t se převádí na const unsigned int; může dojít ke ztrátě dat.
+c:\users\danisik\desktop\os\src\boot\disk.cpp(144): warning C4244: argument: uint64_t se převádí na size_t; může dojít ke ztrátě dat.
+  idt.cpp
+c:\users\danisik\desktop\os\src\boot\idt.cpp(17): error C2039: Set_Interrupt_Handler: Není členem kiv_hal.
+  c:\users\danisik\desktop\os\src\api\hal.h(7): note: viz deklarace: kiv_hal
+c:\users\danisik\desktop\os\src\boot\idt.cpp(17): error C3861: Set_Interrupt_Handler: identifikátor se nenašel
+c:\users\danisik\desktop\os\src\boot\idt.cpp(18): error C2039: Set_Interrupt_Handler: Není členem kiv_hal.
+  c:\users\danisik\desktop\os\src\api\hal.h(7): note: viz deklarace: kiv_hal
+c:\users\danisik\desktop\os\src\boot\idt.cpp(18): error C3861: Set_Interrupt_Handler: identifikátor se nenašel
+c:\users\danisik\desktop\os\src\boot\idt.cpp(19): error C2039: Set_Interrupt_Handler: Není členem kiv_hal.
+  c:\users\danisik\desktop\os\src\api\hal.h(7): note: viz deklarace: kiv_hal
+c:\users\danisik\desktop\os\src\boot\idt.cpp(19): error C3861: Set_Interrupt_Handler: identifikátor se nenašel
+  keyboard.cpp
+  main.cpp
+c:\users\danisik\desktop\os\src\boot\main.cpp(38): error C2039: Call_Interrupt_Handler: Není členem kiv_hal.
+  c:\users\danisik\desktop\os\src\api\hal.h(7): note: viz deklarace: kiv_hal
+c:\users\danisik\desktop\os\src\boot\main.cpp(38): error C3861: Call_Interrupt_Handler: identifikátor se nenašel
+  vga.cpp
+  Generování kódu...
