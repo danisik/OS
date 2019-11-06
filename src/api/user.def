@@ -1,6 +1,7 @@
 LIBRARY user.dll
 
 EXPORTS
+	shell
 	type
 	md
 	rd

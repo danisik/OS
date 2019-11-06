@@ -16,21 +16,30 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 
 
 	const char* prompt = "C:\\>";
-	do {
+	while(1) {
 		kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);
 
 		if (kiv_os_rtl::Read_File(std_in, buffer, buffer_size, counter) && (counter > 0)) {
-			if (counter == buffer_size) counter--;
+			
+			if (counter == buffer_size) {
+				counter--;
+			}
+
 			buffer[counter] = 0;	//udelame z precteneho vstup null-terminated retezec
+
+			if (strcmp(buffer, "exit") == 0) {
+				break;
+			}
 
 			const char* new_line = "\n";
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 			kiv_os_rtl::Write_File(std_out, buffer, strlen(buffer), counter);	//a vypiseme ho
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 		}
-		else
+		else {
 			break;	//EOF
-	} while (strcmp(buffer, "exit") != 0);
+		}
+	}
 
 	return 0;
 }
