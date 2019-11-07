@@ -2,6 +2,10 @@
 
 #include "rtl.h"
 
+const char* new_line = "\n";
+const char* prompt = "C:\\>";
+const char* welcome_message = "Welcome in OS";
+
 size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);
@@ -10,12 +14,12 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	char buffer[buffer_size];
 	size_t counter;
 
-	const char* intro = "Vitejte v kostre semestralni prace z KIV/OS.\n" \
-		"Shell zobrazuje echo zadaneho retezce. Prikaz exit ukonci shell.\n";
-	kiv_os_rtl::Write_File(std_out, intro, strlen(intro), counter);
+	//Print welcome message.
+	kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
+	kiv_os_rtl::Write_File(std_out, welcome_message, strlen(welcome_message), counter);
+	kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 
-
-	const char* prompt = "C:\\>";
+	//While cycle for commands.
 	while(1) {
 		kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);
 
@@ -31,9 +35,7 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 				break;
 			}
 
-			const char* new_line = "\n";
-			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
-			kiv_os_rtl::Write_File(std_out, buffer, strlen(buffer), counter);	//a vypiseme ho
+			// Tohle tam ve výsledku nebude.			
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 		}
 		else {
