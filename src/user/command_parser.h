@@ -14,4 +14,3 @@ namespace command_parser {
 	std::vector<std::string> parse_input(char input[]);
 	std::vector<Command> get_commands(char input[]);
 }
-#pragma once
