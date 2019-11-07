@@ -4,27 +4,25 @@
 #include <atomic>
 
 namespace kiv_os_rtl {
-
 	extern std::atomic<kiv_os::NOS_Error> Last_Error;
 
 	//NOS_File_System
-	bool Open_File(const char *buffer, const size_t buffer_size, kiv_os::THandle &file_handle, const bool exist, const kiv_os::NFile_Attributes attributes);
+	bool Open_File(const char *fileName, const kiv_os::NOpen_File flags, const kiv_os::NFile_Attributes attributes, kiv_os::THandle &open);
 	bool Write_File(const kiv_os::THandle file_handle, const char *buffer, const size_t buffer_size, size_t &written);
 	bool Read_File(const kiv_os::THandle file_handle, char* const buffer, const size_t buffer_size, size_t &read);
-	bool Seek();
+	bool Seek(const kiv_os::THandle file_handle, const kiv_os::NFile_Seek seek_operation, const kiv_os::NFile_Seek new_position, size_t &position);
 	bool Close_Handle(const kiv_os::THandle file_handle);
-	bool Delete_File(const char* filename);
-	bool Set_Working_Dir(const char *dir);
-	bool Get_Working_Dir(const char *buffer, const size_t buffer_size, size_t &read);
-	bool Create_Pipe(kiv_os::THandle handlers[]);
+	bool Delete_File(const char* fileName);
+	bool Set_Working_Dir(const char *new_directory);
+	bool Get_Working_Dir(const char *path, const size_t path_size, size_t &written_chars);
+	bool Create_Pipe(const kiv_os::THandle pipein_handle, const kiv_os::THandle pipeout_handle);
 
 	//NOS_Process
-	bool Clone(kiv_os::THandle& pid, const char* function, const char* arguments, kiv_os::THandle stdin_handle, kiv_os::THandle stdout_handle);
-	bool Wait_For(kiv_os::THandle handle);
-	std::uint8_t Read_Exit_Code(kiv_os::THandle handle);
-	bool Exit(uint16_t exitcode);
+	bool Clone(const char* export_name, const char* arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process);
+	bool Wait_For(const kiv_os::THandle process_handle);
+	std::uint8_t Read_Exit_Code(const kiv_os::THandle process_handle);
+	bool Exit(const uint16_t exitcode);
 	bool Shutdown();
-	bool Register_Signal_Handler(kiv_os::NSignal_Id signal, kiv_os::TThread_Proc handler);
+	bool Register_Signal_Handler(const kiv_os::NSignal_Id signal_Id, const kiv_os::TThread_Proc process_handle);
 
-	kiv_os::THandle Create_Thread(void* function, void* data, kiv_os::THandle stdin_handle, kiv_os::THandle stdout_handle);
 }
