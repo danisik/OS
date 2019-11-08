@@ -2,6 +2,7 @@
 
 #include "kernel.h"
 #include "io.h"
+#include "process.h"
 #include <Windows.h>
 
 HMODULE User_Programs;
@@ -24,6 +25,7 @@ void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
 		break;
 
 	case kiv_os::NOS_Service_Major::Process:
+		Handle_Process(regs);
 		break;
 	}
 
@@ -41,13 +43,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 		kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Disk_IO, regs);
 
 		if (!regs.flags.carry) {
-			auto print_str = [](const char* str) {
-				kiv_hal::TRegisters regs;
-				regs.rax.l = static_cast<uint8_t>(kiv_os::NOS_File_System::Write_File);
-				regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(str);
-				regs.rcx.r = strlen(str);
-				Handle_IO(regs);
-			};
+
 		}
 
 		if (regs.rdx.l == 255) break;

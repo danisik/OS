@@ -34,8 +34,7 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			if (strcmp(buffer, "exit") == 0) {
 				break;
 			}
-
-			// Tohle tam ve výsledku nebude.			
+		
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 		}
 		else {
@@ -43,5 +42,6 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 		}
 	}
 
+	kiv_os_rtl::Exit(0);
 	return 0;
 }

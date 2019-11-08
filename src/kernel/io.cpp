@@ -4,57 +4,11 @@
 #include "kernel.h"
 #include "handles.h"
 
-size_t Read_Line_From_Console(char *buffer, const size_t buffer_size) {
-	kiv_hal::TRegisters registers;
-	
-	size_t pos = 0;
-	while (pos < buffer_size) {
-		//read char
-		registers.rax.h = static_cast<decltype(registers.rax.l)>(kiv_hal::NKeyboard::Read_Char);
-		kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Keyboard, registers);
-		
-		if (!registers.flags.non_zero) break;	//nic jsme neprecetli, 
-												//pokud je rax.l EOT, pak byl zrejme vstup korektne ukoncen
-												//jinak zrejme doslo k chybe zarizeni
-
-		char ch = registers.rax.l;
-
-		//osetrime zname kody
-		switch (static_cast<kiv_hal::NControl_Codes>(ch)) {
-			case kiv_hal::NControl_Codes::BS: {
-					//mazeme znak z bufferu
-					if (pos > 0) pos--;
-
-					registers.rax.h = static_cast<decltype(registers.rax.l)>(kiv_hal::NVGA_BIOS::Write_Control_Char);
-					registers.rdx.l = ch;
-					kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
-				}
-				break;
-
-			case kiv_hal::NControl_Codes::LF:  break;	//jenom pohltime, ale necteme
-			case kiv_hal::NControl_Codes::NUL:			//chyba cteni?
-			case kiv_hal::NControl_Codes::CR:  return pos;	//docetli jsme az po Enter
-
-
-			default: buffer[pos] = ch;
-					 pos++;	
-					 registers.rax.h = static_cast<decltype(registers.rax.l)>(kiv_hal::NVGA_BIOS::Write_String);
-					 registers.rdx.r = reinterpret_cast<decltype(registers.rdx.r)>(&ch);
-					 registers.rcx.r = 1;
-					 kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
-					 break;
-		}
-	}
-
-	return pos;
-
-}
-
 void Open_File(kiv_hal::TRegisters &regs) {
 	char* fileName = reinterpret_cast<char*>(regs.rdx.x);
 	kiv_os::NOpen_File flags = static_cast<kiv_os::NOpen_File>(regs.rcx.r);
 	kiv_os::NFile_Attributes attributes = static_cast<kiv_os::NFile_Attributes>(regs.rdi.r);
-	kiv_os::THandle handle = NULL;
+	HANDLE handle = NULL;
 
 	// TODO Open_File: functional code.
 
@@ -65,35 +19,28 @@ void Open_File(kiv_hal::TRegisters &regs) {
 			else regs.rax.r = GetLastError();
 	*/
 
-	regs.rax.x = handle;
+	regs.rax.r = Convert_Native_Handle(static_cast<HANDLE>(handle));
 }
 
 void Write_File(kiv_hal::TRegisters &regs) {
-	//Spravne bychom nyni meli pouzit interni struktury kernelu a zadany handle resolvovat na konkretni objekt, ktery pise na konkretni zarizeni/souboru/roury.
-	//Ale protoze je tohle jenom kostra, tak to rovnou biosem posleme na konzoli.
-	kiv_hal::TRegisters registers;
-	registers.rax.h = static_cast<decltype(registers.rax.h)>(kiv_hal::NVGA_BIOS::Write_String);
-	registers.rdx.r = regs.rdi.r;
-	registers.rcx = regs.rcx;
+	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
+	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
+	size_t buffer_size = regs.rcx.r;
+	size_t write = NULL;
 
-	//preklad parametru dokoncen, zavolame sluzbu
-	kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
+	// TODO Write_File: functional code.
 
-	regs.flags.carry |= (registers.rax.r == 0 ? 1 : 0);	//jestli jsme nezapsali zadny znak, tak jiste doslo k nejake chybe
-	regs.rax = registers.rcx;	//VGA BIOS nevraci pocet zapsanych znaku, tak predpokladame, ze zapsal vsechny
-
-
-	//IN : dx je handle souboru, rdi je pointer na buffer, rcx je pocet bytu v bufferu k zapsani
-	//OUT : rax je pocet zapsanych bytu
-
-	//regs.rax.r = size_t
+	//Set_Error()
+	regs.rax.r = write;
 }
 
 void Read_File(kiv_hal::TRegisters &regs) {
-	//viz uvodni komentar u Write_File
-	regs.rax.r = Read_Line_From_Console(reinterpret_cast<char*>(regs.rdi.r), regs.rcx.r);
-
+	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
+	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
+	size_t buffer_size = regs.rcx.r;
 	size_t read = NULL;
+
+	// TODO Read_File: functional code.
 
 	regs.rax.r = read;
 }
