@@ -158,12 +158,11 @@ bool kiv_os_rtl::Clone(const char *export_name, const char *arguments, const kiv
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Wait_For(const kiv_os::THandle process_handle) {
+bool kiv_os_rtl::Wait_For(const kiv_os::THandle process_handlers[]) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Wait_For));
 
-	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(process_handle);
-	//We are waiting for this one handle, so rcx is = 1.
-	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(1);
+	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(process_handlers);
+	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(sizeof(process_handlers) / sizeof(kiv_os::THandle*));
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
 	return syscall_result;

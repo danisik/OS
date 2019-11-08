@@ -19,7 +19,7 @@ namespace kiv_os_rtl {
 
 	//NOS_Process
 	bool Clone(const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process);
-	bool Wait_For(const kiv_os::THandle process_handle);
+	bool Wait_For(const kiv_os::THandle process_handlers[]);
 	std::uint8_t Read_Exit_Code(const kiv_os::THandle process_handle);
 	bool Exit(const uint16_t exitcode);
 	bool Shutdown();
