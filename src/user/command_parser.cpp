@@ -1,7 +1,7 @@
 #include "command_parser.h"
 
 namespace command_parser {
-	std::vector<Command> find_commands(std::vector<std::string> tokens) {
+	std::vector<Command> Find_Commands(std::vector<std::string> tokens) {
 		std::vector<Command> commands = std::vector<Command>();
 		size_t size = tokens.size();
 		int i = 0;
@@ -26,7 +26,7 @@ namespace command_parser {
 		return commands;
 	}
 
-	std::vector<std::string> parse_input(char input[]) {
+	std::vector<std::string> Parse_Input(char input[]) {
 		std::vector<std::string> tokens = std::vector<std::string>();
 
 		char *next_token = NULL;
@@ -40,9 +40,9 @@ namespace command_parser {
 		return tokens;
 	}
 
-	std::vector<Command> get_commands(char input[]) {
-		std::vector<std::string> command_line = parse_input(input);
-		std::vector<Command> commands = find_commands(command_line);
+	std::vector<Command> Get_Commands(char input[]) {
+		std::vector<std::string> command_line = Parse_Input(input);
+		std::vector<Command> commands = Find_Commands(command_line);
 
 		return commands;
 	}

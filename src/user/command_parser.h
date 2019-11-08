@@ -2,15 +2,14 @@
 #include <vector>
 #include <string>
 
-
 namespace command_parser {
 	class Command {
-	public:
-		std::string base;
-		std::vector<std::string> parameters;
-	};
+		public:
+			std::string base;
+			std::vector<std::string> parameters;
+		};
 
-	std::vector<Command> find_commands(std::vector<std::string> tokens);
-	std::vector<std::string> parse_input(char input[]);
-	std::vector<Command> get_commands(char input[]);
+	std::vector<Command> Find_Commands(std::vector<std::string> tokens);
+	std::vector<std::string> Parse_Input(char input[]);
+	std::vector<Command> Get_Commands(char input[]);
 }

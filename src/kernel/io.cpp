@@ -1,3 +1,5 @@
+#pragma warning (disable: 4244)
+
 #include "io.h"
 #include "kernel.h"
 #include "handles.h"
@@ -49,10 +51,21 @@ size_t Read_Line_From_Console(char *buffer, const size_t buffer_size) {
 }
 
 void Open_File(kiv_hal::TRegisters &regs) {
-	//rdx je pointer na null - terminated ANSI char string udavajici file_name;
-	//rcx jsou flags k otevreni souboru - viz NOpen_File konstanty
-	//rdi jsou atributy souboru - viz NFile_Attributes
-	//OUT : ax je handle nove otevreneho souboru
+	char* fileName = reinterpret_cast<char*>(regs.rdx.x);
+	kiv_os::NOpen_File flags = static_cast<kiv_os::NOpen_File>(regs.rcx.r);
+	kiv_os::NFile_Attributes attributes = static_cast<kiv_os::NFile_Attributes>(regs.rdi.r);
+	kiv_os::THandle handle = NULL;
+
+	// TODO Open_File: functional code.
+
+	/*			HANDLE result = CreateFileA((char*)regs.rdx.r, GENERIC_READ | GENERIC_WRITE, (DWORD)regs.rcx.r, 0, OPEN_EXISTING, 0, 0);
+			//zde je treba podle Rxc doresit shared_read, shared_write, OPEN_EXISING, etc. podle potreby
+			regs.flags.carry = result == INVALID_HANDLE_VALUE;
+			if (!regs.flags.carry) regs.rax.x = Convert_Native_Handle(result);
+			else regs.rax.r = GetLastError();
+	*/
+
+	regs.rax.x = handle;
 }
 
 void Write_File(kiv_hal::TRegisters &regs) {
@@ -70,54 +83,72 @@ void Write_File(kiv_hal::TRegisters &regs) {
 	regs.rax = registers.rcx;	//VGA BIOS nevraci pocet zapsanych znaku, tak predpokladame, ze zapsal vsechny
 
 
-
 	//IN : dx je handle souboru, rdi je pointer na buffer, rcx je pocet bytu v bufferu k zapsani
 	//OUT : rax je pocet zapsanych bytu
+
+	//regs.rax.r = size_t
 }
 
 void Read_File(kiv_hal::TRegisters &regs) {
 	//viz uvodni komentar u Write_File
 	regs.rax.r = Read_Line_From_Console(reinterpret_cast<char*>(regs.rdi.r), regs.rcx.r);
 
+	size_t read = NULL;
 
-	//IN : dx je handle souboru, rdi je pointer na buffer, kam zapsat, rcx je velikost bufferu v bytech
-	//OUT : rax je pocet prectenych bytu
+	regs.rax.r = read;
 }
 
 void Seek(kiv_hal::TRegisters &regs) {
-	//IN : dx je handle souboru, rdi je nova pozice v souboru
-	//cl konstatna je typ pozice - viz NFile_Seek,
-		//		Beginning : od zacatku souboru
-		//		Current : od aktualni pozice v souboru
-		//		End : od konce souboru
-	//ch == Set_Position jenom nastavi pozici
-	//ch == Set_Size nastav pozici a nastav velikost souboru na tuto pozici 
-	//ch == Get_Position => OUT: rax je pozice v souboru od jeho zacatku
+	kiv_os::THandle file_handle = static_cast<kiv_os::THandle>(regs.rdx.x);
+	kiv_os::NFile_Seek new_position = static_cast<kiv_os::NFile_Seek>(regs.rdi.r);
+	size_t position = NULL;
+
+	// TODO Seek: functional code.
+
+	regs.rax.r = position;
 }
 
 void Close_Handle(kiv_hal::TRegisters &regs) {
-	//IN : dx  je handle libovolneho typu k zavreni
+	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.r);
+
+	regs.flags.carry = !CloseHandle(file_handle);
+	if (!regs.flags.carry) {
+		Remove_Handle(regs.rdx.r);
+	}
+	else {
+		regs.rax.r = GetLastError();
+	}
 }
 
 void Delete_File(kiv_hal::TRegisters &regs) {
-	//IN : rdx je pointer na null - terminated ANSI char string udavajici file_name
+	char *fileName = reinterpret_cast<char*>(regs.rdx.r);
+
+	// TODO Delete_File: functional code.
 }
 
 void Set_Working_Dir(kiv_hal::TRegisters &regs) {
-	//IN : rdx je pointer na null - terminated ANSI char string udavajici novy adresar(muze byt relativni cesta)
+	char *new_directory = reinterpret_cast<char*>(regs.rdx.r);
+	
+	// TODO Set_Working_Dir: functional code.
 }
 
 void Get_Working_Dir(kiv_hal::TRegisters &regs) {
-	//IN : rdx je pointer na ANSI char buffer, rcx je velikost buffer
-	//OUT : rax pocet zapsanych znaku
+	char *path = reinterpret_cast<char*>(regs.rdx.r);
+	size_t path_size = static_cast<size_t>(regs.rcx.r);
+	size_t written_chars = NULL;
 
-	//vytvoreni adresare - vytvori se soubor s atributem adresar
-	//smazani adresare - smaze se soubor
-	//vypis adresare - otevre se adresar jako read - only soubor a cte se jako binarni soubor obsahujici jenom polozky TDir_Entry
+	// TODO Get_Working_Dir: functional code.
+
+	regs.rax.r = written_chars;
 }
 
 void Create_Pipe(kiv_hal::TRegisters &regs) {
-	//IN : rdx je pointer na pole dvou Thandle - prvni zapis a druhy pro cteni z pipy
+
+	kiv_os::THandle *pipe_handle = reinterpret_cast<kiv_os::THandle*>(regs.rdx.r);
+	//pipe_handle[0] = pipein_handle;
+	//pipe_handle[1] = pipeout_handle;
+
+	// TODO Create_Pipe: functional code.
 }
 
 
@@ -162,27 +193,3 @@ void Handle_IO(kiv_hal::TRegisters &regs) {
 			break;
 	}
 }
-
-
-
-	/* Nasledujici dve vetve jsou ukazka, ze starsiho zadani, ktere ukazuji, jak mate mapovat Windows HANDLE na kiv_os handle a zpet, vcetne jejich alokace a uvolneni
-
-		case kiv_os::scCreate_File: {
-			HANDLE result = CreateFileA((char*)regs.rdx.r, GENERIC_READ | GENERIC_WRITE, (DWORD)regs.rcx.r, 0, OPEN_EXISTING, 0, 0);
-			//zde je treba podle Rxc doresit shared_read, shared_write, OPEN_EXISING, etc. podle potreby
-			regs.flags.carry = result == INVALID_HANDLE_VALUE;
-			if (!regs.flags.carry) regs.rax.x = Convert_Native_Handle(result);
-			else regs.rax.r = GetLastError();
-		}
-									break;	//scCreateFile
-
-		case kiv_os::scClose_Handle: {
-				HANDLE hnd = Resolve_kiv_os_Handle(regs.rdx.x);
-				regs.flags.carry = !CloseHandle(hnd);
-				if (!regs.flags.carry) Remove_Handle(regs.rdx.x);				
-					else regs.rax.r = GetLastError();
-			}
-
-			break;	//CloseFile
-
-	*/

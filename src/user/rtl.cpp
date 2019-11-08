@@ -28,7 +28,6 @@ bool kiv_os_rtl::Open_File(const char *fileName, const kiv_os::NOpen_File flags,
 
 	uint16_t fileNameUint = 0;
 	bool success = str_to_uint16(fileName, &fileNameUint);
-	
 	if (success) {
 		regs.rdx.x = static_cast<decltype(regs.rdx.x)>(fileNameUint);
 	}
@@ -62,7 +61,7 @@ bool kiv_os_rtl::Write_File(const kiv_os::THandle file_handle, const char *buffe
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Read_File(const kiv_os::THandle file_handle, char* const buffer, const size_t buffer_size, size_t &read) {
+bool kiv_os_rtl::Read_File(const kiv_os::THandle file_handle, const char *buffer, const size_t buffer_size, size_t &read) {
 	kiv_hal::TRegisters regs =  Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Read_File));
 	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(file_handle);
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(buffer);
@@ -101,7 +100,7 @@ bool kiv_os_rtl::Close_Handle(const kiv_os::THandle file_handle) {
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Delete_File(const char* fileName) {
+bool kiv_os_rtl::Delete_File(const char *fileName) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Delete_File));
 	
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(fileName);
@@ -144,7 +143,7 @@ bool kiv_os_rtl::Create_Pipe(const kiv_os::THandle pipein_handle, const kiv_os::
 }
 
 //NOS_Process
-bool kiv_os_rtl::Clone(const char* export_name, const char* arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
+bool kiv_os_rtl::Clone(const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(kiv_os::NClone::Create_Process);
@@ -204,6 +203,7 @@ bool kiv_os_rtl::Register_Signal_Handler(const kiv_os::NSignal_Id signal_Id, con
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(process_handle);
 
 	/*
+	TODO Register_Signal_Handler: ask about handler, when = 0 (NEEDED).
 	if (handler == 0) {
 		regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(handler);
 	}
