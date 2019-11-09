@@ -1,97 +1,30 @@
 #include "process.h"
 
-void Clone(kiv_hal::TRegisters &regs) {
-	// TODO Clone: functional code.
-	
-	//IN : rcx je NClone hodnota
-
-
-	//	Funkce procesu i vlakna maji prototyp TThread_Proc, protoze proces na zacatku bezi jako jedno vlakno,
-	//		context.rdi v TThread_Proc pak pro proces ukazuji na retezec udavajiciho jeho argumenty, tj. co bylo dano do rdi
-	//		a u vlakna je to pointer na jeho data
-}
-
-void Clone_Process(kiv_hal::TRegisters &regs) {
-	// TODO Clone_Process: functional code.
-
-	//	Create_Process: rdx je je pointer na null - terminated string udavajici jmeno souboru ke spusteni(tj.retezec pro GetProcAddress v kernelu)
-	//		rdi je pointer na null-termined ANSI char string udavajici argumenty programu
-	//		bx obsahuje 2x THandle na stdin a stdout, tj. bx.e = (stdin << 16) | stdout
-	//OUT - v programu, ktery zavolal Clone: ax je handle noveho procesu 
-	//		ve spustenem programu:	ax a bx jsou hodnoty stdin a stdout, stderr pro jednoduchost nepodporujeme
-}
-
-void Clone_Thread(kiv_hal::TRegisters &regs) {
-	// TODO Clone_Thread: functional code.
-
-	//	Create_Thread a pak rdx je TThread_Proc a rdi jsou *data
-	//OUT : rax je handle noveho procesu / threadu
-}
-
-void Wait_For(kiv_hal::TRegisters &regs) {
-	// TODO Wait_For: functional code.
-
-	//IN : rdx pointer na pole THandle, na ktere se ma cekat, rcx je pocet handlu
-	//	funkce se vraci jakmile je signalizovan prvni handle
-	//OUT : rax je index handle, ktery byl signalizovan
-}
-
-void Read_Exit_Code(kiv_hal::TRegisters &regs) {
-	// TODO Read_Exit_Code: functional code.
-
-	//IN:  dx je handle procesu/thread jehoz exit code se ma cist
-	//OUT: cx je exitcode
-}
-
-void Exit(kiv_hal::TRegisters &regs) {
-	// TODO Exit: functional code.
-
-	//ukonci proces/vlakno
-	//IN: cx je exit code
-}
-
-void Shutdown(kiv_hal::TRegisters &regs) {
-	// TODO Shutdown: functional code.
-
-	//nema parametry, nejprve korektne ukonci vsechny bezici procesy a pak kernel, cimz se preda rizeni do boot.exe, ktery provede simulaci vypnuti pocitace pres ACPI
-}
-
-void Register_Signal_Handler(kiv_hal::TRegisters &regs) {
-	// TODO Register_Signal_Handler: functional code.
-
-	//IN: rcx NSignal_Id, rdx 
-	//	a) pointer na TThread_Proc, kde pri jeho volani context.rcx bude id signalu
-	//	b) 0 a pak si OS dosadi defualtni obsluhu signalu
+Process::Process(size_t p_process_ID, char *p_working_directory) {
+	process_ID = p_process_ID;
+	state = State::Ready;
+	working_directory = p_working_directory;	
 }
 
 
-void Handle_Process(kiv_hal::TRegisters &regs) {
+void Process::Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegisters registers) {
+	std::unique_ptr<Thread> thread = std::make_unique<Thread>(entry_point, registers);
+	thread->Start(); 
 
-	switch (static_cast<kiv_os::NOS_Process>(regs.rax.l)) {
-
-	case kiv_os::NOS_Process::Clone:
-		Clone(regs);
-		break;
-
-	case kiv_os::NOS_Process::Wait_For:
-		Wait_For(regs);
-		break;
-
-	case kiv_os::NOS_Process::Read_Exit_Code:
-		Read_Exit_Code(regs);
-		break;
-
-	case kiv_os::NOS_Process::Exit:
-		Exit(regs);
-		break;
-
-	case kiv_os::NOS_Process::Shutdown:
-		Shutdown(regs);
-		break;
-
-	case kiv_os::NOS_Process::Register_Signal_Handler:
-		Register_Signal_Handler(regs);
-		break;
+	if (state == State::Ready) {
+		state = State::Running;
 	}
 
+	threads.insert(std::pair<size_t, std::unique_ptr<Thread>>(thread->thread_ID, std::move(thread)));
+}
+
+void Process::Join_Thread(size_t thread_ID, uint32_t exit_code) {
+	std::unique_ptr<Thread> thread = std::move(threads[thread_ID]);
+	thread->Join(exit_code);
+
+	threads.erase(thread_ID);
+
+	if (threads.size() < 1) {
+		state = State::Blocked;
+	}
 }

@@ -2,6 +2,11 @@
 
 #include "..\api\api.h"
 
+#include "kernel.h"
+#include "handles.h"
+
+#include <mutex>
+
 void Handle_IO(kiv_hal::TRegisters &regs);
 
 void Open_File(kiv_hal::TRegisters &regs);

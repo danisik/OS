@@ -2,7 +2,7 @@
 
 #include "kernel.h"
 #include "io.h"
-#include "process.h"
+#include "io_process.h"
 #include <Windows.h>
 
 HMODULE User_Programs;
@@ -53,7 +53,10 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	kiv_os::TThread_Proc shell = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, "shell");
 
+
 	if (shell) {
+
+
 		//spravne se ma shell spustit pres clone!
 		//ale ten v kostre pochopitelne neni implementovan		
 		shell(regs);

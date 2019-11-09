@@ -1,0 +1,36 @@
+#include "thread.h"
+
+#include <condition_variable>
+#include <mutex>
+
+std::condition_variable condition;
+std::mutex thread_mutex;
+
+Thread::Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers) {
+	thread_ID = 0;
+	state = State::Ready;
+	registers = t_registers;
+	exit_code = 0;
+	entry_point = t_entry_point;
+}
+
+Thread::~Thread() {
+	handlers.clear();
+
+	if (std_thread.joinable()) {
+		std_thread.detach();
+	}
+}
+
+void Thread::Start() {
+	state = State::Running;
+	std_thread = std::thread(entry_point, registers);
+	thread_ID = std::hash<std::thread::id>()(std_thread.get_id());
+}
+
+void Thread::Join(uint32_t t_exit_code) {
+	std::lock_guard<std::mutex> lock(thread_mutex);
+	state = State::Exited;
+	exit_code = t_exit_code;
+	std_thread.join();
+}
