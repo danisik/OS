@@ -5,8 +5,9 @@ namespace command_parser {
 		std::vector<Command> commands = std::vector<Command>();
 		size_t size = tokens.size();
 		int i = 0;
+		std::string token;
 		while (i < size) {
-			std::string token = tokens[i];
+			token = tokens[i];
 			Command command;
 			command.base = token;
 			command.parameters = std::vector<std::string>();
@@ -14,11 +15,14 @@ namespace command_parser {
 			if (i < size) {
 				token = tokens[i];
 			}
-			while ((token != "cd" || token != "echo" || token != "ps" || token != "rd" || token != "md" || token != "type"
-				|| token != "wc" || token != "sort" || token != "dir" || token != "rgen" || token != "freq"
-				|| token != "shell" || token != "shutdown" || token != "exit") && i < size) {
+			while ((token != "cd" && token != "echo" && token != "ps" && token != "rd" && token != "md" && token != "type"
+				&& token != "wc" && token != "sort" && token != "dir" && token != "rgen" && token != "freq"
+				&& token != "shell" && token != "shutdown" && token != "exit") && i < size) {
 				command.parameters.push_back(token);
 				i++;
+				if (i < size) {
+					token = tokens[i];
+				}
 			}
 			commands.push_back(command);
 		}
