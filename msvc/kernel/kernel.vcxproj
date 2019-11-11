@@ -26,6 +26,15 @@
     <ClCompile Include="..\..\src\kernel\kernel.cpp" />
     <ClCompile Include="..\..\src\kernel\process.cpp" />
     <ClCompile Include="..\..\src\kernel\thread.cpp" />
+    <ClCompile Include="..\..\src\user\VFS\Bitmap.cpp" />
+    <ClCompile Include="..\..\src\user\VFS\BootRecord.cpp" />
+    <ClCompile Include="..\..\src\user\VFS\Commands.cpp" />
+    <ClCompile Include="..\..\src\user\VFS\IoUtils.cpp" />
+    <ClCompile Include="..\..\src\user\VFS\main.cpp" />
+    <ClCompile Include="..\..\src\user\VFS\Mft_fragment.cpp" />
+    <ClCompile Include="..\..\src\user\VFS\Mft_item.cpp" />
+    <ClCompile Include="..\..\src\user\VFS\Ntfs.cpp" />
+    <ClCompile Include="..\..\src\user\VFS\Vfs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\api\api.h" />
@@ -37,6 +46,15 @@
     <ClInclude Include="..\..\src\kernel\process.h" />
     <ClInclude Include="..\..\src\kernel\state.h" />
     <ClInclude Include="..\..\src\kernel\thread.h" />
+    <ClInclude Include="..\..\src\user\VFS\Bitmap.hpp" />
+    <ClInclude Include="..\..\src\user\VFS\BootRecord.hpp" />
+    <ClInclude Include="..\..\src\user\VFS\Commands.hpp" />
+    <ClInclude Include="..\..\src\user\VFS\Constants.h" />
+    <ClInclude Include="..\..\src\user\VFS\IoUtils.hpp" />
+    <ClInclude Include="..\..\src\user\VFS\Mft_fragment.h" />
+    <ClInclude Include="..\..\src\user\VFS\Mft_item.h" />
+    <ClInclude Include="..\..\src\user\VFS\Ntfs.hpp" />
+    <ClInclude Include="..\..\src\user\VFS\Vfs.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B4305463-59C5-40C3-9A1A-92976A40562D}</ProjectGuid>
