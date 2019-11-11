@@ -46,6 +46,7 @@
     <ClInclude Include="..\..\src\kernel\process.h" />
     <ClInclude Include="..\..\src\kernel\state.h" />
     <ClInclude Include="..\..\src\kernel\thread.h" />
+    <ClInclude Include="..\..\src\kernel\user_programs.h" />
     <ClInclude Include="..\..\src\kernel\VFS\Bitmap.hpp" />
     <ClInclude Include="..\..\src\kernel\VFS\BootRecord.hpp" />
     <ClInclude Include="..\..\src\kernel\VFS\Commands.hpp" />

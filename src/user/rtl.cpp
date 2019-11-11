@@ -11,7 +11,6 @@ kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uin
 
 uint16_t str_to_uint16(const char *str) {
 	char *end;
-	errno = 0;
 	long val = strtol(str, &end, 10);
 	return (uint16_t)val;
 }

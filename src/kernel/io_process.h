@@ -3,6 +3,7 @@
 #include "../api/api.h"
 #include "process.h"
 #include "handles.h"
+#include "user_programs.h"
 
 #include <map>
 

@@ -1,12 +1,8 @@
 #pragma once
 
 #include "kernel.h"
-#include "io.h"
-#include "io_process.h"
-#include <Windows.h>
 
 HMODULE User_Programs;
-
 
 void Initialize_Kernel() {
 	User_Programs = LoadLibraryW(L"user.dll");
