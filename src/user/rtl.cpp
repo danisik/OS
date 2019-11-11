@@ -1,5 +1,3 @@
-#pragma warning (disable: 4302)
-
 #include "rtl.h"
 
 std::atomic<kiv_os::NOS_Error> kiv_os_rtl::Last_Error;
