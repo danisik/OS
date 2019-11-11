@@ -10,7 +10,7 @@ namespace command_parser {
 			token = tokens[i];
 			Command command;
 			command.base = token;
-			command.parameters = std::vector<std::string>();
+			command.parameters = "";
 			i++;
 			if (i < size) {
 				token = tokens[i];
@@ -18,7 +18,7 @@ namespace command_parser {
 			while ((token != "cd" && token != "echo" && token != "ps" && token != "rd" && token != "md" && token != "type"
 				&& token != "wc" && token != "sort" && token != "dir" && token != "rgen" && token != "freq"
 				&& token != "shell" && token != "shutdown" && token != "exit") && i < size) {
-				command.parameters.push_back(token);
+				command.parameters.append(token);
 				i++;
 				if (i < size) {
 					token = tokens[i];
