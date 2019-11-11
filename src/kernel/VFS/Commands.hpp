@@ -9,13 +9,14 @@
 #ifndef Functions_hpp
 #define Functions_hpp
 
-#include <stdio.h>
+#include <cstdio>
 #include "Vfs.hpp"
 #include "IoUtils.hpp"
 #include "Constants.h"
 #include "Ntfs.hpp"
 #include <fstream>
 #include <string>
+#include <stdlib.h>
 
 class Commands
 {

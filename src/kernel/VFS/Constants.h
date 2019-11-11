@@ -17,7 +17,7 @@ const int32_t UID_ITEM_FREE = 0;
 
 const int32_t MFT_FRAGMENTS_COUNT = 32;
 
-const float MFT_PERCENTAGE_USAGE = 0.1; //we expect, that MFT usage 10% from space
+const double MFT_PERCENTAGE_USAGE = 0.1; //we expect, that MFT usage 10% from space
 
 const int32_t DISK_SIZE = 30720;
 //const int32_t DISK_SIZE = 10000;

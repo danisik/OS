@@ -16,7 +16,7 @@ Mft_item::Mft_item(int32_t uid, int32_t parent_id, bool isDirectory, int8_t item
     this->isDirectory = isDirectory;
     this->item_order = item_order;
     this->item_order_total = item_order_total;
-    strcpy(this->item_name, name);
+    strcpy_s(this->item_name, name);
     this->item_size = size;
     this->fragments_count = 0;
 }

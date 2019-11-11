@@ -10,14 +10,14 @@
 
 BootRecord::BootRecord(int32_t disk_size, int32_t cluster_size)
 {
-    strncpy(this->signature, "cagy", sizeof(this->signature) - 1);
-    strncpy(this->volume_descriptor, "pseudoNTFS", sizeof(this->volume_descriptor) - 1);
+    strncpy_s(this->signature, "cagy", sizeof(this->signature) - 1);
+    strncpy_s(this->volume_descriptor, "pseudoNTFS", sizeof(this->volume_descriptor) - 1);
     
     this->disk_size = disk_size;
     this->cluster_size = cluster_size;
     this->cluster_count = disk_size / cluster_size;
     this->mft_start_address = sizeof(BootRecord);
-    this->bitmap_start_address = sizeof(BootRecord) + (disk_size * MFT_PERCENTAGE_USAGE);
+    this->bitmap_start_address = int32_t(sizeof(BootRecord) + (disk_size * MFT_PERCENTAGE_USAGE));
     
     this->data_start_address =sizeof(BootRecord) + this->bitmap_start_address + sizeof(Bitmap);
     

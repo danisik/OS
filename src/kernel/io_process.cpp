@@ -38,7 +38,8 @@ void Clone_Process(kiv_hal::TRegisters &regs) {
 	char *arguments = reinterpret_cast<char*>(regs.rdi.r);
 	char *working_directory;
 
-	kiv_os::TThread_Proc entry_point = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, export_name);
+	// TODO Clone_Process: 
+	//kiv_os::TThread_Proc entry_point = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, export_name);
 
 	//   |stdin|stdout| in hex
 	//    |....|....| 

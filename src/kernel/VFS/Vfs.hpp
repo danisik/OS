@@ -14,7 +14,10 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
+#include <iterator>
 #include <map>
+#include <string>
+#include <algorithm>
 
 #include "BootRecord.hpp"
 #include "Mft_item.h"

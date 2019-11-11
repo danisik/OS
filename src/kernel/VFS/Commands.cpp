@@ -282,7 +282,8 @@ void Commands::insert_file_from_hdd(Vfs* vfs, std::string filename, std::string 
         return;
     }
     
-    FILE *source = std::fopen(filename.c_str(), "rb");
+	FILE *source;
+	fopen_s(&source, filename.c_str(), "rb");
     
     Mft_item *d_item = vfs->find_mft_item_by_uid(s_parent_id);
     
@@ -321,7 +322,8 @@ void Commands::export_file_from_ntfs(Vfs *vfs, std::string filename, std::string
     
     Mft_item *item = vfs->find_mft_item_by_name_and_parent(IoUtils::get_filename(vfs, filename), s_parent_id);
     
-    FILE *file = std::fopen((destination + item->item_name).c_str(), "wb");
+	FILE *file;
+    fopen_s(&file, (destination + item->item_name).c_str(), "wb");
     if (file == NULL)
     {
         printf("PATH NOT FOUND\n");

@@ -42,31 +42,31 @@
     <ClCompile Include="..\..\src\kernel\io_process.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\user\VFS\Bitmap.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\Bitmap.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\user\VFS\BootRecord.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\BootRecord.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\user\VFS\Commands.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\Commands.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\user\VFS\IoUtils.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\IoUtils.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\user\VFS\main.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\main.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\user\VFS\Mft_fragment.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\Mft_fragment.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\user\VFS\Mft_item.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\Mft_item.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\user\VFS\Ntfs.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\Ntfs.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\user\VFS\Vfs.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\Vfs.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,31 +98,31 @@
     <ClInclude Include="..\..\src\kernel\state.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\user\VFS\Bitmap.hpp">
+    <ClInclude Include="..\..\src\kernel\VFS\Bitmap.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\user\VFS\BootRecord.hpp">
+    <ClInclude Include="..\..\src\kernel\VFS\BootRecord.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\user\VFS\Commands.hpp">
+    <ClInclude Include="..\..\src\kernel\VFS\Commands.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\user\VFS\Constants.h">
+    <ClInclude Include="..\..\src\kernel\VFS\Constants.h">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\user\VFS\IoUtils.hpp">
+    <ClInclude Include="..\..\src\kernel\VFS\IoUtils.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\user\VFS\Mft_fragment.h">
+    <ClInclude Include="..\..\src\kernel\VFS\Mft_fragment.h">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\user\VFS\Mft_item.h">
+    <ClInclude Include="..\..\src\kernel\VFS\Mft_item.h">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\user\VFS\Ntfs.hpp">
+    <ClInclude Include="..\..\src\kernel\VFS\Ntfs.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\user\VFS\Vfs.hpp">
+    <ClInclude Include="..\..\src\kernel\VFS\Vfs.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
   </ItemGroup>

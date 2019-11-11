@@ -10,7 +10,8 @@
 
 bool IoUtils::is_file_exists(std::string filename)
 {
-    if (FILE *file = fopen(filename.c_str(), "r")) {
+	FILE *file;
+    if (fopen_s(&file, filename.c_str(), "r")) {
         fclose(file);
         return true;
     }
@@ -20,7 +21,8 @@ bool IoUtils::is_file_exists(std::string filename)
 
 FILE* IoUtils::create_new_ntfs_file(Vfs *vfs)
 {
-    FILE* file = std::fopen(vfs->filename.data(), "w+");
+	FILE* file;
+    fopen_s(&file, vfs->filename.data(), "w+");
     
     return file;
 }

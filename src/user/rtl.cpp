@@ -9,30 +9,18 @@ kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uin
 	return regs;
 }
 
-bool str_to_uint16(const char *str, uint16_t *res) {
+uint16_t str_to_uint16(const char *str) {
 	char *end;
 	errno = 0;
 	long val = strtol(str, &end, 10);
-	if (errno || end == str || *end != '\0' || val < 0 || val >= 0x10000) {
-		return false;
-	}
-	*res = (uint16_t)val;
-	return true;
+	return (uint16_t)val;
 }
 
 //NOS_File_System
 bool kiv_os_rtl::Open_File(const char *file_name, const kiv_os::NOpen_File flags, const kiv_os::NFile_Attributes attributes, kiv_os::THandle &open) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Open_File));
 
-	uint16_t file_name_uint = 0;
-	bool success = str_to_uint16(file_name, &file_name_uint);
-	if (success) {
-		regs.rdx.x = static_cast<decltype(regs.rdx.x)>(file_name_uint);
-	}
-	else {
-		regs.rdx.x = reinterpret_cast<decltype(regs.rdx.x)>(file_name);
-	}
-	
+	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(str_to_uint16(file_name));	
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(flags);
 	regs.rdi.r = static_cast<decltype(regs.rdi.r)>(attributes);
 
@@ -141,10 +129,10 @@ bool kiv_os_rtl::Create_Pipe(const kiv_os::THandle pipein_handle, const kiv_os::
 }
 
 //NOS_Process
-bool kiv_os_rtl::Clone(kiv_os::NOS_Process process_type, const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
+bool kiv_os_rtl::Clone(kiv_os::NClone clone_type, const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 
-	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(process_type);
+	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(clone_type);
 
 	// TODO - registry podle api.h -> pøidat podmínku na create process | create thread, a podle toho pøiøadit urèité registry.
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(export_name);

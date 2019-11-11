@@ -92,7 +92,7 @@ void Vfs::print_mft_item(Mft_item *item)
 
 void Vfs::write_vfs()
 {
-    this->boot_record->mft_items_count = this->mft_items.size();
+    this->boot_record->mft_items_count = (long)this->mft_items.size();
     
     this->boot_record->write(this->file);
 
@@ -402,8 +402,13 @@ bool Vfs::insert_file(FILE *source, Mft_item *destination, std::string filename)
     }
     
     Mft_item *item = this->create_new_item(this->create_uniq_mft_uid(), destination->uid, false, 0, 0, filename, size);
-    
-    char buffer[item->cluster_count][CLUSTER_SIZE];
+
+    //char **buffer = new char[item->cluster_count][CLUSTER_SIZE];
+
+	char **buffer = new char*[item->cluster_count];
+	for (int i = 0; i < item->cluster_count; ++i) {
+		buffer[i] = new char[CLUSTER_SIZE];
+	}
     
     for (int i = 0 ; i < item->cluster_count ; i++)
     {

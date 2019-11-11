@@ -25,7 +25,7 @@ void Ntfs::create_vfs()
     if (IoUtils::is_file_exists(this->filename))
     {
         Ntfs::vfs = new Vfs(this->filename);
-        Ntfs::vfs->file = fopen(this->filename.c_str(), "r+");
+        fopen_s(&Ntfs::vfs->file, this->filename.c_str(), "r+");
         
         
         printf("Loading existing file...\n");
@@ -35,10 +35,11 @@ void Ntfs::create_vfs()
     else
     {
         Ntfs::vfs = new Vfs(this->filename, DISK_SIZE);
-        FILE *file = fopen(this->filename.c_str(), "wb");
+		FILE *file;
+		fopen_s(&file, this->filename.c_str(), "wb");
         fclose(file);
         
-        Ntfs::vfs->file = fopen(this->filename.c_str(), "r+");
+		fopen_s(&Ntfs::vfs->file, this->filename.c_str(), "r+");
         Ntfs::vfs->create_root();
         printf("Creating new file...\n");
         

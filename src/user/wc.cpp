@@ -32,14 +32,14 @@ size_t __stdcall wc(const kiv_hal::TRegisters &regs) {
 		bool res = kiv_os_rtl::Read_File(std_in, buffer, sizeof(buffer), read);
 		if (!res) {
 			//TODO error
-			return;
+			return 0;
 		}
 		complete.append(buffer);
 		while (read) {
 			res = kiv_os_rtl::Read_File(std_in, buffer, sizeof(buffer), read);
 			if (!res) {
 				//TODO error
-				return;
+				return 0;
 			}
 			complete.append(buffer);
 		}
