@@ -59,10 +59,10 @@
     <ClInclude Include="..\..\src\kernel\thread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\kernel\State.h">
+    <ClInclude Include="..\..\src\kernel\io_process.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\kernel\io_process.h">
+    <ClInclude Include="..\..\src\kernel\state.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

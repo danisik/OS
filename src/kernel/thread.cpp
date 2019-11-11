@@ -4,7 +4,6 @@
 #include <mutex>
 
 std::condition_variable condition;
-std::mutex thread_mutex;
 
 Thread::Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers) {
 	thread_ID = 0;
@@ -29,7 +28,6 @@ void Thread::Start() {
 }
 
 void Thread::Join(uint32_t t_exit_code) {
-	std::lock_guard<std::mutex> lock(thread_mutex);
 	state = State::Exited;
 	exit_code = t_exit_code;
 	std_thread.join();

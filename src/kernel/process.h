@@ -1,6 +1,5 @@
 #pragma once
 
-#include "State.h"
 #include "thread.h"
 
 #include <map>

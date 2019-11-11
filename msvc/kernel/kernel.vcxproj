@@ -35,7 +35,7 @@
     <ClInclude Include="..\..\src\kernel\io_process.h" />
     <ClInclude Include="..\..\src\kernel\kernel.h" />
     <ClInclude Include="..\..\src\kernel\process.h" />
-    <ClInclude Include="..\..\src\kernel\State.h" />
+    <ClInclude Include="..\..\src\kernel\state.h" />
     <ClInclude Include="..\..\src\kernel\thread.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

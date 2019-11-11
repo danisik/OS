@@ -73,7 +73,8 @@ void Open_File(kiv_hal::TRegisters &regs) {
 }
 
 void Write_File(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	// TODO Write_File / Read_File: error after ctrl+c -> mutex destroyed while busy.
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
@@ -101,7 +102,7 @@ void Write_File(kiv_hal::TRegisters &regs) {
 }
 
 void Read_File(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);

@@ -1,12 +1,30 @@
 #include "io_process.h"
 
-std::vector<Process> processes;
+std::map<size_t, std::unique_ptr<Process>> processes;
+size_t first_free_process_ID = 0;
+
+size_t Get_Free_Process_ID() {
+
+	while (1) {
+		first_free_process_ID++;
+		if (processes.find(first_free_process_ID) == processes.end()) {
+			return first_free_process_ID;
+		}
+	}
+}
 
 void Clone(kiv_hal::TRegisters &regs) {
-	// TODO Clone: functional code.
 
-	//IN : rcx je NClone hodnota
+	kiv_os::NClone clone_type = static_cast<kiv_os::NClone>(regs.rcx.r);
 
+	switch (clone_type) {
+		case kiv_os::NClone::Create_Process:
+			Clone_Process(regs);
+			break;
+		case kiv_os::NClone::Create_Thread:
+			Clone_Thread(regs);
+			break;
+	}
 
 	//	Funkce procesu i vlakna maji prototyp TThread_Proc, protoze proces na zacatku bezi jako jedno vlakno,
 	//		context.rdi v TThread_Proc pak pro proces ukazuji na retezec udavajiciho jeho argumenty, tj. co bylo dano do rdi
@@ -14,10 +32,28 @@ void Clone(kiv_hal::TRegisters &regs) {
 }
 
 void Clone_Process(kiv_hal::TRegisters &regs) {
-	// TODO Clone_Process: functional code.
+	// TODO Clone_Process: functional code.	
 
-	//	Create_Process: rdx je je pointer na null - terminated string udavajici jmeno souboru ke spusteni(tj.retezec pro GetProcAddress v kernelu)
-	//		rdi je pointer na null-termined ANSI char string udavajici argumenty programu
+	char *export_name = reinterpret_cast<char*>(regs.rdx.r);
+	char *arguments = reinterpret_cast<char*>(regs.rdi.r);
+	char *working_directory;
+
+	kiv_os::TThread_Proc entry_point = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, export_name);
+
+	//   |stdin|stdout| in hex
+	//    |....|....| 
+	//	  
+	//	 stdin  = rbx.e >> 16
+	//
+	//					  |....|....|
+	//   stdout = rbx.e & |0000|FFFF|
+	//	
+	kiv_os::THandle stdin_handle = regs.rbx.e >> 16;
+	kiv_os::THandle stdout_handle = regs.rbx.e & 0x0000FFFF;
+
+	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), working_directory);
+
+	//	Create_Process: 
 	//		bx obsahuje 2x THandle na stdin a stdout, tj. bx.e = (stdin << 16) | stdout
 	//OUT - v programu, ktery zavolal Clone: ax je handle noveho procesu 
 	//		ve spustenem programu:	ax a bx jsou hodnoty stdin a stdout, stderr pro jednoduchost nepodporujeme

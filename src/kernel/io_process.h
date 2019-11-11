@@ -2,10 +2,11 @@
 
 #include "../api/api.h"
 #include "process.h"
+#include "handles.h"
 
-#include <vector>
+#include <map>
 
-void Handle_Process(kiv_hal::TRegisters &regs);
+size_t Get_Free_Process_ID();
 
 void Clone(kiv_hal::TRegisters &regs);
 void Clone_Process(kiv_hal::TRegisters &regs);
@@ -16,3 +17,5 @@ void Read_Exit_Code(kiv_hal::TRegisters &regs);
 void Exit(kiv_hal::TRegisters &regs);
 void Shutdown(kiv_hal::TRegisters &regs);
 void Register_Signal_Handler(kiv_hal::TRegisters &regs);
+
+void Handle_Process(kiv_hal::TRegisters &regs);
