@@ -6,7 +6,7 @@ namespace command_parser {
 	class Command {
 		public:
 			std::string base;
-			std::vector<std::string> parameters;
+			std::string parameters;
 		};
 
 	std::vector<Command> Find_Commands(std::vector<std::string> tokens);
