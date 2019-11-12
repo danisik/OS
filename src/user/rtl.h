@@ -18,9 +18,10 @@ namespace kiv_os_rtl {
 	bool Create_Pipe(const kiv_os::THandle pipein_handle, const kiv_os::THandle pipeout_handle);
 
 	//NOS_Process
-	bool Clone(kiv_os::NClone clone_type, const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process);
+	bool Clone_Process(const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process);
+	bool Clone_Thread(void *export_name, void *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process);
 	bool Wait_For(const kiv_os::THandle process_handlers[]);
-	std::uint8_t Read_Exit_Code(const kiv_os::THandle process_handle);
+	bool Read_Exit_Code(const kiv_os::THandle process_handle, size_t &exit_code);
 	bool Exit(const uint16_t exit_code);
 	bool Shutdown();
 	bool Register_Signal_Handler(const kiv_os::NSignal_Id signal_Id, const kiv_os::TThread_Proc process_handle);

@@ -69,12 +69,11 @@ void Open_File(kiv_hal::TRegisters &regs) {
 			else regs.rax.r = GetLastError();
 	*/
 
-	regs.rax.r = Convert_Native_Handle(static_cast<HANDLE>(handle));
+	regs.rax.x = Convert_Native_Handle(static_cast<HANDLE>(handle));
 }
 
 void Write_File(kiv_hal::TRegisters &regs) {
-	// TODO Write_File / Read_File: error after ctrl+c -> mutex destroyed while busy.
-	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
@@ -102,16 +101,16 @@ void Write_File(kiv_hal::TRegisters &regs) {
 }
 
 void Read_File(kiv_hal::TRegisters &regs) {
-	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
-	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
-	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
-	size_t buffer_size = regs.rcx.r;
-	size_t read = NULL;
+	//HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
+	//char *buffer = reinterpret_cast<char*>(regs.rdi.r);
+	//size_t buffer_size = regs.rcx.r;
+	//size_t read = NULL;
 
 	// TODO Read_File: functional code.
 
-	regs.rax.r = read;
+	//regs.rax.x = read;
 
 
 
@@ -127,7 +126,7 @@ void Seek(kiv_hal::TRegisters &regs) {
 
 	// TODO Seek: functional code.
 
-	regs.rax.r = position;
+	regs.rax.x = position;
 }
 
 void Close_Handle(kiv_hal::TRegisters &regs) {
@@ -137,10 +136,10 @@ void Close_Handle(kiv_hal::TRegisters &regs) {
 
 	regs.flags.carry = !CloseHandle(file_handle);
 	if (!regs.flags.carry) {
-		Remove_Handle(regs.rdx.r);
+		Remove_Handle(regs.rdx.x);
 	}
 	else {
-		regs.rax.r = GetLastError();
+		regs.rax.x = GetLastError();
 	}
 }
 

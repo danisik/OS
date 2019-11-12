@@ -21,7 +21,7 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 
 	//While cycle for commands.
 	while(1) {
-		kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);
+		kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);		
 
 		if (kiv_os_rtl::Read_File(std_in, buffer, buffer_size, counter) && (counter > 0)) {
 			

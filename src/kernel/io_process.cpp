@@ -1,7 +1,11 @@
 #include "io_process.h"
 
+// Index -> thread_ID; Value -> Process.
 std::map<size_t, std::unique_ptr<Process>> processes;
+
 size_t first_free_process_ID = 0;
+
+std::mutex io_process_mutex;
 
 size_t Get_Free_Process_ID() {
 
@@ -25,21 +29,18 @@ void Clone(kiv_hal::TRegisters &regs) {
 			Clone_Thread(regs);
 			break;
 	}
-
-	//	Funkce procesu i vlakna maji prototyp TThread_Proc, protoze proces na zacatku bezi jako jedno vlakno,
-	//		context.rdi v TThread_Proc pak pro proces ukazuji na retezec udavajiciho jeho argumenty, tj. co bylo dano do rdi
-	//		a u vlakna je to pointer na jeho data
 }
 
 void Clone_Process(kiv_hal::TRegisters &regs) {
-	// TODO Clone_Process: functional code.	
+	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
 	char *export_name = reinterpret_cast<char*>(regs.rdx.r);
 	char *arguments = reinterpret_cast<char*>(regs.rdi.r);
-	char *working_directory;
 
-	// TODO Clone_Process: 
-	//kiv_os::TThread_Proc entry_point = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, export_name);
+	// TODO Clone_Process: working directory.
+	char *working_directory = "";
+
+	kiv_os::TThread_Proc entry_point = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, export_name);
 
 	//   |stdin|stdout| in hex
 	//    |....|....| 
@@ -49,25 +50,42 @@ void Clone_Process(kiv_hal::TRegisters &regs) {
 	//					  |....|....|
 	//   stdout = rbx.e & |0000|FFFF|
 	//	
-	kiv_os::THandle stdin_handle = regs.rbx.e >> 16;
-	kiv_os::THandle stdout_handle = regs.rbx.e & 0x0000FFFF;
 
-	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), working_directory);
+	kiv_hal::TRegisters process_registers;
+	process_registers.rax.x = regs.rbx.e >> 16;			// Stdin.
+	process_registers.rbx.x = regs.rbx.e & 0x0000FFFF;	// Stdout.
+	process_registers.rdi.r = regs.rdi.r;				// Arguments.
 
-	//	Create_Process: 
-	//		bx obsahuje 2x THandle na stdin a stdout, tj. bx.e = (stdin << 16) | stdout
-	//OUT - v programu, ktery zavolal Clone: ax je handle noveho procesu 
-	//		ve spustenem programu:	ax a bx jsou hodnoty stdin a stdout, stderr pro jednoduchost nepodporujeme
-}
+	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), working_directory, entry_point, process_registers);
+
+	// Create first thread.
+	size_t thread_ID = process->Create_Thread(entry_point, process_registers);
+
+	//Add newly created process into "processes" map.
+	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(thread_ID, std::move(process)));
+
+	regs.rax.x = static_cast<kiv_os::THandle>(process->process_ID);
+}	
 
 void Clone_Thread(kiv_hal::TRegisters &regs) {
-	// TODO Clone_Thread: functional code.
+	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
-	//	Create_Thread a pak rdx je TThread_Proc a rdi jsou *data
-	//OUT : rax je handle noveho procesu / threadu
+	kiv_os::TThread_Proc entry_point = reinterpret_cast<kiv_os::TThread_Proc>(regs.rdx.r);
+
+	kiv_hal::TRegisters thread_registers;
+	thread_registers.rdi.r = regs.rdi.r;				// Arguments.
+
+	// Get current process and create new thread.
+	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	std::unique_ptr<Process> current_process = std::move(processes.find(current_thread_ID)->second);
+
+	size_t cloned_thread_ID = current_process->Create_Thread(entry_point, thread_registers);
+
+	regs.rax.x = static_cast<kiv_os::THandle>(cloned_thread_ID);
 }
 
 void Wait_For(kiv_hal::TRegisters &regs) {
+	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Wait_For: functional code.
 
 	//IN : rdx pointer na pole THandle, na ktere se ma cekat, rcx je pocet handlu
@@ -76,6 +94,7 @@ void Wait_For(kiv_hal::TRegisters &regs) {
 }
 
 void Read_Exit_Code(kiv_hal::TRegisters &regs) {
+	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Read_Exit_Code: functional code.
 
 	//IN:  dx je handle procesu/thread jehoz exit code se ma cist
@@ -83,6 +102,7 @@ void Read_Exit_Code(kiv_hal::TRegisters &regs) {
 }
 
 void Exit(kiv_hal::TRegisters &regs) {
+	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Exit: functional code.
 
 	//ukonci proces/vlakno
@@ -90,12 +110,14 @@ void Exit(kiv_hal::TRegisters &regs) {
 }
 
 void Shutdown(kiv_hal::TRegisters &regs) {
+	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Shutdown: functional code.
 
 	//nema parametry, nejprve korektne ukonci vsechny bezici procesy a pak kernel, cimz se preda rizeni do boot.exe, ktery provede simulaci vypnuti pocitace pres ACPI
 }
 
 void Register_Signal_Handler(kiv_hal::TRegisters &regs) {
+	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Register_Signal_Handler: functional code.
 
 	//IN: rcx NSignal_Id, rdx 

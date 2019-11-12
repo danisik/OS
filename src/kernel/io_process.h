@@ -6,6 +6,7 @@
 #include "user_programs.h"
 
 #include <map>
+#include <mutex>
 
 size_t Get_Free_Process_ID();
 

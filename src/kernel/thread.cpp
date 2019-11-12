@@ -1,9 +1,10 @@
 #include "thread.h"
 
-#include <condition_variable>
-#include <mutex>
-
 std::condition_variable condition;
+
+size_t Get_Thread_ID(std::thread::id thread_ID) {
+	return std::hash<std::thread::id>()(thread_ID);
+}
 
 Thread::Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers) {
 	thread_ID = 0;
@@ -24,7 +25,7 @@ Thread::~Thread() {
 void Thread::Start() {
 	state = State::Running;
 	std_thread = std::thread(entry_point, registers);
-	thread_ID = std::hash<std::thread::id>()(std_thread.get_id());
+	thread_ID = Get_Thread_ID(std_thread.get_id());
 }
 
 void Thread::Join(uint32_t t_exit_code) {

@@ -2,7 +2,6 @@
 
 #include "..\api\api.h"
 
-#include "kernel.h"
 #include "handles.h"
 
 #include <mutex>

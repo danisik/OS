@@ -64,7 +64,7 @@ bool kiv_os_rtl::Seek(const kiv_os::THandle file_handle, const kiv_os::NFile_See
 	regs.rdi.r = static_cast<decltype(regs.rdi.r)>(new_position);
 	
 	if (kiv_os::NFile_Seek::Set_Size == seek_operation) {
-		// TODO Seek: Set size of file on this position (NEEDED).
+		// TODO Seek: Set size of file (NEEDED).
 	}	
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
@@ -128,15 +128,27 @@ bool kiv_os_rtl::Create_Pipe(const kiv_os::THandle pipein_handle, const kiv_os::
 }
 
 //NOS_Process
-bool kiv_os_rtl::Clone(kiv_os::NClone clone_type, const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
+bool kiv_os_rtl::Clone_Process(const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 
-	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(clone_type);
-
-	// TODO - registry podle api.h -> pøidat podmínku na create process | create thread, a podle toho pøiøadit urèité registry.
+	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(kiv_os::NClone::Create_Process);
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(export_name);
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(arguments);
 	regs.rbx.e = (stdin_handle << 16) | stdout_handle;
+
+	bool syscall_result = kiv_os::Sys_Call(regs);
+
+	process = static_cast<kiv_os::THandle>(regs.rax.r);
+
+	return syscall_result;
+}
+
+bool Clone_Thread(void *export_name, void *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
+	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
+
+	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(kiv_os::NClone::Create_Thread);
+	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(export_name);
+	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(arguments);
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
 
@@ -155,13 +167,14 @@ bool kiv_os_rtl::Wait_For(const kiv_os::THandle process_handlers[]) {
 	return syscall_result;
 }
 
-std::uint8_t kiv_os_rtl::Read_Exit_Code(const kiv_os::THandle process_handle) {
+bool kiv_os_rtl::Read_Exit_Code(const kiv_os::THandle process_handle, size_t &exit_code) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
 	
 	//.r register viz Exit method.
 	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(process_handle);
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
+	exit_code = static_cast<size_t>(regs.rax.r);
 	return syscall_result;
 }
 
@@ -186,17 +199,15 @@ bool kiv_os_rtl::Register_Signal_Handler(const kiv_os::NSignal_Id signal_Id, con
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Register_Signal_Handler));
 
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(signal_Id);
-	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(process_handle);
 
-	/*
-	TODO Register_Signal_Handler: ask about handler, when = 0 (NEEDED).
-	if (handler == 0) {
+	if (process_handle == 0) {
+		// TODO Register_Signal_Handler: stdin and stdout instead of process_handle.
 		regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(process_handle);
 	}
 	else {
 		regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(process_handle);
 	}
-	*/
+	
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
 	return syscall_result;
