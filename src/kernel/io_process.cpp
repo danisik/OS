@@ -1,13 +1,8 @@
 #include "io_process.h"
 
-// Index -> thread_ID; Value -> Process.
-std::map<size_t, std::unique_ptr<Process>> processes;
 
-size_t first_free_process_ID = 0;
 
-std::mutex io_process_mutex;
-
-size_t Get_Free_Process_ID() {
+size_t IO_Process::Get_Free_Process_ID() {
 
 	while (1) {
 		first_free_process_ID++;
@@ -17,7 +12,7 @@ size_t Get_Free_Process_ID() {
 	}
 }
 
-void Clone(kiv_hal::TRegisters &regs) {
+void IO_Process::Clone(kiv_hal::TRegisters &regs) {
 
 	kiv_os::NClone clone_type = static_cast<kiv_os::NClone>(regs.rcx.r);
 
@@ -31,7 +26,7 @@ void Clone(kiv_hal::TRegisters &regs) {
 	}
 }
 
-void Clone_Process(kiv_hal::TRegisters &regs) {
+void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
 	char *export_name = reinterpret_cast<char*>(regs.rdx.r);
@@ -67,7 +62,7 @@ void Clone_Process(kiv_hal::TRegisters &regs) {
 	regs.rax.x = static_cast<kiv_os::THandle>(process->process_ID);
 }	
 
-void Clone_Thread(kiv_hal::TRegisters &regs) {
+void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
 	kiv_os::TThread_Proc entry_point = reinterpret_cast<kiv_os::TThread_Proc>(regs.rdx.r);
@@ -84,7 +79,7 @@ void Clone_Thread(kiv_hal::TRegisters &regs) {
 	regs.rax.x = static_cast<kiv_os::THandle>(cloned_thread_ID);
 }
 
-void Wait_For(kiv_hal::TRegisters &regs) {
+void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Wait_For: functional code.
 
@@ -93,7 +88,7 @@ void Wait_For(kiv_hal::TRegisters &regs) {
 	//OUT : rax je index handle, ktery byl signalizovan
 }
 
-void Read_Exit_Code(kiv_hal::TRegisters &regs) {
+void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Read_Exit_Code: functional code.
 
@@ -101,7 +96,7 @@ void Read_Exit_Code(kiv_hal::TRegisters &regs) {
 	//OUT: cx je exitcode
 }
 
-void Exit(kiv_hal::TRegisters &regs) {
+void IO_Process::Exit(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Exit: functional code.
 
@@ -109,14 +104,14 @@ void Exit(kiv_hal::TRegisters &regs) {
 	//IN: cx je exit code
 }
 
-void Shutdown(kiv_hal::TRegisters &regs) {
+void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Shutdown: functional code.
 
 	//nema parametry, nejprve korektne ukonci vsechny bezici procesy a pak kernel, cimz se preda rizeni do boot.exe, ktery provede simulaci vypnuti pocitace pres ACPI
 }
 
-void Register_Signal_Handler(kiv_hal::TRegisters &regs) {
+void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Register_Signal_Handler: functional code.
 
@@ -126,7 +121,7 @@ void Register_Signal_Handler(kiv_hal::TRegisters &regs) {
 }
 
 
-void Handle_Process(kiv_hal::TRegisters &regs) {
+void IO_Process::Handle_Process(kiv_hal::TRegisters &regs) {
 
 	switch (static_cast<kiv_os::NOS_Process>(regs.rax.l)) {
 

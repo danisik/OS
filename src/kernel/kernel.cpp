@@ -3,13 +3,52 @@
 #include "kernel.h"
 
 HMODULE User_Programs;
+IO_Process *io_process;
+
 
 void Initialize_Kernel() {
+	io_process = new IO_Process();
 	User_Programs = LoadLibraryW(L"user.dll");
 }
 
 void Shutdown_Kernel() {
 	FreeLibrary(User_Programs);
+}
+
+kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uint8_t minor) {
+	kiv_hal::TRegisters regs;
+	regs.rax.h = static_cast<uint8_t>(major);
+	regs.rax.l = minor;
+	return regs;
+}
+
+kiv_os::THandle Shell_Clone() {
+	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
+	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>("shell");
+	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>("");
+
+	// TODO Shell_Clone: Get in out handles.
+	//const auto std_handle = Register_STD();
+	//kiv_os::THandle stdin_handle = std_handle.in;
+	//kiv_os::THandle stdout_handle = std_handle.out;
+	//regs.rbx.e = (stdin_handle << 16) | stdout_handle;
+
+	// Create shell process.
+	io_process->Clone_Process(regs);
+	return static_cast<kiv_os::THandle>(regs.rax.x);
+}
+
+void Shell_Wait() {
+	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Wait_For));
+
+	// TODO Shell_Wait: Assign.
+
+	Handle_IO(regs);
+}
+
+void Shell_Close() {
+	
+	// TODO Shell_Close: Create Shell_Close.
 }
 
 void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
@@ -21,7 +60,7 @@ void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
 		break;
 
 	case kiv_os::NOS_Service_Major::Process:
-		Handle_Process(regs);
+		io_process->Handle_Process(regs);
 		break;
 	}
 
@@ -49,6 +88,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	kiv_os::TThread_Proc shell = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, "shell");
 
+	//kiv_os::THandle handle = Shell_Clone();
 
 	if (shell) {
 
@@ -71,3 +111,6 @@ void Set_Error(const bool failed, kiv_hal::TRegisters &regs) {
 	else
 		regs.flags.carry = false;
 }
+
+
+

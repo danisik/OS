@@ -8,16 +8,28 @@
 #include <map>
 #include <mutex>
 
-size_t Get_Free_Process_ID();
+class IO_Process {
 
-void Clone(kiv_hal::TRegisters &regs);
-void Clone_Process(kiv_hal::TRegisters &regs);
-void Clone_Thread(kiv_hal::TRegisters &regs);
+	public:
+		size_t first_free_process_ID = 0;
 
-void Wait_For(kiv_hal::TRegisters &regs);
-void Read_Exit_Code(kiv_hal::TRegisters &regs);
-void Exit(kiv_hal::TRegisters &regs);
-void Shutdown(kiv_hal::TRegisters &regs);
-void Register_Signal_Handler(kiv_hal::TRegisters &regs);
+		std::mutex io_process_mutex;
 
-void Handle_Process(kiv_hal::TRegisters &regs);
+		// Index -> thread_ID; Value -> Process.
+		std::map<size_t, std::unique_ptr<Process>> processes;
+
+		size_t Get_Free_Process_ID();
+
+		void Clone(kiv_hal::TRegisters &regs);
+		void Clone_Process(kiv_hal::TRegisters &regs);
+		void Clone_Thread(kiv_hal::TRegisters &regs);
+
+		void Wait_For(kiv_hal::TRegisters &regs);
+		void Read_Exit_Code(kiv_hal::TRegisters &regs);
+		void Exit(kiv_hal::TRegisters &regs);
+		void Shutdown(kiv_hal::TRegisters &regs);
+		void Register_Signal_Handler(kiv_hal::TRegisters &regs);
+
+		void Handle_Process(kiv_hal::TRegisters &regs);
+
+};
