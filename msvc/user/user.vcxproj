@@ -26,6 +26,7 @@
     <ClInclude Include="..\..\src\user\dir.h" />
     <ClInclude Include="..\..\src\user\echo.h" />
     <ClInclude Include="..\..\src\user\freq.h" />
+    <ClInclude Include="..\..\src\user\global.h" />
     <ClInclude Include="..\..\src\user\md.h" />
     <ClInclude Include="..\..\src\user\ps.h" />
     <ClInclude Include="..\..\src\user\rd.h" />
