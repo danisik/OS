@@ -15,8 +15,10 @@ class IO_Process {
 
 		std::mutex io_process_mutex;
 
-		// Index -> thread_ID; Value -> Process.
+		// Index -> process_ID; Value -> Process.
 		std::map<size_t, std::unique_ptr<Process>> processes;
+		// Index -> thread_ID; Value -> process_ID
+		std::map<size_t, size_t> thread_ID_to_process_ID;
 
 		size_t Get_Free_Process_ID();
 

@@ -15,8 +15,6 @@ Thread::Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registe
 }
 
 Thread::~Thread() {
-	handlers.clear();
-
 	if (std_thread.joinable()) {
 		std_thread.detach();
 	}

@@ -57,7 +57,8 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	size_t thread_ID = process->Create_Thread(entry_point, process_registers);
 
 	//Add newly created process into "processes" map.
-	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(thread_ID, std::move(process)));
+	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
+	thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(thread_ID, process->process_ID));
 
 	regs.rax.x = static_cast<kiv_os::THandle>(process->process_ID);
 }	
@@ -72,9 +73,11 @@ void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 
 	// Get current process and create new thread.
 	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
-	std::unique_ptr<Process> current_process = std::move(processes.find(current_thread_ID)->second);
+	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
+	std::unique_ptr<Process> current_process = std::move(processes.find(process_ID)->second);
 
 	size_t cloned_thread_ID = current_process->Create_Thread(entry_point, thread_registers);
+	thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(cloned_thread_ID, current_process->process_ID));
 
 	regs.rax.x = static_cast<kiv_os::THandle>(cloned_thread_ID);
 }

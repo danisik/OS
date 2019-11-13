@@ -15,7 +15,6 @@ public:
 	kiv_hal::TRegisters registers;
 	uint32_t exit_code;
 	kiv_os::TThread_Proc entry_point;
-	std::map<kiv_os::NSignal_Id, kiv_os::TThread_Proc> handlers;
 
 	Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers);
 	~Thread();
