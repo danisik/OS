@@ -26,8 +26,12 @@ void Thread::Start() {
 	thread_ID = Get_Thread_ID(std_thread.get_id());
 }
 
-void Thread::Join(uint32_t t_exit_code) {
-	state = State::Exited;
+void Thread::Stop(uint16_t t_exit_code) {
+	state = State::Blocked;
 	exit_code = t_exit_code;
+}
+
+void Thread::Join() {
+	state = State::Exited;
 	std_thread.join();
 }

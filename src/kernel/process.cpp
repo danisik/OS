@@ -20,9 +20,14 @@ size_t Process::Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegist
 	return thread->thread_ID;
 }
 
-void Process::Join_Thread(size_t thread_ID, uint32_t exit_code) {
+void Process::Stop_Thread(size_t thread_ID, uint16_t exit_code) {
 	std::unique_ptr<Thread> thread = std::move(threads[thread_ID]);
-	thread->Join(exit_code);
+	thread->Stop(exit_code);
+}
+
+void Process::Join_Thread(size_t thread_ID) {
+	std::unique_ptr<Thread> thread = std::move(threads[thread_ID]);
+	thread->Join();
 
 	threads.erase(thread_ID);
 
