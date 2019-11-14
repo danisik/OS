@@ -3,6 +3,12 @@
 #include "..\api\api.h"
 #include <atomic>
 
+enum class Exit_Codes {
+	EXIT_CODE_SUCCESS = 0,
+	EXIT_CODE_FAILURE,
+	EXIT_CODE_FATAL
+};
+
 namespace kiv_os_rtl {
 	extern std::atomic<kiv_os::NOS_Error> Last_Error;
 
