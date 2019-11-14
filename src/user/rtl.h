@@ -6,6 +6,8 @@
 namespace kiv_os_rtl {
 	extern std::atomic<kiv_os::NOS_Error> Last_Error;
 
+	void Default_Signal_Handler();
+
 	//NOS_File_System
 	bool Open_File(const char *file_name, const kiv_os::NOpen_File flags, const kiv_os::NFile_Attributes attributes, kiv_os::THandle &open);
 	bool Write_File(const kiv_os::THandle file_handle, const char *buffer, const size_t buffer_size, size_t &written);

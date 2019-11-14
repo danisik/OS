@@ -15,6 +15,10 @@ uint16_t str_to_uint16(const char *str) {
 	return (uint16_t)val;
 }
 
+void kiv_os_rtl::Default_Signal_Handler() {
+	// Do nothing.
+}
+
 //NOS_File_System
 bool kiv_os_rtl::Open_File(const char *file_name, const kiv_os::NOpen_File flags, const kiv_os::NFile_Attributes attributes, kiv_os::THandle &open) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Open_File));
@@ -143,7 +147,7 @@ bool kiv_os_rtl::Clone_Process(const char *export_name, const char *arguments, c
 	return syscall_result;
 }
 
-bool Clone_Thread(void *export_name, void *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
+bool kiv_os_rtl::Clone_Thread(void *export_name, void *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(kiv_os::NClone::Create_Thread);
@@ -201,8 +205,7 @@ bool kiv_os_rtl::Register_Signal_Handler(const kiv_os::NSignal_Id signal_Id, con
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(signal_Id);
 
 	if (process_handle == 0) {
-		// TODO Register_Signal_Handler: stdin and stdout instead of process_handle.
-		regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(process_handle);
+		regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(Default_Signal_Handler);
 	}
 	else {
 		regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(process_handle);
