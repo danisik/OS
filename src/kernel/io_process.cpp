@@ -88,7 +88,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 	size_t handles_count = static_cast<size_t>(regs.rcx.r);
 
 	kiv_os::THandle handle;
-	size_t current_thread_ID, process_ID;
+	size_t process_ID;
 	std::unique_ptr<Process> current_process;
 	std::unique_ptr<Thread> current_thread;
 
@@ -97,18 +97,11 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 	for (int i = 0; i < handles_count; i++) {
 		handle = handles[i];
 
-		current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
-		process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
+		process_ID = thread_ID_to_process_ID.find(handle)->second;
 		current_process = std::move(processes.find(process_ID)->second);
-		current_thread = std::move(current_process->threads.find(current_thread_ID)->second);
+		current_thread = std::move(current_process->threads.find(handle)->second);
 
 		wait_threads[i] = current_thread.get();
-
-		if (current_thread->state == State::Exited) {
-			// Currently processed thread is already exited, so return his ID.
-			regs.rax.r = static_cast<decltype(regs.rax.r)>(current_thread_ID);
-			return;
-		}
 	}
 
 	while (1)
@@ -119,7 +112,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 			
 			if (checked_thread->state == State::Exited)
 			{
-				regs.rax.r = static_cast<decltype(regs.rax.r)>(current_thread_ID);
+				regs.rax.r = static_cast<decltype(regs.rax.r)>(checked_thread->thread_ID);
 				return;
 			}
 		}
@@ -139,6 +132,7 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 void IO_Process::Exit(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Exit: functional code.
+	// TODO EXit: send terminate signal to all thread.
 
 	//ukonci proces/vlakno
 	//IN: cx je exit code
