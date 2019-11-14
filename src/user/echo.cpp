@@ -13,6 +13,7 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 
 	if (strlen(arguments) == 0) {
 		if (echo_on) {
+			// TODO echo: Use \n in string.
 			output.append("Echo is on.");
 
 			size_t written;
@@ -23,6 +24,7 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 			return 0;
 		}
 		else {
+			// TODO echo: Use \n in string.
 			output.append("Echo is off.");
 
 			size_t written;
@@ -33,10 +35,12 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 			return 0;
 		}
 	}
+	// TODO echo: /? didnt work.
 	else if (strcmp(arguments, ECHO_HELP) == 0) {
 		output.append("Displays messages, or turns command echoing off.\n");
 		output.append("  ECHO [ON | OFF]\n");
 		output.append("  ECHO [message]\n");
+		// TODO echo: Use \n in string.
 		output.append("Type ECHO without parameters to display the current echo setting.");
 
 		size_t written;
@@ -62,6 +66,7 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 	}
 	else {
 		size_t written;
+		// TODO echo: Use \n in string.
 		output.append(arguments);
 		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 

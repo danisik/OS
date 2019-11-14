@@ -17,12 +17,12 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	char buffer[buffer_size];
 	size_t counter;
 
-	//Print welcome message.
+	// Print welcome message.
 	kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 	kiv_os_rtl::Write_File(std_out, welcome_message, strlen(welcome_message), counter);
 	kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 
-	//While cycle for commands.
+	// While cycle for commands.
 	while(1) {
 		kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);		
 
@@ -32,7 +32,7 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 				counter--;
 			}
 
-			buffer[counter] = 0;	//udelame z precteneho vstup null-terminated retezec
+			buffer[counter] = 0;
 
 			std::vector<command_parser::Command> commands = command_parser::Get_Commands(buffer);
 			
@@ -45,7 +45,8 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 		}
 		else {
-			break;	//EOF
+			// TODO shell: Really ? Ask teacher.
+			break;	// EOF.
 		}
 	}
 

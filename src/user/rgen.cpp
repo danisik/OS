@@ -26,7 +26,9 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 	std::string output;
 	size_t written;
 
+	// TODO rgen: When i use only "rgen", this condition is used.
 	if (strlen(arguments) != 0) {
+		// TODO rgen: Use \n in string.
 		output = "Wrong arguments";
 		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Invalid_Argument);
 		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
