@@ -28,6 +28,8 @@ void Thread::Start() {
 }
 
 void Thread::Stop(uint16_t t_exit_code) {
+	// Wait until Read_Exit_Code is called.
+
 	state = State::Blocked;
 	exit_code = t_exit_code;
 }
