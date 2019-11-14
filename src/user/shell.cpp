@@ -1,6 +1,9 @@
 #include "shell.h"
-
+#include "command_parser.h"
+#include "command_exe.h"
 #include "rtl.h"
+
+#include <vector>
 
 const char* new_line = "\n";
 const char* prompt = "C:\\>";
@@ -30,6 +33,10 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			}
 
 			buffer[counter] = 0;	//udelame z precteneho vstup null-terminated retezec
+
+			std::vector<command_parser::Command> commands = command_parser::Get_Commands(buffer);
+			
+			command_exe::Execute_Commands(commands);
 
 			if (strcmp(buffer, "exit") == 0) {
 				break;
