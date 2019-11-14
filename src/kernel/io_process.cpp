@@ -1,7 +1,6 @@
 #include "io_process.h"
 
 
-
 size_t IO_Process::Get_Free_Process_ID() {
 
 	while (1) {
@@ -84,11 +83,49 @@ void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 
 void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
-	// TODO Wait_For: functional code.
 
-	//IN : rdx pointer na pole THandle, na ktere se ma cekat, rcx je pocet handlu
-	//	funkce se vraci jakmile je signalizovan prvni handle
-	//OUT : rax je index handle, ktery byl signalizovan
+	kiv_os::THandle *handles = reinterpret_cast<kiv_os::THandle*>(regs.rdx.r);
+	size_t handles_count = static_cast<size_t>(regs.rcx.r);
+
+	kiv_os::THandle handle;
+	size_t current_thread_ID, process_ID;
+	std::unique_ptr<Process> current_process;
+	std::unique_ptr<Thread> current_thread;
+
+	std::vector<Thread*> wait_threads(handles_count);
+	
+	for (int i = 0; i < handles_count; i++) {
+		handle = handles[i];
+
+		current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
+		process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
+		current_process = std::move(processes.find(process_ID)->second);
+		current_thread = std::move(current_process->threads.find(current_thread_ID)->second);
+
+		wait_threads[i] = current_thread.get();
+
+		if (current_thread->state == State::Exited) {
+			// Currently processed thread is already exited, so return his ID.
+			regs.rax.r = static_cast<decltype(regs.rax.r)>(current_thread_ID);
+			return;
+		}
+	}
+
+	while (1)
+	{
+		for (int i = 0; i < handles_count; i++)
+		{
+			Thread *checked_thread = wait_threads[i];
+			
+			if (checked_thread->state == State::Exited)
+			{
+				regs.rax.r = static_cast<decltype(regs.rax.r)>(current_thread_ID);
+				return;
+			}
+		}
+	}
+
+	return;
 }
 
 void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
@@ -109,18 +146,37 @@ void IO_Process::Exit(kiv_hal::TRegisters &regs) {
 
 void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
-	// TODO Shutdown: functional code.
 
-	//nema parametry, nejprve korektne ukonci vsechny bezici procesy a pak kernel, cimz se preda rizeni do boot.exe, ktery provede simulaci vypnuti pocitace pres ACPI
+	std::unique_ptr<Process> process;
+	std::map<size_t, std::unique_ptr<Process>>::iterator it_process = processes.begin();
+	std::map<size_t, std::unique_ptr<Thread>>::iterator it_thread;
+
+	while (it_process != processes.end()) {
+		process = std::move(it_process->second);
+
+		it_thread = process->threads.begin();
+
+		while (it_thread != process->threads.end()) {
+			process->Join_Thread(it_thread->first);
+
+			it_thread++;
+		}
+
+		it_process++;	
+	}
 }
 
 void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
-	// TODO Register_Signal_Handler: functional code.
 
-	//IN: rcx NSignal_Id, rdx 
-	//	a) pointer na TThread_Proc, kde pri jeho volani context.rcx bude id signalu
-	//	b) 0 a pak si OS dosadi defualtni obsluhu signalu
+	kiv_os::NSignal_Id signal = static_cast<kiv_os::NSignal_Id>(regs.rcx.r);
+	kiv_os::TThread_Proc process_handle = reinterpret_cast<kiv_os::TThread_Proc>(regs.rdx.r);
+
+	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
+	std::unique_ptr<Process> current_process = std::move(processes.find(process_ID)->second);
+	std::unique_ptr<Thread> current_thread = std::move(current_process->threads.find(current_thread_ID)->second);
+	current_thread->terminate_handlers.insert(std::pair<kiv_os::NSignal_Id, kiv_os::TThread_Proc>(signal, process_handle));
 }
 
 

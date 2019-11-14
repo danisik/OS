@@ -2,7 +2,7 @@
 
 Process::Process(size_t p_process_ID, char *p_working_directory, kiv_os::TThread_Proc entry_point, kiv_hal::TRegisters registers) {
 	process_ID = p_process_ID;
-	state = State::Ready;
+	state = State::Runnable;
 	working_directory = p_working_directory;	
 }
 
@@ -11,7 +11,7 @@ size_t Process::Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegist
 	std::unique_ptr<Thread> thread = std::make_unique<Thread>(entry_point, registers);
 	thread->Start(); 
 
-	if (state == State::Ready) {
+	if (state == State::Runnable) {
 		state = State::Running;
 	}
 
