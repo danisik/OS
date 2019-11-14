@@ -38,17 +38,26 @@ kiv_os::THandle Shell_Clone() {
 	return static_cast<kiv_os::THandle>(regs.rax.x);
 }
 
-void Shell_Wait() {
-	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Wait_For));
+void Shell_Wait(kiv_os::THandle handle) {
+	// Wait for shell to be closed.
 
-	// TODO Shell_Wait: Assign.
+	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Wait_For));
+	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(handle);
+	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(1);
 
 	Handle_IO(regs);
 }
 
-void Shell_Close() {
+void Shell_Close(kiv_os::THandle std_in, kiv_os::THandle std_out) {
+	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Close_Handle));
 	
-	// TODO Shell_Close: Create Shell_Close.
+	// Close std_in handle.
+	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(std_in);
+	Handle_IO(regs);
+
+	// Close std_out handle.
+	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(std_out);
+	Handle_IO(regs);
 }
 
 void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
@@ -88,17 +97,22 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	kiv_os::TThread_Proc shell = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, "shell");
 
-	//kiv_os::THandle handle = Shell_Clone();
-
 	if (shell) {
-
-
 		//spravne se ma shell spustit pres clone!
 		//ale ten v kostre pochopitelne neni implementovan		
 		shell(regs);
 	}
 
+	// Create shell.
+	//kiv_os::THandle handle = Shell_Clone();
+	
+	// Wait for shell to be closed.
+	//Shell_Wait(handle)
 
+	// Close std_in and std_out handles.
+	//Shell_Close(std_in, std_out);
+
+	// Shutdown kernel.
 	Shutdown_Kernel();
 }
 

@@ -60,7 +60,7 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	
 	size_t process_ID = process->process_ID;
 	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
-	
+
 	regs.rax.x = static_cast<kiv_os::THandle>(process_ID);
 }
 
@@ -162,7 +162,7 @@ void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) {
 
 	kiv_os::NSignal_Id signal = static_cast<kiv_os::NSignal_Id>(regs.rcx.r);
 	kiv_os::TThread_Proc process_handle = reinterpret_cast<kiv_os::TThread_Proc>(regs.rdx.r);
-
+	
 	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
 	processes.find(process_ID)->second->threads.find(current_thread_ID)->second->terminate_handlers.insert(std::pair<kiv_os::NSignal_Id, kiv_os::TThread_Proc>(signal, process_handle));
