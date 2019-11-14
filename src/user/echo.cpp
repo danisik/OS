@@ -18,7 +18,8 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 			size_t written;
 			kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 
-			kiv_os_rtl::Exit(0);
+			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
+			kiv_os_rtl::Exit(exit_code);
 			return 0;
 		}
 		else {
@@ -27,7 +28,8 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 			size_t written;
 			kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 
-			kiv_os_rtl::Exit(0);
+			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
+			kiv_os_rtl::Exit(exit_code);
 			return 0;
 		}
 	}
@@ -40,19 +42,22 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 		size_t written;
 		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 
-		kiv_os_rtl::Exit(0);
+		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
+		kiv_os_rtl::Exit(exit_code);
 		return 0;
 	}
 	else if (strcmp(arguments, ECHO_ON) == 0) {
 		echo_on = true;
 
-		kiv_os_rtl::Exit(0);
+		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
+		kiv_os_rtl::Exit(exit_code);
 		return 0;
 	}
 	else if (strcmp(arguments, ECHO_OFF) == 0) {
 		echo_on = false;
 
-		kiv_os_rtl::Exit(0);
+		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
+		kiv_os_rtl::Exit(exit_code);
 		return 0;
 	}
 	else {
@@ -60,7 +65,8 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 		output.append(arguments);
 		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 
-		kiv_os_rtl::Exit(0);
+		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
+		kiv_os_rtl::Exit(exit_code);
 		return 0;
 	}
 }
