@@ -51,16 +51,18 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	process_registers.rdi.r = regs.rdi.r;				// Arguments.
 
 	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), working_directory, entry_point, process_registers);
-
+	
 	// Create first thread.
 	size_t thread_ID = process->Create_Thread(entry_point, process_registers);
-
-	//Add newly created process into "processes" map.
-	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
+	
+	// Add newly created process into "processes" map.
 	thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(thread_ID, process->process_ID));
-
-	regs.rax.x = static_cast<kiv_os::THandle>(process->process_ID);
-}	
+	
+	size_t process_ID = process->process_ID;
+	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
+	
+	regs.rax.x = static_cast<kiv_os::THandle>(process_ID);
+}
 
 void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
@@ -73,10 +75,9 @@ void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 	// Get current process and create new thread.
 	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
-	std::unique_ptr<Process> current_process = std::move(processes.find(process_ID)->second);
 
-	size_t cloned_thread_ID = current_process->Create_Thread(entry_point, thread_registers);
-	thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(cloned_thread_ID, current_process->process_ID));
+	size_t cloned_thread_ID = processes.find(process_ID)->second->Create_Thread(entry_point, thread_registers);
+	thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(cloned_thread_ID, processes.find(process_ID)->second->process_ID));
 
 	regs.rax.x = static_cast<kiv_os::THandle>(cloned_thread_ID);
 }
@@ -89,8 +90,6 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 
 	kiv_os::THandle handle;
 	size_t process_ID;
-	std::unique_ptr<Process> current_process;
-	std::unique_ptr<Thread> current_thread;
 
 	std::vector<Thread*> wait_threads(handles_count);
 	
@@ -98,10 +97,8 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 		handle = handles[i];
 
 		process_ID = thread_ID_to_process_ID.find(handle)->second;
-		current_process = std::move(processes.find(process_ID)->second);
-		current_thread = std::move(current_process->threads.find(handle)->second);
 
-		wait_threads[i] = current_thread.get();
+		wait_threads[i] = processes.find(process_ID)->second->threads.find(handle)->second.get();
 	}
 
 	while (1)
@@ -168,11 +165,8 @@ void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) {
 
 	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
-	std::unique_ptr<Process> current_process = std::move(processes.find(process_ID)->second);
-	std::unique_ptr<Thread> current_thread = std::move(current_process->threads.find(current_thread_ID)->second);
-	current_thread->terminate_handlers.insert(std::pair<kiv_os::NSignal_Id, kiv_os::TThread_Proc>(signal, process_handle));
+	processes.find(process_ID)->second->threads.find(current_thread_ID)->second->terminate_handlers.insert(std::pair<kiv_os::NSignal_Id, kiv_os::TThread_Proc>(signal, process_handle));
 }
-
 
 void IO_Process::Handle_Process(kiv_hal::TRegisters &regs) {
 

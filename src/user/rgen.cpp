@@ -73,4 +73,7 @@ size_t Eof_Checker(const kiv_hal::TRegisters &regs) {
 	eof = true;
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	kiv_os_rtl::Exit(exit_code);
+
+	// TODO return exit code.
+	return 0;
 }

@@ -17,6 +17,7 @@ uint16_t str_to_uint16(const char *str) {
 
 void kiv_os_rtl::Default_Signal_Handler() {
 	// Do nothing.
+	return;
 }
 
 //NOS_File_System
@@ -139,11 +140,11 @@ bool kiv_os_rtl::Clone_Process(const char *export_name, const char *arguments, c
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(export_name);
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(arguments);
 	regs.rbx.e = (stdin_handle << 16) | stdout_handle;
-
+	
 	bool syscall_result = kiv_os::Sys_Call(regs);
-
+	
 	process = static_cast<kiv_os::THandle>(regs.rax.r);
-
+	
 	return syscall_result;
 }
 
