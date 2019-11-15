@@ -3,7 +3,7 @@
 #include "../api/api.h"
 #include "process.h"
 #include "handles.h"
-#include "user_programs.h"
+#include "globals.h"
 
 #include <map>
 #include <mutex>
@@ -34,4 +34,6 @@ class IO_Process {
 
 		void Handle_Process(kiv_hal::TRegisters &regs); // Tested.
 
+		void Notify(size_t sleeped_thread_ID, size_t waiting_thread_ID);
+		void Notify_All(size_t thread_ID);
 };

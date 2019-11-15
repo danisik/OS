@@ -53,7 +53,7 @@ size_t Read_Line_From_Console(char *buffer, const size_t buffer_size) {
 }
 
 void Open_File(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	char* fileName = reinterpret_cast<char*>(regs.rdx.x);
 	kiv_os::NOpen_File flags = static_cast<kiv_os::NOpen_File>(regs.rcx.r);
@@ -92,7 +92,7 @@ void Write_File(kiv_hal::TRegisters &regs) {
 	kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
 	regs.flags.carry |= (registers.rax.r == 0 ? 1 : 0);	//jestli jsme nezapsali zadny znak, tak jiste doslo k nejake chybe
 	regs.rax = registers.rcx;	//VGA BIOS nevraci pocet zapsanych znaku, tak predpokladame, ze zapsal vsechny
-
+	
 
 	//IN : dx je handle souboru, rdi je pointer na buffer, rcx je pocet bytu v bufferu k zapsani
 	//OUT : rax je pocet zapsanych bytu
@@ -114,7 +114,7 @@ void Read_File(kiv_hal::TRegisters &regs) {
 
 
 
-	regs.rax.r = Read_Line_From_Console(reinterpret_cast<char*>(regs.rdi.r), regs.rcx.r);
+	regs.rax.r = Read_Line_From_Console(reinterpret_cast<char*>(regs.rdi.r), regs.rcx.r);	
 }
 
 void Seek(kiv_hal::TRegisters &regs) {
@@ -122,7 +122,7 @@ void Seek(kiv_hal::TRegisters &regs) {
 
 	kiv_os::THandle file_handle = static_cast<kiv_os::THandle>(regs.rdx.x);
 	kiv_os::NFile_Seek new_position = static_cast<kiv_os::NFile_Seek>(regs.rdi.r);
-	size_t position = NULL;
+	kiv_os::THandle position = NULL;
 
 	// TODO Seek: functional code.
 
@@ -132,14 +132,14 @@ void Seek(kiv_hal::TRegisters &regs) {
 void Close_Handle(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
-	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.r);
+	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
 
 	regs.flags.carry = !CloseHandle(file_handle);
 	if (!regs.flags.carry) {
 		Remove_Handle(regs.rdx.x);
 	}
 	else {
-		regs.rax.x = GetLastError();
+		regs.rax.r = GetLastError();
 	}
 }
 

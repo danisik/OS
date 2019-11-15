@@ -18,13 +18,13 @@ namespace command_parser {
 			while ((token != "cd" && token != "echo" && token != "ps" && token != "rd" && token != "md" && token != "type"
 				&& token != "wc" && token != "sort" && token != "dir" && token != "rgen" && token != "freq"
 				&& token != "shell" && token != "shutdown" && token != "exit") && i < size) {
-				command.parameters.append(" ");
+				//command.parameters.append(" ");
 				command.parameters.append(token);
 				i++;
 				if (i < size) {
 					token = tokens[i];
 				}
-			}
+			}			
 			commands.push_back(command);
 		}
 
@@ -33,10 +33,10 @@ namespace command_parser {
 
 	std::vector<std::string> Parse_Input(char input[]) {
 		std::vector<std::string> tokens = std::vector<std::string>();
-
+		
 		char *next_token = NULL;
-		char *token = strtok_s(input, " ", &next_token);
-
+		char *token = strtok_s(input, " ", &next_token);		
+		
 		while (token != NULL) {
 			tokens.push_back(token);
 			token = strtok_s(NULL, " ", &next_token);

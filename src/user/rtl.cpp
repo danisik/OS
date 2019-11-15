@@ -84,7 +84,7 @@ bool kiv_os_rtl::Seek(const kiv_os::THandle file_handle, const kiv_os::NFile_See
 bool kiv_os_rtl::Close_Handle(const kiv_os::THandle file_handle) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Close_Handle));
 
-	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(file_handle);
+	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(file_handle);
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
 	return syscall_result;
@@ -169,14 +169,14 @@ bool kiv_os_rtl::Wait_For(const kiv_os::THandle process_handlers[]) {
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(sizeof(process_handlers) / sizeof(kiv_os::THandle*));
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
+	// TODO Wait_For: exit_code = static_cast<size_t>(regs.rax.r);
 	return syscall_result;
 }
 
 bool kiv_os_rtl::Read_Exit_Code(const kiv_os::THandle process_handle, size_t &exit_code) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
 	
-	//.r register viz Exit method.
-	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(process_handle);
+	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(process_handle);
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
 	exit_code = static_cast<size_t>(regs.rax.r);
@@ -186,9 +186,7 @@ bool kiv_os_rtl::Read_Exit_Code(const kiv_os::THandle process_handle, size_t &ex
 bool kiv_os_rtl::Exit(const uint16_t exit_code) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Exit));
 
-	//NOS_Error
-	//Using .r register, because kiv_os::Sys_Call using .r register (uint64).
-	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(exit_code);
+	regs.rcx.x = static_cast<decltype(regs.rcx.x)>(exit_code);
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
 	return syscall_result;

@@ -6,8 +6,9 @@ size_t Get_Thread_ID(std::thread::id thread_ID) {
 	return std::hash<std::thread::id>()(thread_ID);
 }
 
-Thread::Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers) {
+Thread::Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers, size_t t_parent_ID) {
 	thread_ID = 0;
+	parent_ID = t_parent_ID;
 	state = State::Runnable;
 	registers = t_registers;
 	exit_code = 0;
@@ -15,10 +16,7 @@ Thread::Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registe
 }
 
 Thread::~Thread() {
-	terminate_handlers.clear();
-	if (std_thread.joinable()) {
-		std_thread.detach();
-	}
+
 }
 
 void Thread::Start() {
@@ -27,14 +25,8 @@ void Thread::Start() {
 	thread_ID = Get_Thread_ID(std_thread.get_id());
 }
 
-void Thread::Stop(uint16_t t_exit_code) {
-	// Wait until Read_Exit_Code is called.
-
-	state = State::Blocked;
+void Thread::Join(uint16_t t_exit_code) {
 	exit_code = t_exit_code;
-}
-
-void Thread::Join() {
 	state = State::Exited;
 
 	std::map<kiv_os::NSignal_Id, kiv_os::TThread_Proc>::iterator it_handler = terminate_handlers.begin();
@@ -49,6 +41,45 @@ void Thread::Join() {
 
 		it_handler++;
 	}
-	
-	//std_thread.join();
+
+	terminate_handlers.clear();
+	std_thread.join();
+}
+
+void Thread::Stop() {
+	printf("Stop: started %zd\n", thread_ID);
+	if (handlers_waiting_for.size() > 0) {
+
+		if (state == State::Running) {
+			state = State::Blocked;
+
+			std::unique_lock<std::mutex> lock(mutex);
+			printf("Stop: Locking %zd\n", thread_ID);
+			cv.wait(lock);
+		}
+	}
+	printf("Stop: ended %zd\n", thread_ID);
+}
+
+void Thread::Add_Handlers_Waiting_For(size_t thread_ID) {
+
+	printf("Add_Handlers_Waiting_For: %zd\n", thread_ID);
+	handlers_waiting_for.insert(std::pair<size_t, size_t>(thread_ID, thread_ID));
+
+	printf("Add_Handlers_Waiting_For: %zd ended.\n", thread_ID);
+}
+
+void Thread::Remove_Handler_From_Handlers_Waiting_For(size_t thread_ID) {
+	printf("Remove_Handler_From_Handlers_Waiting_For: %zd\n", thread_ID);
+	handlers_waiting_for.erase(thread_ID);
+
+	if (handlers_waiting_for.size() == 0) {
+		state = State::Running;
+
+		std::unique_lock<std::mutex> lock(mutex);
+		lock.unlock();
+		printf("Remove_Handler_From_Handlers_Waiting_For: notyfiing %zd\n", thread_ID);
+		cv.notify_all();
+	}
+	printf("Remove_Handler_From_Handlers_Waiting_For: ending %zd\n", thread_ID);
 }

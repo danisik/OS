@@ -2,6 +2,7 @@
 
 
 size_t IO_Process::Get_Free_Process_ID() {
+	//std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
 	while (1) {
 		first_free_process_ID++;
@@ -9,6 +10,32 @@ size_t IO_Process::Get_Free_Process_ID() {
 			return first_free_process_ID;
 		}
 	}
+}
+
+// Notify thread that this thread done his work and will be deleted.
+void IO_Process::Notify(size_t sleeped_thread_ID, size_t waiting_thread_ID) {
+	//printf("Notify: Sleeped - %zd; Waiting - %zd\n", sleeped_thread_ID, waiting_thread_ID);
+
+	processes[thread_ID_to_process_ID[sleeped_thread_ID]]->threads[sleeped_thread_ID]->Remove_Handler_From_Handlers_Waiting_For(waiting_thread_ID);
+
+	//printf("Notify ended\n");
+}
+
+// Notify all waited threads that this thread done his work and will be deleted.
+void IO_Process::Notify_All(size_t thread_ID) {
+	//printf("Notify_All: %zd\n", thread_ID);
+
+	std::map<size_t, size_t>::iterator it_thread_sleeped_handlers = processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.begin();
+
+	while (it_thread_sleeped_handlers != processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.end()) {
+	
+		Notify(processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers[it_thread_sleeped_handlers->second], thread_ID);
+
+		it_thread_sleeped_handlers++;
+	}
+
+	processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.clear();
+	//printf("Notify_All: ended.\n");
 }
 
 void IO_Process::Clone(kiv_hal::TRegisters &regs) {
@@ -54,14 +81,15 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	
 	// Create first thread.
 	size_t thread_ID = process->Create_Thread(entry_point, process_registers);
+	process->process_thread_ID = thread_ID;
 	
 	// Add newly created process into "processes" map.
 	thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(thread_ID, process->process_ID));
 	
 	size_t process_ID = process->process_ID;
 	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
-
-	regs.rax.x = static_cast<kiv_os::THandle>(process_ID);
+	//printf("Cloned_Process: %zd\n", thread_ID);
+	regs.rax.x = static_cast<kiv_os::THandle>(thread_ID);
 }
 
 void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
@@ -83,56 +111,57 @@ void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 }
 
 void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
 	kiv_os::THandle *handles = reinterpret_cast<kiv_os::THandle*>(regs.rdx.r);
 	size_t handles_count = static_cast<size_t>(regs.rcx.r);
 
-	kiv_os::THandle handle;
-	size_t process_ID;
+	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
 
-	std::vector<Thread*> wait_threads(handles_count);
-	
 	for (int i = 0; i < handles_count; i++) {
-		handle = handles[i];
-
-		process_ID = thread_ID_to_process_ID.find(handle)->second;
-
-		wait_threads[i] = processes.find(process_ID)->second->threads.find(handle)->second.get();
+		processes[process_ID]->threads[current_thread_ID]->Add_Handlers_Waiting_For(handles[i]);
 	}
-
-	while (1)
-	{
-		for (int i = 0; i < handles_count; i++)
-		{
-			Thread *checked_thread = wait_threads[i];
-			
-			if (checked_thread->state == State::Exited)
-			{
-				regs.rax.r = static_cast<decltype(regs.rax.r)>(checked_thread->thread_ID);
-				return;
-			}
-		}
-	}
-
-	return;
+	processes[process_ID]->threads[current_thread_ID]->Stop();
+	// TODO Wait_For: regs.rax.x = 
+	//rax je index handle, ktery byl signalizovan
 }
 
 void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	// TODO Read_Exit_Code: functional code.
 
-	//IN:  dx je handle procesu/thread jehoz exit code se ma cist
+	//IN:  dx.x je handle procesu/thread jehoz exit code se ma cist
 	//OUT: cx je exitcode
 }
 
 void IO_Process::Exit(kiv_hal::TRegisters &regs) {
+	//printf("Exit: start\n");
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
-	// TODO Exit: functional code.
-	// TODO EXit: send terminate signal to all thread.
+	
+	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
+	//printf("Exit: %zd\n", current_thread_ID);
+	
+	if (current_thread_ID == processes[process_ID]->process_thread_ID) {
+		// Thread is process thread -> kill entire process.
+		std::map<size_t, std::unique_ptr<Thread>>::iterator it_thread = processes[process_ID]->threads.begin();
+		
+		while (it_thread != processes[process_ID]->threads.begin()) {
+			Notify_All(it_thread->first);
+			processes[process_ID]->Join_Thread(it_thread->first, 0);
 
-	//ukonci proces/vlakno
-	//IN: cx je exit code
+			it_thread++;
+		}
+	}
+	else {
+		// Simple thread -> kill only this thread.
+
+		Notify_All(current_thread_ID);
+		processes[process_ID]->Join_Thread(current_thread_ID, 0);
+	}
+
+	processes[process_ID]->threads[current_thread_ID]->exit_code = static_cast<decltype(regs.rcx.x)>(regs.rcx.x);
+	//printf("Exit: exit.\n");
 }
 
 void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
@@ -148,7 +177,8 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 		it_thread = process->threads.begin();
 
 		while (it_thread != process->threads.end()) {
-			process->Join_Thread(it_thread->first);
+			Notify_All(it_thread->first);
+			process->Join_Thread(it_thread->first, 0);
 
 			it_thread++;
 		}

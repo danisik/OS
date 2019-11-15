@@ -1,20 +1,9 @@
 #pragma once
 
-#include "hal.h"
-
-#include <Windows.h>
-#include <memory>
 #include <cstdint>
 #include <limits>
 
-
-#ifdef _USRDLL
-	#ifdef KERNEL
-		#include "..\kernel\kernel.h"
-	#else
-		#include "..\user\rtl.h"
-	#endif
-#endif
+#include "hal.h"
 
 
 namespace kiv_os {

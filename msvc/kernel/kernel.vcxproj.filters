@@ -119,13 +119,13 @@
     <ClInclude Include="..\..\src\kernel\VFS\Vfs.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\kernel\user_programs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\kernel\process.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\kernel\thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\kernel\globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

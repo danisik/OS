@@ -5,6 +5,9 @@
 HMODULE User_Programs;
 IO_Process *io_process;
 
+kiv_os::THandle std_in_shell;
+kiv_os::THandle std_out_shell;
+
 
 void Initialize_Kernel() {
 	io_process = new IO_Process();
@@ -27,11 +30,11 @@ kiv_os::THandle Shell_Clone() {
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>("shell");
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>("");
 
-	// TODO Shell_Clone: Get in out handles.
-	//const auto std_handle = Register_STD();
-	//kiv_os::THandle stdin_handle = std_handle.in;
-	//kiv_os::THandle stdout_handle = std_handle.out;
-	//regs.rbx.e = (stdin_handle << 16) | stdout_handle;
+	// regs.rax.h = static_cast<uint8_t>(kiv_hal::NDisk_IO::Drive_Parameters); -> stdin 1, stdout 52428.
+	kiv_os::THandle std_in_shell = 1; 
+	kiv_os::THandle std_out_shell = 52428;
+	printf("%d %d", regs.rax.x, regs.rbx.x);
+	regs.rbx.e = (std_in_shell << 16) | std_out_shell;
 
 	// Create shell process.
 	io_process->Clone_Process(regs);
@@ -95,6 +98,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	//spustime shell - v realnem OS bychom ovsem spousteli login
 
+	
 	kiv_os::TThread_Proc shell = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, "shell");
 
 	if (shell) {
@@ -102,16 +106,18 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 		//ale ten v kostre pochopitelne neni implementovan		
 		shell(regs);
 	}
-
+	
+	
+	/*
 	// Create shell.
-	//kiv_os::THandle handle = Shell_Clone();
+	kiv_os::THandle handle = Shell_Clone();
 	
 	// Wait for shell to be closed.
-	//Shell_Wait(handle)
+	Shell_Wait(handle);
 
 	// Close std_in and std_out handles.
-	//Shell_Close(std_in, std_out);
-
+	Shell_Close(std_in_shell, std_out_shell);
+	*/
 	// Shutdown kernel.
 	Shutdown_Kernel();
 }

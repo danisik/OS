@@ -39,6 +39,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\api\api.h" />
     <ClInclude Include="..\..\src\api\hal.h" />
+    <ClInclude Include="..\..\src\kernel\globals.h" />
     <ClInclude Include="..\..\src\kernel\handles.h" />
     <ClInclude Include="..\..\src\kernel\io.h" />
     <ClInclude Include="..\..\src\kernel\io_process.h" />
@@ -46,7 +47,6 @@
     <ClInclude Include="..\..\src\kernel\process.h" />
     <ClInclude Include="..\..\src\kernel\state.h" />
     <ClInclude Include="..\..\src\kernel\thread.h" />
-    <ClInclude Include="..\..\src\kernel\user_programs.h" />
     <ClInclude Include="..\..\src\kernel\VFS\Bitmap.hpp" />
     <ClInclude Include="..\..\src\kernel\VFS\BootRecord.hpp" />
     <ClInclude Include="..\..\src\kernel\VFS\Commands.hpp" />

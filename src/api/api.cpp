@@ -1,4 +1,15 @@
+#include <Windows.h>
+#include <memory>
+
 #include "api.h"
+
+#ifdef _USRDLL
+#ifdef KERNEL
+#include "..\kernel\kernel.h"
+#else
+#include "..\user\rtl.h"
+#endif
+#endif
 
 kiv_hal::TInterrupt_Handler *interrupt_descriptor_table;
 
