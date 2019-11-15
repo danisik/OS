@@ -1,9 +1,4 @@
 #include "wc.h"
-#include "rtl.h"
-
-#include <vector>
-#include <string>
-#include <sstream>
 
 size_t __stdcall wc(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);

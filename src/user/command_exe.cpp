@@ -1,5 +1,4 @@
 #include "command_exe.h"
-#include "rtl.h"
 
 void command_exe::Execute_Commands(std::vector<command_parser::Command> commands) {
 	for each (command_parser::Command command in commands) {

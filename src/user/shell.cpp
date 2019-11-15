@@ -1,9 +1,4 @@
 #include "shell.h"
-#include "command_parser.h"
-#include "command_exe.h"
-#include "rtl.h"
-
-#include <vector>
 
 const char* new_line = "\n";
 const char* prompt = "C:\\>";

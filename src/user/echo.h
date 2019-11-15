@@ -1,6 +1,10 @@
 #pragma once
 
 #include "..\api\api.h"
+#include "rtl.h"
+#include "global.h"
+
+#include <string>
 
 #define ECHO_ON "on"
 #define ECHO_OFF "off"

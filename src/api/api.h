@@ -1,9 +1,21 @@
 #pragma once
 
+#include "hal.h"
+
+#include <Windows.h>
+#include <memory>
 #include <cstdint>
 #include <limits>
 
-#include "hal.h"
+
+#ifdef _USRDLL
+	#ifdef KERNEL
+		#include "..\kernel\kernel.h"
+	#else
+		#include "..\user\rtl.h"
+	#endif
+#endif
+
 
 namespace kiv_os {
 	const kiv_hal::NInterrupt System_Int_Number = kiv_hal::NInterrupt(0x21);

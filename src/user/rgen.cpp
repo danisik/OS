@@ -1,8 +1,4 @@
-#include "freq.h"
-#include "rtl.h"
-#include "time.h"
-
-#include <string>
+#include "rgen.h"
 
 bool eof = false;
 bool terminated = false;
