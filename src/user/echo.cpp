@@ -2,7 +2,6 @@
 
 size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);
-	//printf("echo start\n");
 
 	const char *arguments = reinterpret_cast<const char *>(regs.rdi.r);
 
@@ -10,7 +9,7 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 
 	if (strlen(arguments) == 0) {
 		if (echo_on) {
-			output.append("Echo is on.");
+			output.append("Echo is on.\n");
 
 			size_t written;
 			kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
@@ -20,7 +19,7 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 			return 0;
 		}
 		else {
-			output.append("Echo is off.");
+			output.append("Echo is off.\n");
 
 			size_t written;
 			kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
@@ -34,7 +33,7 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 		output.append("Displays messages, or turns command echoing off.\n");
 		output.append("  ECHO [ON | OFF]\n");
 		output.append("  ECHO [message]\n");
-		output.append("Type ECHO without parameters to display the current echo setting.");
+		output.append("Type ECHO without parameters to display the current echo setting.\n");
 
 		size_t written;
 		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
@@ -60,6 +59,7 @@ size_t __stdcall echo(const kiv_hal::TRegisters &regs) {
 	else {
 		size_t written;
 		output.append(arguments);
+		output.append("\n");
 		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 
 		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);

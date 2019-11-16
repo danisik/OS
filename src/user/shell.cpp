@@ -4,7 +4,7 @@ const char* new_line = "\n";
 const char* prompt = "C:\\>";
 const char* welcome_message = "Welcome in OS";
 
-
+extern bool echo_on;
 
 size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
@@ -21,7 +21,9 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 
 	// While cycle for commands.
 	while(1) {
-		kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);		
+		if (echo_on) {
+			kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);
+		}
 
 		if (kiv_os_rtl::Read_File(std_in, buffer, buffer_size, counter) && (counter > 0)) {
 			
@@ -39,7 +41,7 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			
 			std::vector<command_parser::Command> commands = command_parser::Get_Commands(buffer);
 			
-			command_exe::Execute_Commands(commands);
+			command_exe::Execute_Commands(commands, std_in, std_out);
 		
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);

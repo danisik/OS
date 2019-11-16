@@ -20,20 +20,28 @@ size_t __stdcall wc(const kiv_hal::TRegisters &regs) {
 		token = strtok_s(NULL, " ", &next_token);
 	}
 
+	std::string output;
+	size_t written;
 	if (strcmp(part1, "/v") == 0 && strcmp(part2, "/c\"\"") == 0 && other.size() == 0) {
 		size_t read;
 		char buffer[512];
 		std::string complete = "";
 		bool res = kiv_os_rtl::Read_File(std_in, buffer, sizeof(buffer), read);
 		if (!res) {
-			//TODO error
+			output = "Read error.\n";
+			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::IO_Error);
+			kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
+			kiv_os_rtl::Exit(exit_code);
 			return 0;
 		}
 		complete.append(buffer);
 		while (read) {
 			res = kiv_os_rtl::Read_File(std_in, buffer, sizeof(buffer), read);
 			if (!res) {
-				//TODO error
+				output = "Read error.\n";
+				uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::IO_Error);
+				kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
+				kiv_os_rtl::Exit(exit_code);
 				return 0;
 			}
 			complete.append(buffer);
@@ -46,14 +54,20 @@ size_t __stdcall wc(const kiv_hal::TRegisters &regs) {
 			lines = lines + 1;
 		}
 
-		std::string output = std::to_string(lines);
+		output = std::to_string(lines);
 		output.append("\n");
-		size_t written;
 		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 	}
 	else {
-		//TODO error
+		output = "Wrong arguments.\n";
+		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Invalid_Argument);
+		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
+		kiv_os_rtl::Exit(exit_code);
+		return 0;
 	}
 
+	int16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
+	kiv_os_rtl::Exit(exit_code);
+	return 0;
 	return 0;	
 }
