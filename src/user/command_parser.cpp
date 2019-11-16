@@ -16,7 +16,7 @@ namespace command_parser {
 				token = tokens[i];
 			}
 			while ((token != "cd" && token != "echo" && token != "ps" && token != "rd" && token != "md" && token != "type"
-				&& token != "wc" && token != "sort" && token != "dir" && token != "rgen" && token != "freq"
+				&& token != "find" && token != "sort" && token != "dir" && token != "rgen" && token != "freq"
 				&& token != "shell" && token != "shutdown" && token != "exit") && i < size) {
 				command.parameters.append(token);
 				i++;

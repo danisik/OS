@@ -7,4 +7,4 @@
 #include <string>
 #include <sstream>
 
-extern "C" size_t __stdcall wc(const kiv_hal::TRegisters &regs);
+extern "C" size_t __stdcall find(const kiv_hal::TRegisters &regs);

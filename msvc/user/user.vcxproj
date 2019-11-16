@@ -36,7 +36,7 @@
     <ClInclude Include="..\..\src\user\shutdown.h" />
     <ClInclude Include="..\..\src\user\sort.h" />
     <ClInclude Include="..\..\src\user\type.h" />
-    <ClInclude Include="..\..\src\user\wc.h" />
+    <ClInclude Include="..\..\src\user\find.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\api\api.cpp" />
@@ -54,7 +54,7 @@
     <ClCompile Include="..\..\src\user\shutdown.cpp" />
     <ClCompile Include="..\..\src\user\sort.cpp" />
     <ClCompile Include="..\..\src\user\type.cpp" />
-    <ClCompile Include="..\..\src\user\wc.cpp" />
+    <ClCompile Include="..\..\src\user\find.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A5F63FF3-DE9A-4B0B-BBF9-AD27200CE81F}</ProjectGuid>

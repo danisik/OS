@@ -7,7 +7,7 @@ EXPORTS
 	rd
 	dir
 	echo
-	wc
+	find
 	sort
 	rgen
 	freq
