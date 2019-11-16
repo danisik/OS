@@ -11,7 +11,7 @@ Thread::Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registe
 	parent_ID = t_parent_ID;
 	state = State::Runnable;
 	registers = t_registers;
-	exit_code = 0;
+	exit_code = -1;
 	entry_point = t_entry_point;
 }
 
@@ -23,6 +23,12 @@ void Thread::Start() {
 	state = State::Running;
 	std_thread = std::thread(entry_point, registers);
 	thread_ID = Get_Thread_ID(std_thread.get_id());
+}
+
+void Thread::notify_All() {
+	for (std::vector<std::condition_variable>::iterator it = condition_variables.begin(); it != condition_variables.end(); ++it) {
+		it->notify_one();
+	}
 }
 
 void Thread::Join(uint16_t t_exit_code) {
@@ -42,8 +48,12 @@ void Thread::Join(uint16_t t_exit_code) {
 
 		it_handler++;
 	}
+
+	notify_All();
 	
 	terminate_handlers.clear();
+	sleeped_handlers.clear();
+	handlers_waiting_for.clear();
 
 	if (std_thread.joinable()) {
 		std_thread.detach();

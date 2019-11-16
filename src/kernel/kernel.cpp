@@ -41,21 +41,26 @@ void Shell_Wait(kiv_os::THandle handle) {
 	// Wait for shell to be closed.
 
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Wait_For));
-	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(handle);
+	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(&handle);
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(1);
 
 	Handle_IO(regs);
 }
 
-void Shell_Close(kiv_os::THandle std_in, kiv_os::THandle std_out) {
+void Shell_Close(kiv_os::THandle shell_handle, kiv_os::THandle std_in, kiv_os::THandle std_out) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Close_Handle));
 	
 	// Close std_in handle.
-	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(std_in);
+	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_in);
 	Handle_IO(regs);
 
 	// Close std_out handle.
-	regs.rdx.r = static_cast<decltype(regs.rdx.r)>(std_out);
+	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_out);
+	Handle_IO(regs);
+
+	// Delete shell process.
+	regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
+	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(shell_handle);
 	Handle_IO(regs);
 }
 
@@ -103,7 +108,6 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 		shell(regs);
 	}
 	
-	
 	/*
 	// regs.rax.h = static_cast<uint8_t>(kiv_hal::NDisk_IO::Drive_Parameters); -> stdin 1, stdout 52428.
 	std_in_shell = regs.rax.x;
@@ -111,13 +115,13 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	// Create shell.
 	kiv_os::THandle handle = Shell_Clone();
-	
+
 	// Wait for shell to be closed.
 	Shell_Wait(handle);
 
-	// Close std_in and std_out handles.
-	Shell_Close(std_in_shell, std_out_shell);
-	*/
+	// Close std_in and std_out handles + destroy shell process.
+	Shell_Close(handle, std_in_shell, std_out_shell);
+	*/	
 	// Shutdown kernel.
 	Shutdown_Kernel();
 }

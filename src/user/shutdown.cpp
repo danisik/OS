@@ -1,11 +1,9 @@
 #include "shutdown.h"
 
 size_t __stdcall shutdown(const kiv_hal::TRegisters &regs) {
-	bool success = kiv_os_rtl::Shutdown();
-	if (success) {
-		kiv_os_rtl::Exit((uint16_t) Exit_Codes::EXIT_CODE_SUCCESS);
-		return (size_t) Exit_Codes::EXIT_CODE_SUCCESS;
-	}
+	kiv_os_rtl::Shutdown();
 	
-	return (size_t) Exit_Codes::EXIT_CODE_FAILURE;
+	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
+	kiv_os_rtl::Exit(exit_code);
+	return 0;
 }

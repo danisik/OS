@@ -11,9 +11,7 @@ size_t Process::Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegist
 	std::unique_ptr<Thread> thread = std::make_unique<Thread>(entry_point, registers, process_ID);
 	thread->Start();
 
-	if (state == State::Runnable) {
-		state = State::Running;
-	}
+	state = State::Running;
 	
 	size_t thread_ID = thread->thread_ID;
 	threads.insert(std::pair<size_t, std::unique_ptr<Thread>>(thread->thread_ID, std::move(thread)));
@@ -24,7 +22,14 @@ size_t Process::Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegist
 void Process::Join_Thread(size_t thread_ID, uint16_t exit_code) {
 	threads[thread_ID]->Join(exit_code);
 
-	if (threads.size() < 1) {
-		state = State::Blocked;
+	if (process_thread_ID == thread_ID) {
+		state = State::Exited;
 	}
+}
+
+uint16_t Process::Kill_Thread(size_t thread_ID) {
+	// Pass object from array into object. Object will be destroyed after exiting method (property of unique_ptr).
+	std::unique_ptr<Thread> thread = std::move(threads[thread_ID]);
+	
+	return thread->exit_code;
 }

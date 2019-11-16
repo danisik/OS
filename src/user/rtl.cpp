@@ -21,7 +21,7 @@ void kiv_os_rtl::Default_Signal_Handler() {
 }
 
 //NOS_File_System
-bool kiv_os_rtl::Open_File(const char *file_name, const kiv_os::NOpen_File flags, const kiv_os::NFile_Attributes attributes, kiv_os::THandle &open) {
+bool kiv_os_rtl::Open_File(const char *file_name, kiv_os::NOpen_File flags, kiv_os::NFile_Attributes attributes, kiv_os::THandle &open) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Open_File));
 
 	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(str_to_uint16(file_name));	
@@ -33,7 +33,7 @@ bool kiv_os_rtl::Open_File(const char *file_name, const kiv_os::NOpen_File flags
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Write_File(const kiv_os::THandle file_handle, const char *buffer, const size_t buffer_size, size_t &written) {
+bool kiv_os_rtl::Write_File(kiv_os::THandle file_handle, const char *buffer, size_t buffer_size, size_t &written) {
 	
 	if (buffer_size == 0) {
 		return true;
@@ -51,7 +51,7 @@ bool kiv_os_rtl::Write_File(const kiv_os::THandle file_handle, const char *buffe
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Read_File(const kiv_os::THandle file_handle, const char *buffer, const size_t buffer_size, size_t &read) {
+bool kiv_os_rtl::Read_File(kiv_os::THandle file_handle, const char *buffer, size_t buffer_size, size_t &read) {
 	kiv_hal::TRegisters regs =  Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Read_File));
 	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(file_handle);
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(buffer);
@@ -62,7 +62,7 @@ bool kiv_os_rtl::Read_File(const kiv_os::THandle file_handle, const char *buffer
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Seek(const kiv_os::THandle file_handle, const kiv_os::NFile_Seek seek_operation, const kiv_os::NFile_Seek new_position, size_t &position) {
+bool kiv_os_rtl::Seek(kiv_os::THandle file_handle, kiv_os::NFile_Seek seek_operation, kiv_os::NFile_Seek new_position, size_t &position) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Seek));
 	
 	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(file_handle);
@@ -81,7 +81,7 @@ bool kiv_os_rtl::Seek(const kiv_os::THandle file_handle, const kiv_os::NFile_See
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Close_Handle(const kiv_os::THandle file_handle) {
+bool kiv_os_rtl::Close_Handle(kiv_os::THandle file_handle) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Close_Handle));
 
 	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(file_handle);
@@ -90,7 +90,7 @@ bool kiv_os_rtl::Close_Handle(const kiv_os::THandle file_handle) {
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Delete_File(const char *file_name) {
+bool kiv_os_rtl::Delete_File(char *file_name) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Delete_File));
 	
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(file_name);
@@ -99,7 +99,7 @@ bool kiv_os_rtl::Delete_File(const char *file_name) {
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Set_Working_Dir(const char *new_directory) {
+bool kiv_os_rtl::Set_Working_Dir(char *new_directory) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Set_Working_Dir));
 
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(new_directory);
@@ -108,7 +108,7 @@ bool kiv_os_rtl::Set_Working_Dir(const char *new_directory) {
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Get_Working_Dir(const char *path, const size_t path_size, size_t &written_chars) {
+bool kiv_os_rtl::Get_Working_Dir(char *path, size_t path_size, size_t &written_chars) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Get_Working_Dir));
 
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(path);
@@ -119,7 +119,7 @@ bool kiv_os_rtl::Get_Working_Dir(const char *path, const size_t path_size, size_
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Create_Pipe(const kiv_os::THandle pipein_handle, const kiv_os::THandle pipeout_handle) {
+bool kiv_os_rtl::Create_Pipe(kiv_os::THandle pipein_handle, kiv_os::THandle pipeout_handle) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Create_Pipe));
 
 	kiv_os::THandle pipe_handle[2];
@@ -133,7 +133,7 @@ bool kiv_os_rtl::Create_Pipe(const kiv_os::THandle pipein_handle, const kiv_os::
 }
 
 //NOS_Process
-bool kiv_os_rtl::Clone_Process(const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
+bool kiv_os_rtl::Clone_Process(const char *export_name, const char *arguments, kiv_os::THandle stdin_handle, kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(kiv_os::NClone::Create_Process);
@@ -148,7 +148,7 @@ bool kiv_os_rtl::Clone_Process(const char *export_name, const char *arguments, c
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Clone_Thread(void *export_name, void *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
+bool kiv_os_rtl::Clone_Thread(void *export_name, void *arguments, kiv_os::THandle stdin_handle, kiv_os::THandle stdout_handle, kiv_os::THandle &process) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(kiv_os::NClone::Create_Thread);
@@ -162,28 +162,28 @@ bool kiv_os_rtl::Clone_Thread(void *export_name, void *arguments, const kiv_os::
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Wait_For(const kiv_os::THandle process_handlers[]) {
+bool kiv_os_rtl::Wait_For(kiv_os::THandle process_handlers[]) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Wait_For));
 
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(process_handlers);
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(sizeof(process_handlers) / sizeof(kiv_os::THandle*));
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
-	// TODO Wait_For: exit_code = static_cast<size_t>(regs.rax.r);
+	//exit_code = static_cast<size_t>(regs.rax.x);
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Read_Exit_Code(const kiv_os::THandle process_handle, size_t &exit_code) {
+bool kiv_os_rtl::Read_Exit_Code(kiv_os::THandle process_handle, uint16_t &exit_code) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
 	
 	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(process_handle);
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
-	exit_code = static_cast<size_t>(regs.rax.r);
+	exit_code = static_cast<size_t>(regs.rax.x);
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Exit(const uint16_t exit_code) {
+bool kiv_os_rtl::Exit(uint16_t exit_code) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Exit));
 
 	regs.rcx.x = static_cast<decltype(regs.rcx.x)>(exit_code);
@@ -198,7 +198,7 @@ bool kiv_os_rtl::Shutdown() {
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Register_Signal_Handler(const kiv_os::NSignal_Id signal_Id, const kiv_os::TThread_Proc process_handle) {
+bool kiv_os_rtl::Register_Signal_Handler(kiv_os::NSignal_Id signal_Id, kiv_os::TThread_Proc process_handle) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Register_Signal_Handler));
 
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(signal_Id);

@@ -15,23 +15,23 @@ namespace kiv_os_rtl {
 	void Default_Signal_Handler();
 
 	//NOS_File_System
-	bool Open_File(const char *file_name, const kiv_os::NOpen_File flags, const kiv_os::NFile_Attributes attributes, kiv_os::THandle &open);
-	bool Write_File(const kiv_os::THandle file_handle, const char *buffer, const size_t buffer_size, size_t &written);
-	bool Read_File(const kiv_os::THandle file_handle, const char *buffer, const size_t buffer_size, size_t &read);
-	bool Seek(const kiv_os::THandle file_handle, const kiv_os::NFile_Seek seek_operation, const kiv_os::NFile_Seek new_position, size_t &position);
-	bool Close_Handle(const kiv_os::THandle file_handle);
-	bool Delete_File(const char *file_name);
-	bool Set_Working_Dir(const char *new_directory);
-	bool Get_Working_Dir(const char *path, const size_t path_size, size_t &written_chars);
-	bool Create_Pipe(const kiv_os::THandle pipein_handle, const kiv_os::THandle pipeout_handle);
+	bool Open_File(const char *file_name, kiv_os::NOpen_File flags, kiv_os::NFile_Attributes attributes, kiv_os::THandle &open);
+	bool Write_File(kiv_os::THandle file_handle, const char *buffer, size_t buffer_size, size_t &written);
+	bool Read_File(kiv_os::THandle file_handle, const char *buffer, size_t buffer_size, size_t &read);
+	bool Seek(kiv_os::THandle file_handle, kiv_os::NFile_Seek seek_operation, kiv_os::NFile_Seek new_position, size_t &position);
+	bool Close_Handle(kiv_os::THandle file_handle);
+	bool Delete_File(char *file_name);
+	bool Set_Working_Dir(char *new_directory);
+	bool Get_Working_Dir(char *path, size_t path_size, size_t &written_chars);
+	bool Create_Pipe(kiv_os::THandle pipein_handle, kiv_os::THandle pipeout_handle);
 
 	//NOS_Process
-	bool Clone_Process(const char *export_name, const char *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process);
-	bool Clone_Thread(void *export_name, void *arguments, const kiv_os::THandle stdin_handle, const kiv_os::THandle stdout_handle, kiv_os::THandle &process);
-	bool Wait_For(const kiv_os::THandle process_handlers[]);
-	bool Read_Exit_Code(const kiv_os::THandle process_handle, size_t &exit_code);
-	bool Exit(const uint16_t exit_code);
+	bool Clone_Process(const char *export_name, const char *arguments, kiv_os::THandle stdin_handle, kiv_os::THandle stdout_handle, kiv_os::THandle &process);
+	bool Clone_Thread(void *export_name, void *arguments, kiv_os::THandle stdin_handle, kiv_os::THandle stdout_handle, kiv_os::THandle &process);
+	bool Wait_For(kiv_os::THandle process_handlers[]);
+	bool Read_Exit_Code(kiv_os::THandle process_handle, uint16_t &exit_code);
+	bool Exit(uint16_t exit_code);
 	bool Shutdown();
-	bool Register_Signal_Handler(const kiv_os::NSignal_Id signal_Id, const kiv_os::TThread_Proc process_handle);
+	bool Register_Signal_Handler(kiv_os::NSignal_Id signal_Id, kiv_os::TThread_Proc process_handle);
 
 }
