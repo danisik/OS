@@ -4,6 +4,8 @@ const char* new_line = "\n";
 const char* prompt = "C:\\>";
 const char* welcome_message = "Welcome in OS";
 
+
+
 size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);

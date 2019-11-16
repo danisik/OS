@@ -30,10 +30,6 @@ kiv_os::THandle Shell_Clone() {
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>("shell");
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>("");
 
-	// regs.rax.h = static_cast<uint8_t>(kiv_hal::NDisk_IO::Drive_Parameters); -> stdin 1, stdout 52428.
-	kiv_os::THandle std_in_shell = 1; 
-	kiv_os::THandle std_out_shell = 52428;
-	printf("%d %d", regs.rax.x, regs.rbx.x);
 	regs.rbx.e = (std_in_shell << 16) | std_out_shell;
 
 	// Create shell process.
@@ -109,6 +105,10 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 	
 	
 	/*
+	// regs.rax.h = static_cast<uint8_t>(kiv_hal::NDisk_IO::Drive_Parameters); -> stdin 1, stdout 52428.
+	std_in_shell = regs.rax.x;
+	std_out_shell = regs.rbx.x;
+
 	// Create shell.
 	kiv_os::THandle handle = Shell_Clone();
 	

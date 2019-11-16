@@ -8,7 +8,7 @@ size_t Terminated_Checker(const kiv_hal::TRegisters &regs) {
 	return 0;
 }
 
-size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
+size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {	
 	kiv_os::NSignal_Id signal = kiv_os::NSignal_Id::Terminate;
 	kiv_os::TThread_Proc handler = reinterpret_cast<kiv_os::TThread_Proc>(Terminated_Checker);
 

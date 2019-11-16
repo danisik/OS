@@ -26,6 +26,7 @@ void Thread::Start() {
 }
 
 void Thread::Join(uint16_t t_exit_code) {
+
 	exit_code = t_exit_code;
 	state = State::Exited;
 
@@ -41,9 +42,13 @@ void Thread::Join(uint16_t t_exit_code) {
 
 		it_handler++;
 	}
-
+	
 	terminate_handlers.clear();
-	std_thread.join();
+
+	if (std_thread.joinable()) {
+		std_thread.detach();
+	}
+	
 }
 
 void Thread::Stop() {
