@@ -59,12 +59,10 @@ void Thread::Join(uint16_t t_exit_code) {
 	
 	terminate_handlers.clear();
 	sleeped_handlers.clear();
-	handlers_waiting_for.clear();
-
+	
 	if (std_thread.joinable()) {
 		std_thread.detach();
 	}
-	
 }
 
 void Thread::Stop() {	

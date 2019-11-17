@@ -25,7 +25,7 @@ kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uin
 	return regs;
 }
 
-void Create_Kernel_Process() {
+kiv_os::THandle Create_Kernel_Process() {
 	
 	char *working_directory = "";
 	// Create process and thread.
@@ -33,6 +33,7 @@ void Create_Kernel_Process() {
 	std::unique_ptr<Thread> thread = std::make_unique<Thread>(process->process_ID);
 	thread->thread_ID = Get_Thread_ID(std::this_thread::get_id());
 	size_t thread_ID = thread->thread_ID;
+	kiv_os::THandle kernel_handler = io_process->Get_Free_Thread_ID();
 
 	// Set states.
 	process->state = State::Running;
@@ -41,9 +42,26 @@ void Create_Kernel_Process() {
 
 	size_t process_ID = process->process_ID;
 
-	io_process->t_handle_to_thread_ID.insert(std::pair<kiv_os::THandle, size_t>(io_process->Get_Free_Thread_ID(), thread_ID));
+	io_process->t_handle_to_thread_ID.insert(std::pair<kiv_os::THandle, size_t>(kernel_handler, thread_ID));
 	io_process->thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(thread_ID, process->process_ID));
 	io_process->processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
+
+	return kernel_handler;
+}
+
+void Remove_Kernel_Process(kiv_os::THandle kernel_handler) {
+	size_t thread_ID = io_process->t_handle_to_thread_ID[kernel_handler];
+	size_t process_ID = io_process->thread_ID_to_process_ID[thread_ID];
+
+	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Exit));
+	regs.rcx.x = static_cast<decltype(regs.rcx.x)>(kiv_os::NOS_Error::Success);
+
+	io_process->Exit(regs);
+
+	regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
+	regs.rdx.x = kernel_handler;
+
+	io_process->Read_Exit_Code(regs);
 }
 
 kiv_os::THandle Shell_Clone() {
@@ -118,7 +136,8 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 		if (regs.rdx.l == 255) break;
 	}
 
-	Create_Kernel_Process();
+	kiv_os::THandle kernel_handler;
+	kernel_handler = Create_Kernel_Process();
 	
 	// regs.rax.h = static_cast<uint8_t>(kiv_hal::NDisk_IO::Drive_Parameters); -> stdin 1, stdout 52428.
 	std_in_shell = regs.rax.x;
@@ -132,6 +151,8 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	// Close std_in and std_out handles + destroy shell process.
 	Shell_Close(handle, std_in_shell, std_out_shell);
+
+	Remove_Kernel_Process(kernel_handler);
 
 	// Shutdown kernel.
 	Shutdown_Kernel();
