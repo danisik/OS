@@ -69,16 +69,19 @@ void IO_Process::Notify(size_t sleeped_thread_ID, size_t waiting_thread_ID) {
 // Notify all waited threads that this thread done his work and will be deleted.
 void IO_Process::Notify_All(size_t thread_ID) {
 
-	std::map<size_t, size_t>::iterator it_thread_sleeped_handlers = processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.begin();
 
-	while (it_thread_sleeped_handlers != processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.end()) {
-	
-		Notify(processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers[it_thread_sleeped_handlers->second], thread_ID);
+	if (processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.size() > 0) {
+		std::map<size_t, size_t>::iterator it_thread_sleeped_handlers = processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.begin();
 
-		it_thread_sleeped_handlers++;
+		while (it_thread_sleeped_handlers != processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.end()) {
+
+			Notify(processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers[it_thread_sleeped_handlers->second], thread_ID);
+
+			it_thread_sleeped_handlers++;
+		}
+
+		processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.clear();
 	}
-
-	processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.clear();
 }
 
 void IO_Process::Clone(kiv_hal::TRegisters &regs) {
@@ -120,7 +123,7 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	process_registers.rbx.x = regs.rbx.e & 0x0000FFFF;	// Stdout.
 	process_registers.rdi.r = regs.rdi.r;				// Arguments.
 
-	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), working_directory);
+	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), export_name, working_directory);
 	
 	// Create first thread.
 	size_t thread_ID = process->Create_Thread(entry_point, process_registers);
@@ -202,17 +205,20 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 	
 	if (thread_ID == processes[process_ID]->process_thread_ID) {
 		// Kill process thread.          
-		std::unique_ptr<Process> process = std::move(processes[process_ID]);
-		exit_code = process->threads[process->process_thread_ID]->exit_code;
-		Set_Free_Process_ID(process->process_ID);
+		exit_code = processes[process_ID]->threads[processes[process_ID]->process_thread_ID]->exit_code;
+		Set_Free_Process_ID(processes[process_ID]->process_ID);
 		Set_Free_Thread_ID(thread_handler);
-		process->Kill_Thread(process->process_thread_ID);
+		processes[process_ID]->Kill_Thread(processes[process_ID]->process_thread_ID);
+		
+		std::unique_ptr<Process> process = std::move(processes[process_ID]);
+		processes.erase(process->process_ID);
 	}
 	else {
 		// Kill only thread.
 		exit_code = processes[process_ID]->threads[thread_ID]->exit_code;
 		Set_Free_Thread_ID(thread_handler);
 		processes[process_ID]->Kill_Thread(thread_ID);
+		processes[process_ID]->threads.erase(thread_ID);
 	}
 
 	t_handle_to_thread_ID.erase(thread_handler);
@@ -255,8 +261,11 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 	std::map<size_t, std::unique_ptr<Process>>::iterator it_process = processes.begin();
 	std::map<size_t, std::unique_ptr<Thread>>::iterator it_thread;
 
+	// Start from third process (first is KERNEL, second is shell).
+	it_process++;
 	while (it_process != processes.end()) {
 		process = std::move(it_process->second);
+		Set_Free_Process_ID(process->process_ID);
 
 		it_thread = process->threads.begin();
 
@@ -264,10 +273,14 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 			Notify_All(it_thread->first);
 			process->Join_Thread(it_thread->first, 0);
 
+			Set_Free_Thread_ID(Get_THandle_From_Thread_ID(it_thread->first));
+			process->Kill_Thread(process->process_thread_ID);
+
 			it_thread++;
 		}
 
-		it_process++;	
+		it_process++;
+		processes.erase(process->process_ID);
 	}
 }
 

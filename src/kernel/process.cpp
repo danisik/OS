@@ -1,7 +1,8 @@
 #include "process.h"
 
-Process::Process(size_t p_process_ID, char *p_working_directory) {
+Process::Process(size_t p_process_ID, char *p_name, char *p_working_directory) {
 	process_ID = p_process_ID;
+	name = p_name;
 	state = State::Runnable;
 	working_directory = p_working_directory;
 }

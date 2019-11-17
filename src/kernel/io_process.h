@@ -39,8 +39,8 @@ class IO_Process {
 		void Clone_Process(kiv_hal::TRegisters &regs); // Tested.
 		void Clone_Thread(kiv_hal::TRegisters &regs); // Tested.
 
-		void Wait_For(kiv_hal::TRegisters &regs);  // Rewriting.
-		void Read_Exit_Code(kiv_hal::TRegisters &regs); // Test it after Wait_For is completed. 
+		void Wait_For(kiv_hal::TRegisters &regs);  // Tested.
+		void Read_Exit_Code(kiv_hal::TRegisters &regs); // Tested.
 		void Exit(kiv_hal::TRegisters &regs); // Tested.
 		void Shutdown(kiv_hal::TRegisters &regs); // Test it after Exit and Read_Exit_Code are writed.
 		void Register_Signal_Handler(kiv_hal::TRegisters &regs); // Tested.

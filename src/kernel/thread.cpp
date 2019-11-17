@@ -66,18 +66,19 @@ void Thread::Join(uint16_t t_exit_code) {
 }
 
 void Thread::Stop() {	
+	std::unique_lock<std::mutex> lock(mutex);
 	if (handlers_waiting_for.size() > 0) {
 
 		if (state == State::Running) {
 			state = State::Blocked;
 
-			std::unique_lock<std::mutex> lock(mutex);
 			cv.wait(lock);
 		}
 	}
 }
 
 void Thread::Remove_Handler_From_Handlers_Waiting_For(size_t thread_ID) {
+	std::unique_lock<std::mutex> lock(mutex);
 	handlers_waiting_for.clear();
 
 	state = State::Running;
@@ -85,4 +86,6 @@ void Thread::Remove_Handler_From_Handlers_Waiting_For(size_t thread_ID) {
 	cv.notify_all();
 
 	waked_by_handler = thread_ID;
+
+	lock.unlock();
 }
