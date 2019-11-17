@@ -44,7 +44,6 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			command_exe::Execute_Commands(commands, std_in, std_out);
 		
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
-			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 		}
 		else {
 			// TODO shell: Really ? Ask teacher.
