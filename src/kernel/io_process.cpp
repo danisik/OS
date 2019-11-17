@@ -107,8 +107,6 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	// TODO Clone_Process: working directory.
 	char *working_directory = "";
 
-	kiv_os::TThread_Proc entry_point = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, export_name);
-
 	//   |stdin|stdout| in hex
 	//    |....|....| 
 	//	  
@@ -126,6 +124,7 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), export_name, working_directory);
 	
 	// Create first thread.
+	kiv_os::TThread_Proc entry_point = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, export_name);
 	size_t thread_ID = process->Create_Thread(entry_point, process_registers);
 	process->process_thread_ID = thread_ID;
 	
@@ -136,7 +135,7 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	t_handle_to_thread_ID.insert(std::pair<kiv_os::THandle, size_t>(cloned_handler, thread_ID));
 	
 	size_t process_ID = process->process_ID;
-	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
+	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process_ID, std::move(process)));
 
 	regs.rax.x = cloned_handler;
 }
@@ -163,6 +162,7 @@ void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 }
 
 void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
+	//std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	std::condition_variable cv;
 	
 	kiv_os::THandle *handles = reinterpret_cast<kiv_os::THandle*>(regs.rdx.r);
@@ -187,8 +187,6 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 	processes[process_ID]->threads[current_thread_ID]->Stop();
 
 	kiv_os::THandle signalized_handler;
-
-	std::map<kiv_os::THandle, size_t>::iterator it_thread_IDs = t_handle_to_thread_ID.begin();
 
 	signalized_handler = Get_THandle_From_Thread_ID(processes[process_ID]->threads[current_thread_ID]->waked_by_handler);
 
@@ -257,12 +255,24 @@ void IO_Process::Exit(kiv_hal::TRegisters &regs) {
 void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
-	std::unique_ptr<Process> process;
 	std::map<size_t, std::unique_ptr<Process>>::iterator it_process = processes.begin();
 	std::map<size_t, std::unique_ptr<Thread>>::iterator it_thread;
 
-	// Start from third process (first is KERNEL, second is shell).
-	it_process++;
+	while (it_process != processes.end()) {
+
+		it_thread = it_process->second->threads.begin();
+
+		while (it_thread != it_process->second->threads.end()) {			
+			Notify_All(it_thread->first);
+			processes[it_process->second->process_ID]->Join_Thread(it_thread->first, 0);
+			it_thread++;
+		}
+
+		it_process++;
+	}
+
+
+	/*
 	while (it_process != processes.end()) {
 		process = std::move(it_process->second);
 		Set_Free_Process_ID(process->process_ID);
@@ -282,6 +292,7 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 		it_process++;
 		processes.erase(process->process_ID);
 	}
+	*/
 }
 
 void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) {
@@ -324,4 +335,35 @@ void IO_Process::Handle_Process(kiv_hal::TRegisters &regs) {
 		break;
 	}
 
+}
+
+void IO_Process::Clear_Processes() {
+
+	std::unique_ptr<Process> process;
+	std::map<size_t, std::unique_ptr<Process>>::iterator it_process = processes.begin();
+	std::map<size_t, std::unique_ptr<Thread>>::iterator it_thread;
+
+	while(it_process != processes.end()) {
+
+		it_thread = it_process->second->threads.begin();
+
+		while (it_thread != it_process->second->threads.end()) {
+			Notify_All(it_thread->first);
+			it_process->second->Join_Thread(it_thread->first, 0);
+
+			kiv_os::THandle handler = Get_THandle_From_Thread_ID(it_thread->first);
+
+			it_process->second->Kill_Thread(it_process->second->process_thread_ID);
+
+			t_handle_to_thread_ID.erase(handler);
+			thread_ID_to_process_ID.erase(it_thread->first);
+
+			it_thread++;
+		}
+
+		process = std::move(it_process->second);
+		it_process++;
+	}
+
+	processes.clear();
 }

@@ -5,6 +5,7 @@ const char* prompt = "C:\\>";
 const char* welcome_message = "Welcome in OS";
 
 extern bool echo_on;
+extern bool shutdown_signalized;
 
 size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
@@ -21,6 +22,11 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 
 	// While cycle for commands.
 	while(1) {
+
+		if (shutdown_signalized == true) {
+			break;
+		}
+
 		if (echo_on) {
 			kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);
 		}

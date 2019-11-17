@@ -51,6 +51,23 @@ kiv_os::THandle Create_Kernel_Process() {
 	return kernel_handler;
 }
 
+void Remove_Kernel_Process(kiv_os::THandle kernel_handler) {
+	size_t thread_ID = io_process->t_handle_to_thread_ID[kernel_handler];
+	size_t process_ID = io_process->thread_ID_to_process_ID[thread_ID];
+
+	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Exit));
+	regs.rcx.x = static_cast<decltype(regs.rcx.x)>(kiv_os::NOS_Error::Success);
+
+	io_process->Exit(regs);
+
+	regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
+	regs.rdx.x = kernel_handler;
+
+	io_process->Read_Exit_Code(regs);
+
+	io_process->Clear_Processes();
+}
+
 kiv_os::THandle Shell_Clone() {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>("shell");
@@ -138,6 +155,8 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	// Close std_in and std_out handles + destroy shell process.
 	Shell_Close(handle, std_in_shell, std_out_shell);
+
+	Remove_Kernel_Process(kernel_handler);
 
 	printf("shutdown kernel");
 	// Shutdown kernel.
