@@ -5,11 +5,17 @@ const char* prompt = "C:\\>";
 const char* welcome_message = "Welcome in OS";
 
 extern bool echo_on;
-extern bool shutdown_signalized;
+bool shutdown_signalized = false;
+
+void Signalize_Shutdown() {
+	shutdown_signalized = true;
+}
 
 size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);
+
+	kiv_os_rtl::Register_Signal_Handler(kiv_os::NSignal_Id::Terminate, reinterpret_cast<kiv_os::TThread_Proc>(Signalize_Shutdown));
 
 	const size_t buffer_size = 256;
 	char buffer[buffer_size];
