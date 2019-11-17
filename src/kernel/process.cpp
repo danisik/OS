@@ -1,6 +1,6 @@
 #include "process.h"
 
-Process::Process(size_t p_process_ID, char *p_working_directory, kiv_os::TThread_Proc entry_point, kiv_hal::TRegisters registers) {
+Process::Process(size_t p_process_ID, char *p_working_directory) {
 	process_ID = p_process_ID;
 	state = State::Runnable;
 	working_directory = p_working_directory;

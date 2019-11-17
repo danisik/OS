@@ -3,7 +3,7 @@
 #include "kernel.h"
 
 HMODULE User_Programs;
-IO_Process *io_process;
+IO_Process *io_process = new IO_Process();
 
 kiv_os::THandle std_in_shell;
 kiv_os::THandle std_out_shell;
@@ -25,6 +25,27 @@ kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uin
 	return regs;
 }
 
+void Create_Kernel_Process() {
+	
+	char *working_directory = "";
+	// Create process and thread.
+	std::unique_ptr<Process> process = std::make_unique<Process>(io_process->Get_Free_Process_ID(), working_directory);
+	std::unique_ptr<Thread> thread = std::make_unique<Thread>(process->process_ID);
+	thread->thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	size_t thread_ID = thread->thread_ID;
+
+	// Set states.
+	process->state = State::Running;
+
+	process->threads.insert(std::pair<size_t, std::unique_ptr<Thread>>(thread->thread_ID, std::move(thread)));
+
+	size_t process_ID = process->process_ID;
+
+	io_process->t_handle_to_thread_ID.insert(std::pair<kiv_os::THandle, size_t>(io_process->Get_Free_Thread_ID(), thread_ID));
+	io_process->thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(thread_ID, process->process_ID));
+	io_process->processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
+}
+
 kiv_os::THandle Shell_Clone() {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>("shell");
@@ -44,7 +65,7 @@ void Shell_Wait(kiv_os::THandle handle) {
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(&handle);
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(1);
 
-	Handle_IO(regs);
+	io_process->Handle_Process(regs);
 }
 
 void Shell_Close(kiv_os::THandle shell_handle, kiv_os::THandle std_in, kiv_os::THandle std_out) {
@@ -61,7 +82,7 @@ void Shell_Close(kiv_os::THandle shell_handle, kiv_os::THandle std_in, kiv_os::T
 	// Delete shell process.
 	regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
 	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(shell_handle);
-	Handle_IO(regs);
+	io_process->Handle_Process(regs);
 }
 
 void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
@@ -97,18 +118,8 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 		if (regs.rdx.l == 255) break;
 	}
 
-	//spustime shell - v realnem OS bychom ovsem spousteli login
-
+	Create_Kernel_Process();
 	
-	kiv_os::TThread_Proc shell = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, "shell");
-
-	if (shell) {
-		//spravne se ma shell spustit pres clone!
-		//ale ten v kostre pochopitelne neni implementovan		
-		shell(regs);
-	}
-	
-	/*
 	// regs.rax.h = static_cast<uint8_t>(kiv_hal::NDisk_IO::Drive_Parameters); -> stdin 1, stdout 52428.
 	std_in_shell = regs.rax.x;
 	std_out_shell = regs.rbx.x;
@@ -121,7 +132,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	// Close std_in and std_out handles + destroy shell process.
 	Shell_Close(handle, std_in_shell, std_out_shell);
-	*/	
+
 	// Shutdown kernel.
 	Shutdown_Kernel();
 }

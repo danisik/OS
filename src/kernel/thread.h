@@ -23,14 +23,16 @@ public:
 
 	std::condition_variable cv;
 	std::mutex mutex;
-
+	size_t waked_by_handler;
 
 	Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers, size_t t_parent_ID);
+	Thread(size_t t_parent_ID);
 	~Thread();
 	void Start();
 	void notify_All();
 	void Join(uint16_t t_exit_code);
 	void Stop();
-	void Add_Handlers_Waiting_For(size_t thread_ID);
 	void Remove_Handler_From_Handlers_Waiting_For(size_t thread_ID);
 };
+
+size_t Get_Thread_ID(std::thread::id thread_ID);

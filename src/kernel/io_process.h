@@ -16,7 +16,6 @@ class IO_Process {
 		size_t first_free_process_ID = 0;
 		kiv_os::THandle first_free_thread_ID = MIN_THREAD_THANDLE;
 
-
 		std::mutex io_process_mutex;
 		std::mutex wait_for_mutex;
 
@@ -33,6 +32,8 @@ class IO_Process {
 		kiv_os::THandle Get_Free_Thread_ID();
 		void Set_Free_Thread_ID(kiv_os::THandle thread_ID);
 		kiv_os::THandle Find_Free_Thread_ID(size_t thread_ID);
+
+		kiv_os::THandle Get_THandle_From_Thread_ID(size_t thread_ID);
 
 		void Clone(kiv_hal::TRegisters &regs); // Tested.
 		void Clone_Process(kiv_hal::TRegisters &regs); // Tested.

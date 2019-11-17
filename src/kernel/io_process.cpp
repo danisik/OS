@@ -47,18 +47,27 @@ kiv_os::THandle IO_Process::Find_Free_Thread_ID(size_t thread_ID) {
 	return 0;
 }
 
+kiv_os::THandle IO_Process::Get_THandle_From_Thread_ID(size_t thread_ID) {
+	std::map<kiv_os::THandle, size_t>::iterator it_thread_IDs = t_handle_to_thread_ID.begin();
+
+	while (it_thread_IDs != t_handle_to_thread_ID.end()) {
+		if (it_thread_IDs->second == thread_ID) {
+			return it_thread_IDs->first;
+		}
+
+		it_thread_IDs++;
+	}
+
+	return 0;
+}
+
 // Notify thread that this thread done his work and will be deleted.
 void IO_Process::Notify(size_t sleeped_thread_ID, size_t waiting_thread_ID) {
-	printf("Notify: Sleeped - %zd; Waiting - %zd\n", sleeped_thread_ID, waiting_thread_ID);
-
 	processes[thread_ID_to_process_ID[sleeped_thread_ID]]->threads[sleeped_thread_ID]->Remove_Handler_From_Handlers_Waiting_For(waiting_thread_ID);
-
-	printf("Notify ended\n");
 }
 
 // Notify all waited threads that this thread done his work and will be deleted.
 void IO_Process::Notify_All(size_t thread_ID) {
-	printf("Notify_All: %zd\n", thread_ID);
 
 	std::map<size_t, size_t>::iterator it_thread_sleeped_handlers = processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.begin();
 
@@ -70,7 +79,6 @@ void IO_Process::Notify_All(size_t thread_ID) {
 	}
 
 	processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.clear();
-	printf("Notify_All: ended.\n");
 }
 
 void IO_Process::Clone(kiv_hal::TRegisters &regs) {
@@ -112,7 +120,7 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	process_registers.rbx.x = regs.rbx.e & 0x0000FFFF;	// Stdout.
 	process_registers.rdi.r = regs.rdi.r;				// Arguments.
 
-	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), working_directory, entry_point, process_registers);
+	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), working_directory);
 	
 	// Create first thread.
 	size_t thread_ID = process->Create_Thread(entry_point, process_registers);
@@ -126,7 +134,7 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	
 	size_t process_ID = process->process_ID;
 	processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
-	printf("Cloned_Process: %d %zd\n", cloned_handler, thread_ID);
+
 	regs.rax.x = cloned_handler;
 }
 
@@ -152,88 +160,36 @@ void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 }
 
 void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
-
 	std::condition_variable cv;
-	std::unique_lock<std::mutex> lock_wait_for_mutex(wait_for_mutex);
-
+	
 	kiv_os::THandle *handles = reinterpret_cast<kiv_os::THandle*>(regs.rdx.r);
 	size_t handles_count = static_cast<size_t>(regs.rcx.r);
 
-	/*
-	std::map<kiv_os::THandle, size_t> thread_IDs;
-
-	{
-		std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
-		for (int i = 0; i < handles_count; i++) {
-			size_t thread_ID = t_handle_to_thread_ID[handles[i]];
-			thread_IDs.insert(std::pair<kiv_os::THandle, size_t>(handles[i], thread_ID));
-
-			size_t process_ID = thread_ID_to_process_ID[thread_ID];
-
-			if (processes[process_ID]->threads[thread_ID]->state == State::Exited) {
-				regs.rax.x = handles[i];
-				return;
-			}
-
-			processes[process_ID]->threads[thread_ID]->condition_variables.emplace(cv);
-		}
-	}
-
-	// Lock this thread.
-	cv.wait(lock_wait_for_mutex);
-
-	std::map<kiv_os::THandle, size_t>::iterator it_thread_IDs = thread_IDs.begin();
-
-	// Check what process open condition_variable.
-	while (it_thread_IDs != thread_IDs.end()) {
-		size_t thread_ID = it_thread_IDs->second;
-
-		size_t process_ID = thread_ID_to_process_ID[thread_ID];
-
-		if (processes[process_ID]->threads[thread_ID]->state == State::Exited) {
-			regs.rax.x = it_thread_IDs->first;
-			break;
-		}
-
-		it_thread_IDs++;
-	}
-
-	it_thread_IDs = thread_IDs.begin();
-
-	// Remove condition variable from every thread map that has been here.
-	while (it_thread_IDs != thread_IDs.end()) {
-		size_t thread_ID = it_thread_IDs->second;
-
-		size_t process_ID = thread_ID_to_process_ID[thread_ID];
-		processes[process_ID]->threads[thread_ID]->condition_variables.erase(it_thread_IDs->first);
-
-		it_thread_IDs++;
-	}
-
-	printf("%d", regs.rax.x);
-
-	// vláknùm pøidám condition variable do pole condition_variables.
-	// pøi ukonèení vlákna (join) všechny condition_variable v condition_variables notyfijnu
-	// projedu daná vlákna a zjistím, které má stav exited. vrátím handle exited vlákna
-
-	*/
-
-	
 	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
-	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
-
+	
+	size_t process_ID = thread_ID_to_process_ID[current_thread_ID];
 	for (int i = 0; i < handles_count; i++) {
-		processes[process_ID]->threads[current_thread_ID]->Add_Handlers_Waiting_For(handles[i]);
+		size_t waiting_thread_ID = t_handle_to_thread_ID[handles[i]];
+		size_t waiting_process_ID = thread_ID_to_process_ID[waiting_thread_ID];
+
+		if (processes[waiting_process_ID]->state == State::Exited) {
+			regs.rax.x = Get_THandle_From_Thread_ID(waiting_thread_ID);
+			return;
+		}
+
+		processes[process_ID]->threads[current_thread_ID]->handlers_waiting_for.insert(std::pair<size_t, size_t>(waiting_thread_ID, waiting_thread_ID));
+		processes[waiting_process_ID]->threads[waiting_thread_ID]->sleeped_handlers.insert(std::pair<size_t, size_t>(current_thread_ID, current_thread_ID));
 	}
+
 	processes[process_ID]->threads[current_thread_ID]->Stop();
 
-	// Zachovat pùvodní ideu.
-	// V kernelu vytvoøím nový proces který reprezentuje kernel.
-	// Ten po zavolání wait for se stopne.
-	// Pokud dojde k remove_handler_from_waiting_for, tak erasneme celé pole, nastavíme kiv_os::THandle waked_by_who a udìláme notify.
-	// Jakmile dojde k odemèení, vrátíme v registru regs.rax.x hodnotu waked_by_who z threadu.
-	
-	
+	kiv_os::THandle signalized_handler;
+
+	std::map<kiv_os::THandle, size_t>::iterator it_thread_IDs = t_handle_to_thread_ID.begin();
+
+	signalized_handler = Get_THandle_From_Thread_ID(processes[process_ID]->threads[current_thread_ID]->waked_by_handler);
+
+	regs.rax.x = signalized_handler;
 }
 
 void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {

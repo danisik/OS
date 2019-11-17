@@ -162,14 +162,14 @@ bool kiv_os_rtl::Clone_Thread(void *export_name, void *arguments, kiv_os::THandl
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Wait_For(kiv_os::THandle process_handlers[]) {
+bool kiv_os_rtl::Wait_For(kiv_os::THandle process_handlers[], kiv_os::THandle &signalized_handler) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Wait_For));
 
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(process_handlers);
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(sizeof(process_handlers) / sizeof(kiv_os::THandle*));
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
-	//exit_code = static_cast<size_t>(regs.rax.x);
+	signalized_handler = static_cast<kiv_os::THandle>(regs.rax.x);
 	return syscall_result;
 }
 
