@@ -169,21 +169,26 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 	size_t handles_count = static_cast<size_t>(regs.rcx.r);
 
 	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
-	
 	size_t process_ID = thread_ID_to_process_ID[current_thread_ID];
-	for (int i = 0; i < handles_count; i++) {
-		size_t waiting_thread_ID = t_handle_to_thread_ID[handles[i]];
-		size_t waiting_process_ID = thread_ID_to_process_ID[waiting_thread_ID];
+	
+	{
+		std::unique_lock<std::mutex> lock_mutex(io_process_mutex);
+		std::unique_lock<std::mutex> shutdown_lock(shutdown_mutex);
+		for (int i = 0; i < handles_count; i++) {
+			size_t waiting_thread_ID = t_handle_to_thread_ID[handles[i]];
+			size_t waiting_process_ID = thread_ID_to_process_ID[waiting_thread_ID];
 
-		if (processes[waiting_process_ID]->state == State::Exited) {
-			regs.rax.x = Get_THandle_From_Thread_ID(waiting_thread_ID);
-			return;
+			if (processes[waiting_process_ID]->state == State::Exited) {
+				regs.rax.x = Get_THandle_From_Thread_ID(waiting_thread_ID);
+				return;
+			}
+
+			processes[process_ID]->threads[current_thread_ID]->handlers_waiting_for.insert(std::pair<size_t, size_t>(waiting_thread_ID, waiting_thread_ID));
+			processes[waiting_process_ID]->threads[waiting_thread_ID]->sleeped_handlers.insert(std::pair<size_t, size_t>(current_thread_ID, current_thread_ID));
 		}
-
-		processes[process_ID]->threads[current_thread_ID]->handlers_waiting_for.insert(std::pair<size_t, size_t>(waiting_thread_ID, waiting_thread_ID));
-		processes[waiting_process_ID]->threads[waiting_thread_ID]->sleeped_handlers.insert(std::pair<size_t, size_t>(current_thread_ID, current_thread_ID));
+		shutdown_lock.unlock();
+		lock_mutex.unlock();
 	}
-
 	processes[process_ID]->threads[current_thread_ID]->Stop();
 
 	kiv_os::THandle signalized_handler;
@@ -254,6 +259,7 @@ void IO_Process::Exit(kiv_hal::TRegisters &regs) {
 
 void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
+	std::unique_lock<std::mutex> shutdown_lock(shutdown_mutex);
 
 	std::map<size_t, std::unique_ptr<Process>>::iterator it_process = processes.begin();
 	std::map<size_t, std::unique_ptr<Thread>>::iterator it_thread;
@@ -270,7 +276,7 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 
 		it_process++;
 	}
-
+	shutdown_lock.unlock();
 
 	/*
 	while (it_process != processes.end()) {

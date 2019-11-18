@@ -17,7 +17,7 @@ class IO_Process {
 		kiv_os::THandle first_free_thread_ID = MIN_THREAD_THANDLE;
 
 		std::mutex io_process_mutex;
-		std::mutex wait_for_mutex;
+		std::mutex shutdown_mutex;
 
 		// Index -> process_ID; Value -> Process.
 		std::map<size_t, std::unique_ptr<Process>> processes;

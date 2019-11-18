@@ -16,9 +16,8 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 
 	// Wait for commands to be executed.
 	kiv_os::THandle signalized_handler;
-	printf("waiting\n");
+
 	kiv_os_rtl::Wait_For(handles, handles_count, signalized_handler);
-	printf("stopped\n");
 
 	uint16_t exit_code = -1;
 	kiv_os_rtl::Read_Exit_Code(signalized_handler, exit_code);
