@@ -1,10 +1,24 @@
 #include "command_exe.h"
 
+#include <string>
+
 void command_exe::Execute_Commands(std::vector<command_parser::Command> commands, kiv_os::THandle in, kiv_os::THandle out) {
 	kiv_os::THandle *handles = new kiv_os::THandle[commands.size()];
 	int handles_count = 0;
 
 	for each (command_parser::Command command in commands) {
+		if (command.base != "cd" && command.base != "echo" && command.base != "ps" && command.base != "rd"
+			&& command.base != "md" && command.base != "type" && command.base != "find" && command.base != "sort"
+			&& command.base != "dir" && command.base != "rgen" && command.base != "freq" && command.base != "shell"
+			&& command.base != "shutdown" && command.base != "exit") {
+
+			std::string output = "Unknown command.\n";
+			size_t written;
+			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Unknown_Error);
+			kiv_os_rtl::Write_File(out, output.data(), output.size(), written);
+			kiv_os_rtl::Exit(exit_code);
+			continue;
+		}
 		kiv_os::THandle handle;
 
 		// Create process for new command.
