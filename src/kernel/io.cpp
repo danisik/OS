@@ -73,7 +73,7 @@ void Open_File(kiv_hal::TRegisters &regs) {
 }
 
 void Write_File(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
@@ -101,7 +101,7 @@ void Write_File(kiv_hal::TRegisters &regs) {
 }
 
 void Read_File(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	//HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
 	//char *buffer = reinterpret_cast<char*>(regs.rdi.r);
@@ -118,7 +118,7 @@ void Read_File(kiv_hal::TRegisters &regs) {
 }
 
 void Seek(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	kiv_os::THandle file_handle = static_cast<kiv_os::THandle>(regs.rdx.x);
 	kiv_os::NFile_Seek new_position = static_cast<kiv_os::NFile_Seek>(regs.rdi.r);
@@ -130,7 +130,7 @@ void Seek(kiv_hal::TRegisters &regs) {
 }
 
 void Close_Handle(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
 
@@ -144,7 +144,7 @@ void Close_Handle(kiv_hal::TRegisters &regs) {
 }
 
 void Delete_File(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	char *fileName = reinterpret_cast<char*>(regs.rdx.r);
 
@@ -152,7 +152,7 @@ void Delete_File(kiv_hal::TRegisters &regs) {
 }
 
 void Set_Working_Dir(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	char *new_directory = reinterpret_cast<char*>(regs.rdx.r);
 	
@@ -160,7 +160,7 @@ void Set_Working_Dir(kiv_hal::TRegisters &regs) {
 }
 
 void Get_Working_Dir(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	char *path = reinterpret_cast<char*>(regs.rdx.r);
 	size_t path_size = static_cast<size_t>(regs.rcx.r);
@@ -172,7 +172,7 @@ void Get_Working_Dir(kiv_hal::TRegisters &regs) {
 }
 
 void Create_Pipe(kiv_hal::TRegisters &regs) {
-	std::lock_guard<std::mutex> lock_mutex(pipe_mutex);
+	//std::lock_guard<std::mutex> lock_mutex(pipe_mutex);
 
 	kiv_os::THandle *pipe_handle = reinterpret_cast<kiv_os::THandle*>(regs.rdx.r);
 	//pipe_handle[0] = pipein_handle;
