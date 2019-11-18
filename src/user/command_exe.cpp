@@ -16,8 +16,7 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 			size_t written;
 			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Unknown_Error);
 			kiv_os_rtl::Write_File(out, output.data(), output.size(), written);
-			kiv_os_rtl::Exit(exit_code);
-			continue;
+			return;
 		}
 		kiv_os::THandle handle;
 
