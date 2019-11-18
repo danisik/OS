@@ -64,8 +64,6 @@ void Remove_Kernel_Process(kiv_os::THandle kernel_handler) {
 	regs.rdx.x = kernel_handler;
 
 	io_process->Read_Exit_Code(regs);
-
-	io_process->Clear_Processes();
 }
 
 kiv_os::THandle Shell_Clone() {
@@ -158,7 +156,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	Remove_Kernel_Process(kernel_handler);
 
-	printf("shutdown kernel");
+	printf("shutdowned\n");
 	// Shutdown kernel.
 	Shutdown_Kernel();
 }

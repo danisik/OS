@@ -162,7 +162,7 @@ void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 }
 
 void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
-	//std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
+	
 	std::condition_variable cv;
 	
 	kiv_os::THandle *handles = reinterpret_cast<kiv_os::THandle*>(regs.rdx.r);
@@ -192,7 +192,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 	processes[process_ID]->threads[current_thread_ID]->Stop();
 
 	kiv_os::THandle signalized_handler;
-
+	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	signalized_handler = Get_THandle_From_Thread_ID(processes[process_ID]->threads[current_thread_ID]->waked_by_handler);
 
 	regs.rax.x = signalized_handler;
@@ -230,8 +230,9 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 }
 
 void IO_Process::Exit(kiv_hal::TRegisters &regs) {
+
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
-	
+
 	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
 	
@@ -261,44 +262,36 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 	std::unique_lock<std::mutex> shutdown_lock(shutdown_mutex);
 
-	std::map<size_t, std::unique_ptr<Process>>::iterator it_process = processes.begin();
+	auto it_process = processes.rbegin();
 	std::map<size_t, std::unique_ptr<Thread>>::iterator it_thread;
 
-	while (it_process != processes.end()) {
+	while (it_process != processes.rend()) {
+
+		if (it_process->first == 0) {
+			break;
+		}
 
 		it_thread = it_process->second->threads.begin();
 
 		while (it_thread != it_process->second->threads.end()) {			
-			Notify_All(it_thread->first);
-			processes[it_process->second->process_ID]->Join_Thread(it_thread->first, 0);
+			std::map<kiv_os::NSignal_Id, kiv_os::TThread_Proc>::iterator it_handler = it_thread->second->terminate_handlers.begin();
+
+			kiv_hal::TRegisters terminate_registers;
+
+			while (it_handler != it_thread->second->terminate_handlers.end()) {
+
+				// Call terminate handler.
+				it_handler->second(terminate_registers);
+
+				it_handler++;
+			}
+
 			it_thread++;
 		}
 
 		it_process++;
 	}
 	shutdown_lock.unlock();
-
-	/*
-	while (it_process != processes.end()) {
-		process = std::move(it_process->second);
-		Set_Free_Process_ID(process->process_ID);
-
-		it_thread = process->threads.begin();
-
-		while (it_thread != process->threads.end()) {
-			Notify_All(it_thread->first);
-			process->Join_Thread(it_thread->first, 0);
-
-			Set_Free_Thread_ID(Get_THandle_From_Thread_ID(it_thread->first));
-			process->Kill_Thread(process->process_thread_ID);
-
-			it_thread++;
-		}
-
-		it_process++;
-		processes.erase(process->process_ID);
-	}
-	*/
 }
 
 void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) {
@@ -352,6 +345,7 @@ void IO_Process::Clear_Processes() {
 	while(it_process != processes.end()) {
 
 		it_thread = it_process->second->threads.begin();
+		printf("clearing %zd\n", it_process->first);
 
 		while (it_thread != it_process->second->threads.end()) {
 			Notify_All(it_thread->first);
