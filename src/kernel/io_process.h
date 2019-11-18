@@ -17,7 +17,7 @@ class IO_Process {
 		kiv_os::THandle first_free_thread_ID = MIN_THREAD_THANDLE;
 
 		std::mutex io_process_mutex;
-		std::mutex wait_for_mutex;
+		std::mutex shutdown_mutex;
 
 		// Index -> process_ID; Value -> Process.
 		std::map<size_t, std::unique_ptr<Process>> processes;
@@ -35,18 +35,20 @@ class IO_Process {
 
 		kiv_os::THandle Get_THandle_From_Thread_ID(size_t thread_ID);
 
-		void Clone(kiv_hal::TRegisters &regs); // Tested.
-		void Clone_Process(kiv_hal::TRegisters &regs); // Tested.
-		void Clone_Thread(kiv_hal::TRegisters &regs); // Tested.
+		void Clone(kiv_hal::TRegisters &regs);
+		void Clone_Process(kiv_hal::TRegisters &regs);
+		void Clone_Thread(kiv_hal::TRegisters &regs);
 
-		void Wait_For(kiv_hal::TRegisters &regs);  // Tested.
-		void Read_Exit_Code(kiv_hal::TRegisters &regs); // Tested.
-		void Exit(kiv_hal::TRegisters &regs); // Tested.
-		void Shutdown(kiv_hal::TRegisters &regs); // Test it after Exit and Read_Exit_Code are writed.
-		void Register_Signal_Handler(kiv_hal::TRegisters &regs); // Tested.
+		void Wait_For(kiv_hal::TRegisters &regs); 
+		void Read_Exit_Code(kiv_hal::TRegisters &regs);
+		void Exit(kiv_hal::TRegisters &regs);
+		void Shutdown(kiv_hal::TRegisters &regs);
+		void Register_Signal_Handler(kiv_hal::TRegisters &regs); 
 
-		void Handle_Process(kiv_hal::TRegisters &regs); // Tested.
+		void Handle_Process(kiv_hal::TRegisters &regs);
 
 		void Notify(size_t sleeped_thread_ID, size_t waiting_thread_ID);
 		void Notify_All(size_t thread_ID);
+
+		void Clear_Processes();
 };

@@ -31,12 +31,6 @@ void Thread::Start() {
 	thread_ID = Get_Thread_ID(std_thread.get_id());
 }
 
-void Thread::notify_All() {
-	for (std::vector<std::condition_variable>::iterator it = condition_variables.begin(); it != condition_variables.end(); ++it) {
-		it->notify_one();
-	}
-}
-
 void Thread::Join(uint16_t t_exit_code) {
 
 	exit_code = t_exit_code;
@@ -46,16 +40,6 @@ void Thread::Join(uint16_t t_exit_code) {
 
 	kiv_hal::TRegisters terminate_registers;
 	terminate_registers.rcx.l = static_cast<decltype(terminate_registers.rcx.l)>(kiv_os::NSignal_Id::Terminate);
-
-	while (it_handler != terminate_handlers.end()) {
-
-		// Call terminate handler.
-		it_handler->second(terminate_registers);
-
-		it_handler++;
-	}
-
-	notify_All();
 	
 	terminate_handlers.clear();
 	sleeped_handlers.clear();
@@ -80,12 +64,12 @@ void Thread::Stop() {
 void Thread::Remove_Handler_From_Handlers_Waiting_For(size_t thread_ID) {
 	std::unique_lock<std::mutex> lock(mutex);
 	handlers_waiting_for.clear();
-
-	state = State::Running;
-
 	cv.notify_all();
 
-	waked_by_handler = thread_ID;
+	if (state == State::Blocked) {
+		state = State::Running;
+		waked_by_handler = thread_ID;
+	}
 
 	lock.unlock();
 }

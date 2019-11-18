@@ -5,10 +5,17 @@ const char* prompt = "C:\\>";
 const char* welcome_message = "Welcome in OS";
 
 extern bool echo_on;
+bool shutdown_signalized = false;
+
+void Signalize_Shutdown() {
+	shutdown_signalized = true;
+}
 
 size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);
+
+	kiv_os_rtl::Register_Signal_Handler(kiv_os::NSignal_Id::Terminate, reinterpret_cast<kiv_os::TThread_Proc>(Signalize_Shutdown));
 
 	const size_t buffer_size = 256;
 	char buffer[buffer_size];
@@ -21,6 +28,7 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 
 	// While cycle for commands.
 	while(1) {
+
 		if (echo_on) {
 			kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);
 		}
@@ -43,6 +51,10 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			
 			command_exe::Execute_Commands(commands, std_in, std_out);
 		
+			if (shutdown_signalized == true) {
+				break;
+			}
+
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 		}
 		else {

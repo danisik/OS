@@ -2,8 +2,6 @@
 
 size_t __stdcall shutdown(const kiv_hal::TRegisters &regs) {
 	kiv_os_rtl::Shutdown();
-	
-	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
-	kiv_os_rtl::Exit(exit_code);
+	kiv_os_rtl::Exit(0);
 	return 0;
 }

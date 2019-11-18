@@ -19,7 +19,6 @@ public:
 	std::map<kiv_os::NSignal_Id, kiv_os::TThread_Proc> terminate_handlers;
 	std::map<size_t, size_t> handlers_waiting_for;
 	std::map<size_t, size_t> sleeped_handlers;
-	std::vector<std::condition_variable> condition_variables;
 
 	std::condition_variable cv;
 	std::mutex mutex;
@@ -29,7 +28,6 @@ public:
 	Thread(size_t t_parent_ID);
 	~Thread();
 	void Start();
-	void notify_All();
 	void Join(uint16_t t_exit_code);
 	void Stop();
 	void Remove_Handler_From_Handlers_Waiting_For(size_t thread_ID);
