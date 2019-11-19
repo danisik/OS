@@ -1,6 +1,4 @@
 #include "rgen.h"
-#include <thread>
-#include <chrono>
 
 bool terminated = false;
 
@@ -26,9 +24,6 @@ size_t Eof_Checker(const kiv_hal::TRegisters &regs) {
 
 	while (read && !terminated) {
 		kiv_os_rtl::Read_File(std_in, buffer, 1, read);
-		if (buffer[0] != '\x1A') {
-			read = 1;
-		}
 	}
 
 	*eof = true;
@@ -68,7 +63,7 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 	kiv_os_rtl::Clone_Thread(&Eof_Checker, &eof, std_in, std_out, handle);
 
 	while (!eof && !terminated) {
-		float ran_number = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
+		float ran_number = static_cast <float> (rand());
 		output = std::to_string(ran_number);
 		output.append("\n");
 
@@ -76,6 +71,13 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 	}
 
 	uint16_t checker_exit_code;
+
+	if (terminated) {
+		kiv_os::THandle *handles = &handle;
+		kiv_os::THandle signalized_handle;
+		kiv_os_rtl::Wait_For(handles, 1, signalized_handle);
+	}
+	
 	kiv_os_rtl::Read_Exit_Code(handle, checker_exit_code);
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	kiv_os_rtl::Exit(exit_code);
