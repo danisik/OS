@@ -13,6 +13,7 @@ namespace command_parser {
 			command.base = token;
 			command.parameters = "";
 			if (!(stream >> token)) {
+				commands.push_back(command);
 				break;
 			}
 			while ((token != "cd" && token != "echo" && token != "ps" && token != "rd" && token != "md" && token != "type"
