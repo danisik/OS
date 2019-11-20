@@ -1,28 +1,19 @@
-//
-//  Mft_item.cpp
-//  NTFS
-//
-//  Created by Jan Čarnogurský on 22/01/2019.
-//  Copyright © 2019 Jan Čarnogurský. All rights reserved.
-//
+#include "Header.h"
 
-
-#include "Mft_item.h"
-
-Mft_item::Mft_item(int32_t uid, int32_t parent_id, bool isDirectory, int8_t item_order, int8_t item_order_total, char *name, int32_t size)
-{
+MftItem::MftItem(int uid, bool isDirectory, string name, long item_size, int parentID, bool isSymlink, int linkedUID){
+    
     this->uid = uid;
-    this->parent_id = parent_id;
     this->isDirectory = isDirectory;
-    this->item_order = item_order;
-    this->item_order_total = item_order_total;
-    strcpy_s(this->item_name, name);
-    this->item_size = size;
-    this->fragments_count = 0;
-}
-
-void Mft_item::add_fragment(Mft_fragment *fragment)
-{
-    this->fragments_count = this->fragments_count + 1 ;
-    this->fragments.push_back(fragment);
+    strcpy_s(this->item_name, 12, name.c_str());
+    this->item_order = 1;
+    this->item_order_total = 1;
+    this->item_size = item_size;
+    this->parentID = parentID;
+    this->isSymlink = isSymlink;
+    this->linkedUID = linkedUID;
+    for (int i = 0; i < MFT_FRAGMENTS_COUNT; i++) {
+        this->fragments[i] = new MftFragment(0, 0, 0);
+    }
+    
+    
 }

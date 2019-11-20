@@ -1,399 +1,337 @@
-//
-//  Functions.cpp
-//  NTFS
-//
-//  Created by Jan Čarnogurský on 25/01/2019.
-//  Copyright © 2019 Jan Čarnogurský. All rights reserved.
-//
-
-#include "Commands.hpp"
+#include "Header.h"
 
 
-void Commands::create_new_directory(Vfs *vfs, std::string name)
-{
-    int parent_id = IoUtils::check_path(vfs, name, true);
-    if(parent_id < 0)
-    {
-        printf("PATH NOT FOUND\n");
-        return;
-    }
-    
-    if(!IoUtils::check_filename(vfs, name, parent_id))
-    {
-        printf("EXIST\n");
-        return;
-    }
-    
-    auto item = vfs->create_new_item(vfs->create_uniq_mft_uid(), parent_id, true, 0, 0, IoUtils::get_filename(vfs, name), 1);
-    
-    if (!item)
-    {
-        printf("ERROR\n");
-    }
-    else
-    {
-        vfs->write_vfs();
-        printf("OK\n");
-    }
-}
+void Commands::createDirectory(VFS* vfs, string path){
+    ExistItem* item = Functions::checkPath(vfs, path);
+    size_t i = path.find_last_of(FOLDER_SPLIT);
+    path = path.substr(i+1);
 
-void Commands::show_files(Vfs *vfs, std::string path)
-{
-    
-    int item_id = IoUtils::check_path(vfs, path, false);
-
-    if(item_id < 0)
-    {
-        printf("PATH NOT FOUND\n");
-        return;
+    if(!item->pathExists){
+        cout << "PATH NOT FOUND" << endl;
     }
- 
-    Mft_item *item = vfs->find_mft_item_by_uid(item_id);
-    
-    std::vector<Mft_item*>::iterator it;
-    for(it = vfs->mft_items.begin() ; it != vfs->mft_items.end() ; ++it)
-    {
-        if ((*it)->parent_id == item->uid)
-        {
-            if ((*it)->isDirectory)
-            {
-                std::cout << "+ ";
-            }
-            else
-            {
-                std::cout << "- ";
-            }
+    else if(!item->exists && item->pathExists){
+        int size  = 1;
+        if(Functions::isBitmapWritable(vfs, size)){
             
-            std::cout << (*it)->item_name << std::endl;
+            MftItem *mftItem = new MftItem(vfs->mft->UIDcounter, true, path, size, item->uid, false, -1);
+            vfs->mft->UIDcounter++;
+            vfs->mft->size++;
+            Functions::writeToDataBlock(vfs, mftItem);
+            Functions::saveVfsToFile(vfs);
+        }
+    }
+    else if(item->exists){
+        cout << "FOLDER ALREADY EXISTS"<<endl;
+    }
+}
+
+void Commands::moveToDirectory(VFS* vfs, string path){
+    if(strcmp(path.c_str(), "..")==0){
+        if(vfs->currentPath[vfs->currentPath.size()-1]->uid != 0){
+            vfs->currentPath.pop_back();
+            return;
+        }
+    }
+    ExistItem* item = Functions::checkPath(vfs, path);
+        
+    if(item->pathExists && item->exists && item->isDirectory){
+        Functions::moveToPath(vfs, path);
+    }
+    else if(!item->exists || !item->pathExists){
+        cout << "PATH NOT FOUND" << endl;
+    }
+        
+        /*for(int i = 0; i < vfs->mft->mftItems.size(); i++){
+            if((vfs->currentPath[vfs->currentPath.size()-1]->uid == vfs->mft->mftItems[i]->parentID)
+               &&(strcmp(vfs->mft->mftItems[i]->item_name, path.c_str())==0)){
+                vfs->currentPath.push_back(vfs->mft->mftItems[i]);
+            }
+        }*/
+}
+void Commands::moveToRoot(VFS *vfs){
+    while(vfs->currentPath[vfs->currentPath.size()-1]->uid != 0){
+        vfs->currentPath.pop_back();
+    }
+}
+
+void Commands::listWithParams(VFS* vfs, string path){
+    ExistItem* item = Functions::checkPath(vfs, path);
+    if(item->pathExists && item->exists){
+        for (size_t i = 0; i<vfs->mft->mftItems.size(); i++) {
+            if(vfs->mft->mftItems[i]->parentID == item->uid){
+                if(vfs->mft->mftItems[i]->isSymlink){
+                    cout << "*" << vfs->mft->mftItems[i]->item_name << endl;
+                }
+                else if(vfs->mft->mftItems[i]->isDirectory){
+                    cout <<"+"<< vfs->mft->mftItems[i]->item_name << endl;
+                } else{
+                    cout <<"-"<< vfs->mft->mftItems[i]->item_name << endl;
+                }
+            }
+        }
+    }
+    else if(!item->exists || !item->pathExists){
+        cout << "PATH NOT FOUND" << endl;
+    }
+}
+void Commands::list(VFS* vfs){
+    for (size_t i = 0; i<vfs->mft->mftItems.size(); i++) {
+        if(vfs->mft->mftItems[i]->parentID == vfs->currentPath[vfs->currentPath.size()-1]->uid){
+            if(vfs->mft->mftItems[i]->isSymlink){
+                cout << "*" << vfs->mft->mftItems[i]->item_name << endl;
+            }
+            else if(vfs->mft->mftItems[i]->isDirectory){
+                cout <<"+"<< vfs->mft->mftItems[i]->item_name << endl;
+            } else{
+                cout <<"-"<< vfs->mft->mftItems[i]->item_name << endl;
+            }
         }
     }
 }
 
-void Commands::move_to_directory(Vfs *vfs, std::string path)
-{
-    int item_id = IoUtils::check_path(vfs, path, false);
+void Commands::removeDirectory(VFS * vfs, string path){
+    ExistItem* item = Functions::checkPath(vfs, path);
     
-    if(item_id < 0)
-    {
-        printf("PATH NOT FOUND\n");
-        return;
-    }
-  
-    std::vector<std::string> split_path = IoUtils::split(path, "/");
-    
-    for (auto it = split_path.begin() ; it < split_path.end() ; ++it)
-    {
-        if ((*it).compare("..") == 0)
-        {
-            vfs->current_path.pop_back();
+    if(item->exists && item->pathExists){
+        if(Functions::isDirectoryEmpty(vfs, item)){
+            for(size_t i = 0; i < vfs->mft->mftItems.size(); i++){
+                if(vfs->mft->mftItems[i]->uid == item->uid){
+                    Functions::deleteLinks(vfs, vfs->mft->mftItems[i]);
+                    Functions::removeFromDataBlock(vfs, vfs->mft->mftItems[i]);
+                    vfs->mft->mftItems.erase(vfs->mft->mftItems.begin() + i);
+                    vfs->mft->size--;
+                    Functions::saveVfsToFile(vfs);
+                }
+            }
+            //Functions::printBitmap(vfs);
         }
-        else
-        {
-            vfs->current_path.push_back((*it));
+        else {
+            cout <<"DIRECTORY NOT EMPTY"<< endl;
         }
     }
-    
-    Mft_item *item = vfs->find_mft_item_by_uid(item_id);
-    
-    vfs->current_item = item;
-    
-    printf("OK\n");
-    
+    else if(!item->exists || !item->pathExists){
+        cout << "DIRECTORY NOT FOUND" << endl;
+    }
 }
-
-void Commands::print_current_path(Vfs *vfs)
-{
-    std::cout << vfs->print_path() << std::endl;
-}
-
-void Commands::create_new_file(Vfs *vfs, std::string name)
-{
-    int parent_id = IoUtils::check_path(vfs, name, true);
-    if(parent_id < 0)
-    {
-        printf("PATH NOT FOUND\n");
-        return;
+void Commands::removeFile(VFS * vfs, string path){
+    ExistItem* item = Functions::checkPath(vfs, path);
+    if(item->exists && item->pathExists){
+            for(size_t i = 0; i < vfs->mft->mftItems.size(); i++){
+                if(vfs->mft->mftItems[i]->uid == item->uid){
+                    Functions::deleteLinks(vfs, vfs->mft->mftItems[i]);
+                    Functions::removeFromDataBlock(vfs, vfs->mft->mftItems[i]);
+                    vfs->mft->mftItems.erase(vfs->mft->mftItems.begin() + i);
+                    vfs->mft->size--;
+                    Functions::saveVfsToFile(vfs);
+            }
+            //Functions::printBitmap(vfs);
+        }
     }
-    
-    if(!IoUtils::check_filename(vfs, name, parent_id))
-    {
-        printf("EXIST\n");
-        return;
-    }
-    
-    auto item = vfs->create_new_item(vfs->create_uniq_mft_uid(), parent_id, false, 0, 0, IoUtils::get_filename(vfs, name), 1);
-    
-    if (!item)
-    {
-        printf("ERROR\n");
-    }
-    else
-    {
-        printf("OK\n");
+    else if(!item->exists || !item->pathExists){
+        cout << "FILE NOT FOUND" << endl;
     }
 }
 
-void Commands::copy_file(Vfs* vfs, std::string filename, std::string destination)
-{
-    int d_parent_id = IoUtils::check_path(vfs, destination, false);
-    if(d_parent_id < 0)
-    {
-        printf("PATH NOT FOUND\n");
+void Commands::importFile(VFS* vfs, string source, string dest){
+	FILE* file;
+	fopen_s(&file, source.c_str(), "r");
+    size_t i = dest.find_last_of(FOLDER_SPLIT);
+    string name = dest.substr(i+1);
+    if(file==NULL){
+        cout << "FILE NOT FOUND" << endl;
         return;
     }
-    
-    int s_parent_id = IoUtils::check_path(vfs, filename, true);
-    
-    if(!IoUtils::check_file(vfs, filename, s_parent_id))
-    {
-        printf("FILE NOT FOUND\n");
+    ExistItem * existItem = Functions::checkPath(vfs, dest);
+    if(existItem->pathExists && !existItem->exists){
+        fseek(file, 0, SEEK_END);
+        long size = ftell(file);
+        fseek (file, 0, SEEK_SET);
+        if(Functions::isBitmapWritable(vfs, size)){
+            MftItem *mftItem = new MftItem(vfs->mft->UIDcounter, false, name, size, existItem->uid, false, -1);
+            vfs->mft->UIDcounter++;
+            vfs->mft->size++;
+            Functions::writeToDataBlock(vfs, mftItem);
+            Functions::writeToClusters(vfs, mftItem, file);
+            Functions::saveVfsToFile(vfs);
+            //Functions::printBitmap(vfs);
+        }
+        else{
+            cout << "NOT ENOUGH SPACE" <<endl;
+        }
+    }
+    else if(!existItem->pathExists){
+        cout<<"PATH NOT FOUND"<<endl;
+        fclose(file);
         return;
     }
-    
-    
-    Mft_item *s_item = vfs->find_mft_item_by_name_and_parent(IoUtils::get_filename(vfs, filename), s_parent_id);
-    
-    Mft_item *d_folder = vfs->find_mft_item_by_uid(d_parent_id);
-    
-    auto item = vfs->create_new_item(vfs->create_uniq_mft_uid(), d_folder->uid, s_item->isDirectory, 0, 0, s_item->item_name, s_item->item_size);
-    
-    if (!item)
-    {
-        printf("ERROR\n");
+    else if(existItem->exists){
+        cout<<"FILE ALREADY EXISTS"<<endl;
+        fclose(file);
+        return;
     }
-    else
-    {
-        vfs->write_vfs();
-        printf("OK\n");
+}
+void Commands::exportFile(VFS * vfs, string source, string dest){
+	FILE* file;
+	fopen_s(&file, dest.c_str(), "w+");
+    if(file==NULL){
+        cout << "PATH NOT FOUND" << endl;
+        fclose(file);
+        return;
+    }
+    ExistItem * existItem = Functions::checkPath(vfs, source);
+    if(existItem->pathExists && existItem->exists){
+        MftItem * mftItem = Functions::getMftItem(vfs, existItem->uid);
+        Functions::exportFile(vfs, mftItem, file);
+        fclose(file);
+    }
+    else if(!existItem->pathExists || !existItem->exists){
+        cout<<"FILE NOT FOUND"<<endl;
+        return;
+    }
+}
+void Commands::copyFile(VFS * vfs, string source, string dest){
+    ExistItem* existItem = Functions::checkPath(vfs, source);
+    MftItem * srcFile;
+    if(existItem->pathExists && existItem->exists){
+        srcFile = Functions::getMftItem(vfs, existItem->uid);
+        existItem = Functions::checkPath(vfs, dest);
+        if(existItem->pathExists && existItem->exists){
+            if(Functions::isBitmapWritable(vfs, srcFile->item_size)){
+                MftItem *mftItem = new MftItem(vfs->mft->UIDcounter, srcFile->isDirectory, srcFile->item_name, srcFile->item_size, existItem->uid, srcFile->isSymlink, srcFile->linkedUID);
+                vfs->mft->UIDcounter++;
+                vfs->mft->size++;
+                Functions::writeToDataBlock(vfs, mftItem);
+                if(!mftItem->isSymlink) Functions::copyToClusters(vfs, srcFile, mftItem);
+                Functions::saveVfsToFile(vfs);
+            }
+        }
+        
     }
 }
 
-void Commands::move_file(Vfs* vfs, std::string filename, std::string destination)
-{
-    int d_parent_id = IoUtils::check_path(vfs, destination, false);
-    if(d_parent_id < 0)
-    {
-        printf("PATH NOT FOUND\n");
-        return;
+
+void Commands::pwd(VFS* vfs){
+    for(size_t i = 0; i<vfs->currentPath.size();i++){
+        cout << vfs->currentPath[i]->item_name << "/";
+    }
+    cout << endl;
+}
+void Commands::printFile(VFS* vfs, string path){
+    ExistItem* item = Functions::checkPath(vfs, path);
+    
+    if(item->pathExists && item->exists){
+        MftItem * mftItem = Functions::getMftItem(vfs, item->uid);
+        if(mftItem->isSymlink){
+            mftItem = Functions::getMftItem(vfs, mftItem->linkedUID);
+            if(mftItem == NULL){
+                cout << "LINKED FILE DOESN`T EXIST" <<endl;
+                return;
+            }
+        }
+        Functions::printClusters(vfs, mftItem);
     }
     
-    int s_parent_id = IoUtils::check_path(vfs, filename, true);
+}
+void Commands::printMFT(VFS* vfs){
     
-    if(!IoUtils::check_file(vfs, filename, s_parent_id))
-    {
-        printf("FILE NOT FOUND\n");
-        return;
+    for(size_t i = 0; i<vfs->mft->mftItems.size(); i++){
+        cout <<"-" << vfs->mft->mftItems[i]->item_name << endl;
     }
+}
+void Commands::moveFile(VFS* vfs, string source, string dest){
+    ExistItem *item = Functions::checkPath(vfs, source);
     
-    Mft_item *s_item = vfs->find_mft_item_by_name_and_parent(IoUtils::get_filename(vfs, filename), s_parent_id);
-    
-    Mft_item *d_folder = vfs->find_mft_item_by_uid(d_parent_id);
-    
-    s_item->parent_id = d_folder->uid;
-    
-    vfs->write_vfs();
-    
-    printf("OK\n");
+    if(item->pathExists && item->exists){
+        MftItem * mftItem = Functions::getMftItem(vfs, item->uid);
+        item = Functions::checkPath(vfs, dest);
+        if (item->pathExists && item->exists) {
+            mftItem->parentID = item->uid;
+            Functions::saveVfsToFile(vfs);
+        }else{
+            cout<<"PATH NOT FOUND"<<endl;
+        }
+    }
+    else{
+        cout << "FILE NOT FOUND"<<endl;
+    }
+}
+void Commands::info(VFS* vfs, string path){
+    ExistItem *item = Functions::checkPath(vfs, path);
+    if(item->pathExists && item->exists){
+        MftItem * mftItem = Functions::getMftItem(vfs, item->uid);
+        cout
+        << "NAME: " << mftItem->item_name << endl
+        << "UID: " << mftItem->uid << endl
+        << "PUID: " << mftItem->parentID << endl
+        << "SIZE: " << mftItem->item_size << endl;
+        if(mftItem->isSymlink){
+            if(mftItem->linkedUID != -1){
+                MftItem* linked = Functions::getMftItem(vfs, mftItem->linkedUID);
+                cout << "SYMLINK ->"<< " " << linked->item_name << endl;
+            }
+            else{
+                cout << "SYMLINK ->"<< " DELETED FILE"<<endl;
+            }
+        }
+        int fragmentCount = 0;
+        while (( fragmentCount < MFT_FRAGMENTS_COUNT) && (mftItem->fragments[fragmentCount]->bitmapStartID != 0) ){
+            fragmentCount++;
+        }
+        cout << "FRAGMENTS:" << fragmentCount << endl;
+        
+        for (int i = 0; i < fragmentCount; i++) {
+            cout << "Fragment_" << i << endl
+            <<"      Cluster_start_adress: "
+            << mftItem->fragments[i]->fragment_start_address<<endl
+            <<"      Number of clusters: " << mftItem->fragments[i]->fragment_count<<endl;
+        }
+    }
+}
+VFS* Commands::format(VFS* vfs, string command){
+    size_t point = command.find(SPLIT);
+    string tok = command.substr(0, point);
+    string type = command.substr(point + 1);
+    long size = 0;
+    if(strcmp(type.c_str(), "b")==0){
+        size = stol(tok.data());
+    }
+    else if(strcmp(type.c_str(), "kb")==0){
+        size = (long)(stol(tok.data())*pow(2, 10));
+    }
+    else if(strcmp(type.c_str(), "mb")==0){
+        size = (long)(stol(tok.data())*pow(2, 20));
+    }
+    else{
+        size = 0;
+    }
+    cout << size << endl;
+    return new VFS(vfs->file, size);
 }
 
-void Commands::remove_file(Vfs* vfs, std::string filename)
-{
-    int s_parent_id = IoUtils::check_path(vfs, filename, true);
-    
-    if(!IoUtils::check_file(vfs, filename, s_parent_id))
-    {
-        printf("FILE NOT FOUND\n");
-        return;
+void Commands::createSymlink(VFS *vfs, string link, string source){
+    ExistItem* existItem = Functions::checkPath(vfs, source);
+    if(existItem->pathExists && existItem->exists){
+        MftItem * sourceItem = Functions::getMftItem(vfs, existItem->uid);
+        if(sourceItem->isDirectory){
+            cout << "CANNOT LINK DIRECTORY" << endl;
+            return;
+        }
+        existItem = Functions::checkPath(vfs, link);
+        if(existItem->pathExists && !existItem->exists){
+            size_t i = link.find_last_of(FOLDER_SPLIT);
+            link = link.substr(i+1);
+            MftItem * linkItem = new MftItem(vfs->mft->UIDcounter, sourceItem->isDirectory, link, 1, existItem->uid, true, sourceItem->uid);
+            vfs->mft->mftItems.push_back(linkItem);
+            vfs->mft->UIDcounter++;
+            vfs->mft->size++;
+            Functions::saveVfsToFile(vfs);
+        }
+    }
+    else {
+        cout << "FILE NOT FOUND" << endl;
     }
     
-    Mft_item *item = vfs->find_mft_item_by_name_and_parent(IoUtils::get_filename(vfs, filename), s_parent_id);
-    
-    if (!item->isDirectory)
-    {
-        vfs->remove_mft_item(item);
-    }
-    else
-    {
-        printf("FILE NOT FOUND\n");
-    }
-    
-    printf("OK\n");
 }
 
-void Commands::remove_directory(Vfs* vfs, std::string filename)
-{
-    int s_parent_id = IoUtils::check_path(vfs, filename, true);
-    
-    if(!IoUtils::check_file(vfs, filename, s_parent_id))
-    {
-        printf("FILE NOT FOUND\n");
-        return;
-    }
-    
-    Mft_item *item = vfs->find_mft_item_by_name_and_parent(IoUtils::get_filename(vfs, filename), s_parent_id);
-    
-    if (!item->isDirectory)
-    {
-        printf("FILE NOT FOUND\n");
-        return;
-    }
-    
-    
-    if (vfs->get_children_count(item->uid) == 0)
-    {
-        vfs->remove_mft_item(item);
-    }
-    else
-    {
-        printf("NOT EMPTY\n");
-        return;
-    }
-    
-    printf("OK\n");
-}
 
-void Commands::print_item_details(Vfs* vfs, std::string filename)
-{
-    int s_parent_id = IoUtils::check_path(vfs, filename, true);
-    
-    if(!IoUtils::check_file(vfs, filename, s_parent_id))
-    {
-        printf("FILE NOT FOUND\n");
-        return;
-    }
-    
-    Mft_item *item = vfs->find_mft_item_by_name_and_parent(IoUtils::get_filename(vfs, filename), s_parent_id);
-    
-    vfs->print_mft_item(item);
-}
 
-void Commands::insert_file_from_hdd(Vfs* vfs, std::string filename, std::string destination)
-{
-    if (!IoUtils::is_file_exists(filename))
-    {
-        printf("FILE NOT FOUND");
-        return;
-    }
-    
-    int s_parent_id = IoUtils::check_path(vfs, destination, false);
-    if(s_parent_id < 0)
-    {
-        printf("PATH NOT FOUND\n");
-        return;
-    }
-    
-	FILE *source;
-	fopen_s(&source, filename.c_str(), "rb");
-    
-    Mft_item *d_item = vfs->find_mft_item_by_uid(s_parent_id);
-    
-    bool result = vfs->insert_file(source, d_item, IoUtils::get_filename(vfs, filename));
-    
-    if (result)
-    {
-        printf("OK\n");
-    }
-}
-
-void Commands::print_file_content(Vfs *vfs, std::string filename)
-{
-    int s_parent_id = IoUtils::check_path(vfs, filename, true);
-    
-    if(!IoUtils::check_file(vfs, filename, s_parent_id))
-    {
-        printf("FILE NOT FOUND\n");
-        return;
-    }
-    
-    Mft_item *item = vfs->find_mft_item_by_name_and_parent(IoUtils::get_filename(vfs, filename), s_parent_id);
-    
-    vfs->print_content(item);
-}
-
-void Commands::export_file_from_ntfs(Vfs *vfs, std::string filename, std::string destination)
-{
-    int s_parent_id = IoUtils::check_path(vfs, filename, true);
-    
-    if(!IoUtils::check_file(vfs, filename, s_parent_id))
-    {
-        printf("FILE NOT FOUND\n");
-        return;
-    }
-    
-    Mft_item *item = vfs->find_mft_item_by_name_and_parent(IoUtils::get_filename(vfs, filename), s_parent_id);
-    
-	FILE *file;
-    fopen_s(&file, (destination + item->item_name).c_str(), "wb");
-    if (file == NULL)
-    {
-        printf("PATH NOT FOUND\n");
-        return;
-    }
-    
-    vfs->export_file(item, file);
-    
-    fclose(file);
-    
-    printf("OK\n");
-}
-
-void Commands::format_vfs(Vfs *vfs, std::string size, std::string type)
-{
-    
-    
-    vfs->mft_items.clear();
-    
-    int convert_number = 1024;
-    
-    if (type.compare("mb") == 0)
-    {
-        convert_number = convert_number * 1024;
-    }
-    else if (type.compare("gb") == 0)
-    {
-        convert_number = convert_number * 1024 * 1024;
-    }
-    
-    int32_t newSize = atoi(size.c_str()) * convert_number;
-    
-    //valgrind is now crying
-    vfs->boot_record = new BootRecord(newSize, CLUSTER_SIZE);
-    vfs->bitmap = new Bitmap(vfs->boot_record->cluster_count);
-    
-    vfs->current_path.clear();
-    vfs->create_root();
-    
-    vfs->write_vfs();
-    
-    printf("OK\n");
-}
-
-void Commands::load_commands(std::string path)
-{
-    if (!IoUtils::is_file_exists(path))
-    {
-        printf("FILE NOT FOUND\n");
-        return;
-    }
-    
-    std::ifstream file(path.c_str());
-    std::string line;
-    while (std::getline(file, line))
-    {
-         Ntfs::do_action(line);
-    }
-    
-    printf("OK\n");
-}
-
-void Commands::defrag(Vfs *vfs)
-{
-    vfs->defrag_files();
-    printf("OK\n");
-}
-
-void Commands::exit(Vfs *vfs)
-{
-    vfs->write_vfs();
-    printf("OK\n");
-}
