@@ -5,10 +5,22 @@ namespace command_parser {
 		std::vector<Command> commands = std::vector<Command>();
 		std::stringstream stream(input);
 		std::string token;
+
+		bool end = false;
+		bool first = true;
 		while (true) {
-			if (!(stream >> token)) {
+			if (first) {
+				if (!(stream >> token)) {
+					break;
+				}
+			}
+
+			if (end) {
 				break;
 			}
+
+			first = false;
+
 			Command command;
 			command.base = token;
 			command.parameters = "";
@@ -21,6 +33,7 @@ namespace command_parser {
 				&& token != "shell" && token != "shutdown" && token != "exit")) {
 				command.parameters.append(token);
 				if (!(stream >> token)) {
+					end = true;
 					break;
 				}
 				command.parameters.append(" ");
