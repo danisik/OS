@@ -1,23 +1,23 @@
 #include "Header.h"
 
 
-void Commands::createDirectory(VFS* vfs, string path){
-    ExistItem* item = Functions::checkPath(vfs, path);
+void Commands::Create_Directory(VFS* vfs, string path){
+    Exist_Item* item = Functions::Check_Path(vfs, path);
     size_t i = path.find_last_of(FOLDER_SPLIT);
     path = path.substr(i+1);
 
-    if(!item->pathExists){
+    if(!item->path_exists){
         cout << "PATH NOT FOUND" << endl;
     }
-    else if(!item->exists && item->pathExists){
+    else if(!item->exists && item->path_exists){
         int size  = 1;
-        if(Functions::isBitmapWritable(vfs, size)){
+        if(Functions::Is_Bitmap_Writable(vfs, size)){
             
-            MftItem *mftItem = new MftItem(vfs->mft->UIDcounter, true, path, size, item->uid, false, -1);
-            vfs->mft->UIDcounter++;
+            Mft_Item *mftItem = new Mft_Item(vfs->mft->UID_counter, true, path, size, item->uid, false, -1);
+            vfs->mft->UID_counter++;
             vfs->mft->size++;
-            Functions::writeToDataBlock(vfs, mftItem);
-            Functions::saveVfsToFile(vfs);
+            Functions::Write_To_Data_Block(vfs, mftItem);
+            Functions::Save_Vfs_To_File(vfs);
         }
     }
     else if(item->exists){
@@ -25,82 +25,75 @@ void Commands::createDirectory(VFS* vfs, string path){
     }
 }
 
-void Commands::moveToDirectory(VFS* vfs, string path){
+void Commands::Move_To_Directory(VFS* vfs, string path){
     if(strcmp(path.c_str(), "..")==0){
-        if(vfs->currentPath[vfs->currentPath.size()-1]->uid != 0){
-            vfs->currentPath.pop_back();
+        if(vfs->current_path[vfs->current_path.size()-1]->uid != 0){
+            vfs->current_path.pop_back();
             return;
         }
     }
-    ExistItem* item = Functions::checkPath(vfs, path);
+    Exist_Item* item = Functions::Check_Path(vfs, path);
         
-    if(item->pathExists && item->exists && item->isDirectory){
-        Functions::moveToPath(vfs, path);
+    if(item->path_exists && item->exists && item->is_directory){
+        Functions::Move_To_Path(vfs, path);
     }
-    else if(!item->exists || !item->pathExists){
+    else if(!item->exists || !item->path_exists){
         cout << "PATH NOT FOUND" << endl;
-    }
-        
-        /*for(int i = 0; i < vfs->mft->mftItems.size(); i++){
-            if((vfs->currentPath[vfs->currentPath.size()-1]->uid == vfs->mft->mftItems[i]->parentID)
-               &&(strcmp(vfs->mft->mftItems[i]->item_name, path.c_str())==0)){
-                vfs->currentPath.push_back(vfs->mft->mftItems[i]);
-            }
-        }*/
+    }     
 }
-void Commands::moveToRoot(VFS *vfs){
-    while(vfs->currentPath[vfs->currentPath.size()-1]->uid != 0){
-        vfs->currentPath.pop_back();
+void Commands::Move_To_Root(VFS *vfs){
+    while(vfs->current_path[vfs->current_path.size()-1]->uid != 0){
+        vfs->current_path.pop_back();
     }
 }
 
-void Commands::listWithParams(VFS* vfs, string path){
-    ExistItem* item = Functions::checkPath(vfs, path);
-    if(item->pathExists && item->exists){
-        for (size_t i = 0; i<vfs->mft->mftItems.size(); i++) {
-            if(vfs->mft->mftItems[i]->parentID == item->uid){
-                if(vfs->mft->mftItems[i]->isSymlink){
-                    cout << "*" << vfs->mft->mftItems[i]->item_name << endl;
+void Commands::List_With_Params(VFS* vfs, string path){
+    Exist_Item* item = Functions::Check_Path(vfs, path);
+    if(item->path_exists && item->exists){
+        for (size_t i = 0; i<vfs->mft->mft_items.size(); i++) {
+            if(vfs->mft->mft_items[i]->parent_ID == item->uid){
+                if(vfs->mft->mft_items[i]->is_symlink){
+                    cout << "*" << vfs->mft->mft_items[i]->item_name << endl;
                 }
-                else if(vfs->mft->mftItems[i]->isDirectory){
-                    cout <<"+"<< vfs->mft->mftItems[i]->item_name << endl;
+                else if(vfs->mft->mft_items[i]->is_directory){
+                    cout <<"+"<< vfs->mft->mft_items[i]->item_name << endl;
                 } else{
-                    cout <<"-"<< vfs->mft->mftItems[i]->item_name << endl;
+                    cout <<"-"<< vfs->mft->mft_items[i]->item_name << endl;
                 }
             }
         }
     }
-    else if(!item->exists || !item->pathExists){
+    else if(!item->exists || !item->path_exists){
         cout << "PATH NOT FOUND" << endl;
     }
 }
-void Commands::list(VFS* vfs){
-    for (size_t i = 0; i<vfs->mft->mftItems.size(); i++) {
-        if(vfs->mft->mftItems[i]->parentID == vfs->currentPath[vfs->currentPath.size()-1]->uid){
-            if(vfs->mft->mftItems[i]->isSymlink){
-                cout << "*" << vfs->mft->mftItems[i]->item_name << endl;
+void Commands::List(VFS* vfs){
+    for (size_t i = 0; i<vfs->mft->mft_items.size(); i++) {
+        if(vfs->mft->mft_items[i]->parent_ID == vfs->current_path[vfs->current_path.size()-1]->uid){
+            if(vfs->mft->mft_items[i]->is_symlink){
+                cout << "*" << vfs->mft->mft_items[i]->item_name << endl;
             }
-            else if(vfs->mft->mftItems[i]->isDirectory){
-                cout <<"+"<< vfs->mft->mftItems[i]->item_name << endl;
+            else if(vfs->mft->mft_items[i]->is_directory){
+                cout <<"+"<< vfs->mft->mft_items[i]->item_name << endl;
             } else{
-                cout <<"-"<< vfs->mft->mftItems[i]->item_name << endl;
+                cout <<"-"<< vfs->mft->mft_items[i]->item_name << endl;
             }
         }
     }
 }
 
-void Commands::removeDirectory(VFS * vfs, string path){
-    ExistItem* item = Functions::checkPath(vfs, path);
+void Commands::Remove_Directory(VFS * vfs, string path){
+    Exist_Item* item = Functions::Check_Path(vfs, path);
     
-    if(item->exists && item->pathExists){
-        if(Functions::isDirectoryEmpty(vfs, item)){
-            for(size_t i = 0; i < vfs->mft->mftItems.size(); i++){
-                if(vfs->mft->mftItems[i]->uid == item->uid){
-                    Functions::deleteLinks(vfs, vfs->mft->mftItems[i]);
-                    Functions::removeFromDataBlock(vfs, vfs->mft->mftItems[i]);
-                    vfs->mft->mftItems.erase(vfs->mft->mftItems.begin() + i);
+    if(item->exists && item->path_exists){
+        if(Functions::Is_Directory_Empty(vfs, item)){
+            for(size_t i = 0; i < vfs->mft->mft_items.size(); i++){
+                if(vfs->mft->mft_items[i]->uid == item->uid){
+                    Functions::Delete_Links(vfs, vfs->mft->mft_items[i]);
+                    Functions::Remove_From_Data_Block(vfs, vfs->mft->mft_items[i]);
+                    vfs->mft->mft_items.erase(vfs->mft->mft_items.begin() + i);
                     vfs->mft->size--;
-                    Functions::saveVfsToFile(vfs);
+                    Functions::Save_Vfs_To_File(vfs);
                 }
             }
             //Functions::printBitmap(vfs);
@@ -109,30 +102,30 @@ void Commands::removeDirectory(VFS * vfs, string path){
             cout <<"DIRECTORY NOT EMPTY"<< endl;
         }
     }
-    else if(!item->exists || !item->pathExists){
+    else if(!item->exists || !item->path_exists){
         cout << "DIRECTORY NOT FOUND" << endl;
     }
 }
 void Commands::removeFile(VFS * vfs, string path){
-    ExistItem* item = Functions::checkPath(vfs, path);
-    if(item->exists && item->pathExists){
-            for(size_t i = 0; i < vfs->mft->mftItems.size(); i++){
-                if(vfs->mft->mftItems[i]->uid == item->uid){
-                    Functions::deleteLinks(vfs, vfs->mft->mftItems[i]);
-                    Functions::removeFromDataBlock(vfs, vfs->mft->mftItems[i]);
-                    vfs->mft->mftItems.erase(vfs->mft->mftItems.begin() + i);
+    Exist_Item* item = Functions::Check_Path(vfs, path);
+    if(item->exists && item->path_exists){
+            for(size_t i = 0; i < vfs->mft->mft_items.size(); i++){
+                if(vfs->mft->mft_items[i]->uid == item->uid){
+                    Functions::Delete_Links(vfs, vfs->mft->mft_items[i]);
+                    Functions::Remove_From_Data_Block(vfs, vfs->mft->mft_items[i]);
+                    vfs->mft->mft_items.erase(vfs->mft->mft_items.begin() + i);
                     vfs->mft->size--;
-                    Functions::saveVfsToFile(vfs);
+                    Functions::Save_Vfs_To_File(vfs);
             }
             //Functions::printBitmap(vfs);
         }
     }
-    else if(!item->exists || !item->pathExists){
+    else if(!item->exists || !item->path_exists){
         cout << "FILE NOT FOUND" << endl;
     }
 }
 
-void Commands::importFile(VFS* vfs, string source, string dest){
+void Commands::Import_File(VFS* vfs, string source, string dest){
 	FILE* file;
 	fopen_s(&file, source.c_str(), "r");
     size_t i = dest.find_last_of(FOLDER_SPLIT);
@@ -141,25 +134,25 @@ void Commands::importFile(VFS* vfs, string source, string dest){
         cout << "FILE NOT FOUND" << endl;
         return;
     }
-    ExistItem * existItem = Functions::checkPath(vfs, dest);
-    if(existItem->pathExists && !existItem->exists){
+    Exist_Item * existItem = Functions::Check_Path(vfs, dest);
+    if(existItem->path_exists && !existItem->exists){
         fseek(file, 0, SEEK_END);
         long size = ftell(file);
         fseek (file, 0, SEEK_SET);
-        if(Functions::isBitmapWritable(vfs, size)){
-            MftItem *mftItem = new MftItem(vfs->mft->UIDcounter, false, name, size, existItem->uid, false, -1);
-            vfs->mft->UIDcounter++;
+        if(Functions::Is_Bitmap_Writable(vfs, size)){
+            Mft_Item *mftItem = new Mft_Item(vfs->mft->UID_counter, false, name, size, existItem->uid, false, -1);
+            vfs->mft->UID_counter++;
             vfs->mft->size++;
-            Functions::writeToDataBlock(vfs, mftItem);
-            Functions::writeToClusters(vfs, mftItem, file);
-            Functions::saveVfsToFile(vfs);
+            Functions::Write_To_Data_Block(vfs, mftItem);
+            Functions::Write_To_Clusters(vfs, mftItem, file);
+            Functions::Save_Vfs_To_File(vfs);
             //Functions::printBitmap(vfs);
         }
         else{
             cout << "NOT ENOUGH SPACE" <<endl;
         }
     }
-    else if(!existItem->pathExists){
+    else if(!existItem->path_exists){
         cout<<"PATH NOT FOUND"<<endl;
         fclose(file);
         return;
@@ -170,7 +163,7 @@ void Commands::importFile(VFS* vfs, string source, string dest){
         return;
     }
 }
-void Commands::exportFile(VFS * vfs, string source, string dest){
+void Commands::Export_File(VFS * vfs, string source, string dest){
 	FILE* file;
 	fopen_s(&file, dest.c_str(), "w+");
     if(file==NULL){
@@ -178,31 +171,31 @@ void Commands::exportFile(VFS * vfs, string source, string dest){
         fclose(file);
         return;
     }
-    ExistItem * existItem = Functions::checkPath(vfs, source);
-    if(existItem->pathExists && existItem->exists){
-        MftItem * mftItem = Functions::getMftItem(vfs, existItem->uid);
-        Functions::exportFile(vfs, mftItem, file);
+    Exist_Item * existItem = Functions::Check_Path(vfs, source);
+    if(existItem->path_exists && existItem->exists){
+        Mft_Item * mftItem = Functions::Get_Mft_Item(vfs, existItem->uid);
+        Functions::Export_File(vfs, mftItem, file);
         fclose(file);
     }
-    else if(!existItem->pathExists || !existItem->exists){
+    else if(!existItem->path_exists || !existItem->exists){
         cout<<"FILE NOT FOUND"<<endl;
         return;
     }
 }
-void Commands::copyFile(VFS * vfs, string source, string dest){
-    ExistItem* existItem = Functions::checkPath(vfs, source);
-    MftItem * srcFile;
-    if(existItem->pathExists && existItem->exists){
-        srcFile = Functions::getMftItem(vfs, existItem->uid);
-        existItem = Functions::checkPath(vfs, dest);
-        if(existItem->pathExists && existItem->exists){
-            if(Functions::isBitmapWritable(vfs, srcFile->item_size)){
-                MftItem *mftItem = new MftItem(vfs->mft->UIDcounter, srcFile->isDirectory, srcFile->item_name, srcFile->item_size, existItem->uid, srcFile->isSymlink, srcFile->linkedUID);
-                vfs->mft->UIDcounter++;
+void Commands::Copy_File(VFS * vfs, string source, string dest){
+    Exist_Item* existItem = Functions::Check_Path(vfs, source);
+    Mft_Item * srcFile;
+    if(existItem->path_exists && existItem->exists){
+        srcFile = Functions::Get_Mft_Item(vfs, existItem->uid);
+        existItem = Functions::Check_Path(vfs, dest);
+        if(existItem->path_exists && existItem->exists){
+            if(Functions::Is_Bitmap_Writable(vfs, srcFile->item_size)){
+                Mft_Item *mftItem = new Mft_Item(vfs->mft->UID_counter, srcFile->is_directory, srcFile->item_name, srcFile->item_size, existItem->uid, srcFile->is_symlink, srcFile->linked_UID);
+                vfs->mft->UID_counter++;
                 vfs->mft->size++;
-                Functions::writeToDataBlock(vfs, mftItem);
-                if(!mftItem->isSymlink) Functions::copyToClusters(vfs, srcFile, mftItem);
-                Functions::saveVfsToFile(vfs);
+                Functions::Write_To_Data_Block(vfs, mftItem);
+                if(!mftItem->is_symlink) Functions::Copy_To_Clusters(vfs, srcFile, mftItem);
+                Functions::Save_Vfs_To_File(vfs);
             }
         }
         
@@ -210,43 +203,43 @@ void Commands::copyFile(VFS * vfs, string source, string dest){
 }
 
 
-void Commands::pwd(VFS* vfs){
-    for(size_t i = 0; i<vfs->currentPath.size();i++){
-        cout << vfs->currentPath[i]->item_name << "/";
+void Commands::Pwd(VFS* vfs){
+    for(size_t i = 0; i<vfs->current_path.size();i++){
+        cout << vfs->current_path[i]->item_name << "/";
     }
     cout << endl;
 }
-void Commands::printFile(VFS* vfs, string path){
-    ExistItem* item = Functions::checkPath(vfs, path);
+void Commands::Print_File(VFS* vfs, string path){
+    Exist_Item* item = Functions::Check_Path(vfs, path);
     
-    if(item->pathExists && item->exists){
-        MftItem * mftItem = Functions::getMftItem(vfs, item->uid);
-        if(mftItem->isSymlink){
-            mftItem = Functions::getMftItem(vfs, mftItem->linkedUID);
+    if(item->path_exists && item->exists){
+        Mft_Item * mftItem = Functions::Get_Mft_Item(vfs, item->uid);
+        if(mftItem->is_symlink){
+            mftItem = Functions::Get_Mft_Item(vfs, mftItem->linked_UID);
             if(mftItem == NULL){
                 cout << "LINKED FILE DOESN`T EXIST" <<endl;
                 return;
             }
         }
-        Functions::printClusters(vfs, mftItem);
+        Functions::Print_Clusters(vfs, mftItem);
     }
     
 }
-void Commands::printMFT(VFS* vfs){
+void Commands::Print_MFT(VFS* vfs){
     
-    for(size_t i = 0; i<vfs->mft->mftItems.size(); i++){
-        cout <<"-" << vfs->mft->mftItems[i]->item_name << endl;
+    for(size_t i = 0; i<vfs->mft->mft_items.size(); i++){
+        cout <<"-" << vfs->mft->mft_items[i]->item_name << endl;
     }
 }
-void Commands::moveFile(VFS* vfs, string source, string dest){
-    ExistItem *item = Functions::checkPath(vfs, source);
+void Commands::Move_File(VFS* vfs, string source, string dest){
+    Exist_Item *item = Functions::Check_Path(vfs, source);
     
-    if(item->pathExists && item->exists){
-        MftItem * mftItem = Functions::getMftItem(vfs, item->uid);
-        item = Functions::checkPath(vfs, dest);
-        if (item->pathExists && item->exists) {
-            mftItem->parentID = item->uid;
-            Functions::saveVfsToFile(vfs);
+    if(item->path_exists && item->exists){
+        Mft_Item * mftItem = Functions::Get_Mft_Item(vfs, item->uid);
+        item = Functions::Check_Path(vfs, dest);
+        if (item->path_exists && item->exists) {
+            mftItem->parent_ID = item->uid;
+            Functions::Save_Vfs_To_File(vfs);
         }else{
             cout<<"PATH NOT FOUND"<<endl;
         }
@@ -255,18 +248,18 @@ void Commands::moveFile(VFS* vfs, string source, string dest){
         cout << "FILE NOT FOUND"<<endl;
     }
 }
-void Commands::info(VFS* vfs, string path){
-    ExistItem *item = Functions::checkPath(vfs, path);
-    if(item->pathExists && item->exists){
-        MftItem * mftItem = Functions::getMftItem(vfs, item->uid);
+void Commands::Info(VFS* vfs, string path){
+    Exist_Item *item = Functions::Check_Path(vfs, path);
+    if(item->path_exists && item->exists){
+        Mft_Item * mftItem = Functions::Get_Mft_Item(vfs, item->uid);
         cout
         << "NAME: " << mftItem->item_name << endl
         << "UID: " << mftItem->uid << endl
-        << "PUID: " << mftItem->parentID << endl
+        << "PUID: " << mftItem->parent_ID << endl
         << "SIZE: " << mftItem->item_size << endl;
-        if(mftItem->isSymlink){
-            if(mftItem->linkedUID != -1){
-                MftItem* linked = Functions::getMftItem(vfs, mftItem->linkedUID);
+        if(mftItem->is_symlink){
+            if(mftItem->linked_UID != -1){
+                Mft_Item* linked = Functions::Get_Mft_Item(vfs, mftItem->linked_UID);
                 cout << "SYMLINK ->"<< " " << linked->item_name << endl;
             }
             else{
@@ -274,7 +267,7 @@ void Commands::info(VFS* vfs, string path){
             }
         }
         int fragmentCount = 0;
-        while (( fragmentCount < MFT_FRAGMENTS_COUNT) && (mftItem->fragments[fragmentCount]->bitmapStartID != 0) ){
+        while (( fragmentCount < MFT_FRAGMENTS_COUNT) && (mftItem->fragments[fragmentCount]->bitmap_start_ID != 0) ){
             fragmentCount++;
         }
         cout << "FRAGMENTS:" << fragmentCount << endl;
@@ -287,7 +280,7 @@ void Commands::info(VFS* vfs, string path){
         }
     }
 }
-VFS* Commands::format(VFS* vfs, string command){
+VFS* Commands::Format(VFS* vfs, string command){
     size_t point = command.find(SPLIT);
     string tok = command.substr(0, point);
     string type = command.substr(point + 1);
@@ -308,23 +301,23 @@ VFS* Commands::format(VFS* vfs, string command){
     return new VFS(vfs->file, size);
 }
 
-void Commands::createSymlink(VFS *vfs, string link, string source){
-    ExistItem* existItem = Functions::checkPath(vfs, source);
-    if(existItem->pathExists && existItem->exists){
-        MftItem * sourceItem = Functions::getMftItem(vfs, existItem->uid);
-        if(sourceItem->isDirectory){
+void Commands::Create_Symlink(VFS *vfs, string link, string source){
+    Exist_Item* existItem = Functions::Check_Path(vfs, source);
+    if(existItem->path_exists && existItem->exists){
+        Mft_Item * sourceItem = Functions::Get_Mft_Item(vfs, existItem->uid);
+        if(sourceItem->is_directory){
             cout << "CANNOT LINK DIRECTORY" << endl;
             return;
         }
-        existItem = Functions::checkPath(vfs, link);
-        if(existItem->pathExists && !existItem->exists){
+        existItem = Functions::Check_Path(vfs, link);
+        if(existItem->path_exists && !existItem->exists){
             size_t i = link.find_last_of(FOLDER_SPLIT);
             link = link.substr(i+1);
-            MftItem * linkItem = new MftItem(vfs->mft->UIDcounter, sourceItem->isDirectory, link, 1, existItem->uid, true, sourceItem->uid);
-            vfs->mft->mftItems.push_back(linkItem);
-            vfs->mft->UIDcounter++;
+            Mft_Item * linkItem = new Mft_Item(vfs->mft->UID_counter, sourceItem->is_directory, link, 1, existItem->uid, true, sourceItem->uid);
+            vfs->mft->mft_items.push_back(linkItem);
+            vfs->mft->UID_counter++;
             vfs->mft->size++;
-            Functions::saveVfsToFile(vfs);
+            Functions::Save_Vfs_To_File(vfs);
         }
     }
     else {

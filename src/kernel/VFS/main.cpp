@@ -14,16 +14,16 @@ int main(int argc, const char * argv[]) {
     if(file==NULL){
         fopen_s(&file, "ntfs.dat", "w+");
         vfs = new VFS(file, 150000);
-        MftItem* mftItem = new MftItem(0, true, "root", 1, -1, false, -1);
-        vfs->mft->UIDcounter++;
-        vfs->currentPath.push_back(mftItem);
-        Functions::saveVfsToFile(vfs);
-        if(Functions::isBitmapWritable(vfs, vfs->currentPath[0]->item_size)){
-            Functions::writeToDataBlock(vfs, vfs->currentPath[0]);
+        Mft_Item* mftItem = new Mft_Item(0, true, "root", 1, -1, false, -1);
+        vfs->mft->UID_counter++;
+        vfs->current_path.push_back(mftItem);
+        Functions::Save_Vfs_To_File(vfs);
+        if(Functions::Is_Bitmap_Writable(vfs, vfs->current_path[0]->item_size)){
+            Functions::Write_To_Data_Block(vfs, vfs->current_path[0]);
         }
     }
     else{
-        vfs = Functions::loadVFS(file);
+        vfs = Functions::Load_VFS(file);
     }
     
     char buffer[100];
@@ -35,7 +35,7 @@ int main(int argc, const char * argv[]) {
     
     while(1) {
         
-        VFS::printCurrentPath(vfs);
+        VFS::Print_Current_Path(vfs);
         
         if(isUsedFile == false){
             command = "";
@@ -61,36 +61,36 @@ int main(int argc, const char * argv[]) {
                 cout << "FOLDER NOT SPECIFIED" << endl;
             }
             else{
-                Commands::createDirectory(vfs, command);
+                Commands::Create_Directory(vfs, command);
             }
         
         }
         else if(strcmp(tok.data(), MOVE_TO_DIRECTORY)==0){
             if(i==string::npos){
-                Commands::moveToRoot(vfs);
+                Commands::Move_To_Root(vfs);
             }else{
-                Commands::moveToDirectory(vfs, command);
+                Commands::Move_To_Directory(vfs, command);
             }
             
             
         }
         else if(strcmp(tok.data(), LIST)==0){
             if(i== string::npos) {
-                Commands::list(vfs);
+                Commands::List(vfs);
             }else {
-                Commands::listWithParams(vfs, command);
+                Commands::List_With_Params(vfs, command);
             }
             
         }
         else if(strcmp(tok.data(), PWD)==0){
-            Commands::pwd(vfs);
+            Commands::Pwd(vfs);
         }
         else if(strcmp(tok.data(), REMOVE_DIR)==0){
             if(i==string::npos){
                 cout << "FOLDER NOT SPECIFIED" << endl;
             }
             else {
-                Commands::removeDirectory(vfs, command);
+                Commands::Remove_Directory(vfs, command);
             }
         }
         else if(strcmp(tok.data(), IMPORT_FILE)==0){
@@ -99,14 +99,14 @@ int main(int argc, const char * argv[]) {
             command = command.substr(i+1);
             i = command.find(SPLIT);
             string dest =  command.substr(0, i);
-            Commands::importFile(vfs, source, dest);
+            Commands::Import_File(vfs, source, dest);
         }
         else if(strcmp(tok.data(), PRINT_FILE)==0){
             if(i==string::npos){
                 cout << "FILE NOT SPECIFIED" << endl;
             }
             else {
-                Commands::printFile(vfs, command);
+                Commands::Print_File(vfs, command);
             }
         }
         else if(strcmp(tok.data(), MOVE_FILE)==0){
@@ -115,7 +115,7 @@ int main(int argc, const char * argv[]) {
             command = command.substr(i+1);
             i = command.find(SPLIT);
             string dest =  command.substr(0, i);
-            Commands::moveFile(vfs, source, dest);
+            Commands::Move_File(vfs, source, dest);
         }
         else if(strcmp(tok.data(), COPY_FILE)==0){
             i = command.find(SPLIT);
@@ -123,7 +123,7 @@ int main(int argc, const char * argv[]) {
             command = command.substr(i+1);
             i = command.find(SPLIT);
             string dest =  command.substr(0, i);
-            Commands::copyFile(vfs, source, dest);
+            Commands::Copy_File(vfs, source, dest);
         }
         else if(strcmp(tok.data(), REMOVE_FILE)==0){
             if(i==string::npos){
@@ -138,13 +138,13 @@ int main(int argc, const char * argv[]) {
                 cout << "FILE NOT SPECIFIED" << endl;
             }
             else {
-                Commands::info(vfs, command);
+                Commands::Info(vfs, command);
             }
         }
         else if(strcmp(tok.data(), SYSINFO)==0){
-            Functions::printBitmap(vfs);
-            Functions::printMFT(vfs);
-            Functions::printBootRecord(vfs);
+            Functions::Print_Bitmap(vfs);
+            Functions::Print_MFT(vfs);
+            Functions::Print_Boot_Record(vfs);
         }
         else if(strcmp(tok.data(), LOAD)==0){
             fopen_s(&commandFile, command.c_str(), "r");
@@ -166,7 +166,7 @@ int main(int argc, const char * argv[]) {
                 command = command.substr(i+1);
                 i = command.find(SPLIT);
                 string dest =  command.substr(0, i);
-                Commands::exportFile(vfs, source, dest);
+                Commands::Export_File(vfs, source, dest);
             }
         }
         else if(strcmp(tok.data(), FORMAT)==0){
@@ -175,15 +175,15 @@ int main(int argc, const char * argv[]) {
             }
             else{
                 
-                vfs = Commands::format(vfs, command);
-                MftItem* mftItem = new MftItem(0, true, "root", 1, -1, false, -1);
-                vfs->mft->UIDcounter++;
-                vfs->currentPath.push_back(mftItem);
-                Functions::saveVfsToFile(vfs);
-                if(Functions::isBitmapWritable(vfs, vfs->currentPath[0]->item_size)){
-                    Functions::writeToDataBlock(vfs, vfs->currentPath[0]);
+                vfs = Commands::Format(vfs, command);
+                Mft_Item* mftItem = new Mft_Item(0, true, "root", 1, -1, false, -1);
+                vfs->mft->UID_counter++;
+                vfs->current_path.push_back(mftItem);
+                Functions::Save_Vfs_To_File(vfs);
+                if(Functions::Is_Bitmap_Writable(vfs, vfs->current_path[0]->item_size)){
+                    Functions::Write_To_Data_Block(vfs, vfs->current_path[0]);
                 }
-                Functions::saveVfsToFile(vfs);
+                Functions::Save_Vfs_To_File(vfs);
             }
         }
         else if(strcmp(tok.data(), SYMLINK)==0){
@@ -196,11 +196,11 @@ int main(int argc, const char * argv[]) {
                 command = command.substr(i+1);
                 i = command.find(SPLIT);
                 string source =  command.substr(0, i);
-                Commands::createSymlink(vfs, link, source);
+                Commands::Create_Symlink(vfs, link, source);
             }
         }
         else if (strcmp(tok.data(), "exit")==0){
-            Functions::saveVfsToFile(vfs);
+            Functions::Save_Vfs_To_File(vfs);
             break;
         }
         else {

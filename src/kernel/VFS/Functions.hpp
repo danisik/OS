@@ -14,12 +14,12 @@ using namespace std;
 
 class Functions{
 public:
-    static ExistItem* checkPath(VFS*, string);
-    static bool isDirectoryEmpty(VFS*, ExistItem*);
-    static void moveToPath(VFS*, string);
-    static bool isBitmapWritable(VFS*, long);
-    static void writeToDataBlock(VFS*, MftItem*);
-    static void removeFromDataBlock(VFS*, MftItem*);
-    static void writeToClusters(VFS*, MftItem*, FILE*);
-    static void printBitmap(VFS*);
+    static Exist_Item* Check_Path(VFS*, string);
+    static bool Is_Directory_Empty(VFS*, Exist_Item*);
+    static void Move_To_Path(VFS*, string);
+    static bool Is_Bitmap_Writable(VFS*, long);
+    static void Write_To_Data_Block(VFS*, Mft_Item*);
+    static void Remove_From_Data_Block(VFS*, Mft_Item*);
+    static void Write_To_Clusters(VFS*, Mft_Item*, FILE*);
+    static void Print_Bitmap(VFS*);
 };

@@ -5,20 +5,19 @@
 #include <string>
 using namespace std;
 
-class BootRecord{
+class Boot_Record{
 public:
-    BootRecord(long);
-    void initBootRecord(long);
-    long getClusterCount() { return this->clusterCount;};
+    Boot_Record(long);
+    long Get_Cluster_Count() { return this->cluster_count;};
     char signature[9];              //login autora FS
     char volume_descriptor[251];    //popis vygenerovaného FS
-    long diskSize;              //celkova velikost VFS
-    long clusterSize;           //velikost clusteru
-    long clusterCount;          //pocet clusteru
-    long mftStartAddress;      //adresa pocatku mft
-    long bitmapStartAddress;   //adresa pocatku bitmapy
-    long dataStartAddress;     //adresa pocatku datovych bloku
-    long mftMaxFragmentCount; //maximalni pocet fragmentu v jednom zaznamu v mft (pozor, ne souboru)
+    long disk_size;              //celkova velikost VFS
+    long cluster_size;           //velikost clusteru
+    long cluster_count;          //pocet clusteru
+    long mft_start_address;      //adresa pocatku mft
+    long bitmap_start_address;   //adresa pocatku bitmapy
+    long data_start_address;     //adresa pocatku datovych bloku
+    long mft_max_fragment_count; //maximalni pocet fragmentu v jednom zaznamu v mft (pozor, ne souboru)
     // stejne jako   MFT_FRAGMENTS_COUNT
 };
 

@@ -15,12 +15,12 @@ class VFS{
 public:
     VFS(FILE*, long);
     FILE* file;
-    static void printCurrentPath(VFS*);
+    static void Print_Current_Path(VFS*);
     static void saveVfsToFile(VFS*);
-    BootRecord* bootRecord;
+    Boot_Record* boot_record;
     MFT* mft;
     bool* bitmap;
-    vector<MftItem*> currentPath;
+    vector<Mft_Item*> current_path;
 
 };
 

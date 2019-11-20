@@ -5,10 +5,10 @@
 
 #endif /* existingItem_hpp */
 
-class ExistItem{
+class Exist_Item{
 public:
-    int parentID;
+    int parent_ID;
     int uid;
     bool exists;
-    bool pathExists;
+    bool path_exists;
 };

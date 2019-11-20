@@ -2,13 +2,13 @@
 
 MFT::MFT(){
     this->size = 0;
-    this->UIDcounter = 0;
-    this->mftItems = vector<MftItem*>();
+    this->UID_counter = 0;
+    this->mft_items = vector<Mft_Item*>();
 }
 
-bool MFT::isInMFT(string path){
-    for (size_t i = 0; i<mftItems.size(); i++) {
-        if(std::strcmp(mftItems[i]->item_name, path.c_str())==0){
+bool MFT::Is_In_MFT(string path){
+    for (size_t i = 0; i<mft_items.size(); i++) {
+        if(std::strcmp(mft_items[i]->item_name, path.c_str())==0){
             return true;
         }
     }

@@ -3,12 +3,12 @@
 
 #include <stdio.h>
 
-class MftFragment {
+class Mft_Fragment {
 public:
-    MftFragment(int, int32_t, int32_t);
+    Mft_Fragment(int, int32_t, int32_t);
     int32_t fragment_start_address;     //start adresa
     int32_t fragment_count;             //pocet clusteru ve fragmentu
-    int bitmapStartID;
+    int bitmap_start_ID;
 };
 
 #endif /* mft_fragment_hpp */

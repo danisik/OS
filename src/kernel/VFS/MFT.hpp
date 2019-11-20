@@ -14,8 +14,8 @@ class MFT{
 
 public:
     MFT();
-    bool isInMFT(string);
-    vector<MftItem*> mftItems;
+    bool Is_In_MFT(string);
+    vector<Mft_Item*> mft_items;
     int32_t size;
     
 };

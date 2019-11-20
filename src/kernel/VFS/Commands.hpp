@@ -12,15 +12,15 @@ using namespace std;
 
 class Commands{
 public:
-    static void createDirectory(VFS*, string);
-    static void moveToDirectory(VFS*, string);
-    static void moveToRoot(VFS*);
-    static void importFile(VFS*, string, string);
-    static void listWithParams(VFS*, string);
-    static void list(VFS*);
-    static void pwd(VFS*);
-    static void removeDirectory(VFS*, string);
-    static void printMFT(VFS*);
+    static void Create_Directory(VFS*, string);
+    static void Move_To_Directory(VFS*, string);
+    static void Move_To_Root(VFS*);
+    static void Import_File(VFS*, string, string);
+    static void List_With_Params(VFS*, string);
+    static void List(VFS*);
+    static void Pwd(VFS*);
+    static void Remove_Directory(VFS*, string);
+    static void Print_MFT(VFS*);
 };
 
 

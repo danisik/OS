@@ -11,46 +11,46 @@
 
 using namespace std;
 
-class MftFragment {
+class Mft_Fragment {
 public:
-    MftFragment(int, int32_t, int32_t);
+    Mft_Fragment(int, int32_t, int32_t);
     int32_t fragment_start_address;     //start adresa
     int32_t fragment_count;             //pocet clusteru ve fragmentu
-    int bitmapStartID;
+    int bitmap_start_ID;
 };
 
 
-class MftItem {
+class Mft_Item {
     
 public:
-    MftItem(int, bool, string, long, int, bool, int);
+    Mft_Item(int, bool, string, long, int, bool, int);
     
     int uid;                                        //UID polozky, pokud UID = UID_ITEM_FREE, je polozka volna
-    int parentID;
-    bool isDirectory;                                   //soubor, nebo adresar
+    int parent_ID;
+    bool is_directory;                                   //soubor, nebo adresar
     int item_order;                                  //poradi v MFT pri vice souborech, jinak 1
     int item_order_total;                            //celkovy pocet polozek v MFT
     char item_name[12];                                 //8+3 + /0 C/C++ ukoncovaci string znak
     long item_size;                                  //velikost souboru v bytech
-    bool isSymlink;
-    int linkedUID;
-    MftFragment* fragments[MFT_FRAGMENTS_COUNT]; //fragmenty souboru
+    bool is_symlink;
+    int linked_UID;
+    Mft_Fragment* fragments[MFT_FRAGMENTS_COUNT]; //fragmenty souboru
 };
 
-class BootRecord{
+class Boot_Record{
 public:
-    BootRecord(long);
+    Boot_Record(long);
     void initBootRecord(long);
-    long getClusterCount() { return this->clusterCount;};
+    long Get_Cluster_Count() { return this->cluster_count;};
     char signature[9];              //login autora FS
     char volume_descriptor[251];    //popis vygenerovaného FS
-    long diskSize;              //celkova velikost VFS
-    long clusterSize;           //velikost clusteru
-    long clusterCount;          //pocet clusteru
-    long mftStartAddress;      //adresa pocatku mft
-    long bitmapStartAddress;   //adresa pocatku bitmapy
-    long dataStartAddress;     //adresa pocatku datovych bloku
-    long mftMaxFragmentCount; //maximalni pocet fragmentu v jednom zaznamu v mft (pozor, ne souboru)
+    long disk_size;              //celkova velikost VFS
+    long cluster_size;           //velikost clusteru
+    long cluster_count;          //pocet clusteru
+    long mft_start_address;      //adresa pocatku mft
+    long bitmap_start_address;   //adresa pocatku bitmapy
+    long data_start_address;     //adresa pocatku datovych bloku
+    long mft_max_fragment_count; //maximalni pocet fragmentu v jednom zaznamu v mft (pozor, ne souboru)
     // stejne jako   MFT_FRAGMENTS_COUNT
 };
 
@@ -58,9 +58,9 @@ class MFT{
     
 public:
     MFT();
-    bool isInMFT(string);
-    vector<MftItem*> mftItems;
-    int UIDcounter;
+    bool Is_In_MFT(string);
+    vector<Mft_Item*> mft_items;
+    int UID_counter;
     int32_t size;
     
 };
@@ -69,63 +69,63 @@ class VFS{
 public:
     VFS(FILE*, long);
     FILE* file;
-    static void printCurrentPath(VFS*);
-    BootRecord* bootRecord;
+    static void Print_Current_Path(VFS*);
+    Boot_Record* boot_record;
     MFT* mft;
     bool* bitmap;
-    vector<MftItem*> currentPath;
+    vector<Mft_Item*> current_path;
     
 };
 
 class Commands{
 public:
-    static void createDirectory(VFS*, string);
-    static void moveToDirectory(VFS*, string);
-    static void moveToRoot(VFS*);
-    static void importFile(VFS*, string, string);
-    static void listWithParams(VFS*, string);
-    static void list(VFS*);
-    static void pwd(VFS*);
-    static void removeDirectory(VFS*, string);
+    static void Create_Directory(VFS*, string);
+    static void Move_To_Directory(VFS*, string);
+    static void Move_To_Root(VFS*);
+    static void Import_File(VFS*, string, string);
+    static void List_With_Params(VFS*, string);
+    static void List(VFS*);
+    static void Pwd(VFS*);
+    static void Remove_Directory(VFS*, string);
     static void removeFile(VFS*, string);
-    static void printMFT(VFS*);
-    static void printFile(VFS*, string);
-    static void moveFile(VFS*, string, string);
-    static void copyFile(VFS*, string, string);
-    static void info(VFS*, string);
-    static void exportFile(VFS*, string, string);
-    static VFS* format(VFS*, string);
-    static void createSymlink(VFS*, string, string);
+    static void Print_MFT(VFS*);
+    static void Print_File(VFS*, string);
+    static void Move_File(VFS*, string, string);
+    static void Copy_File(VFS*, string, string);
+    static void Info(VFS*, string);
+    static void Export_File(VFS*, string, string);
+    static VFS* Format(VFS*, string);
+    static void Create_Symlink(VFS*, string, string);
 };
 
-class ExistItem{
+class Exist_Item{
 public:
-    int parentID;
+    int parent_ID;
     int uid;
     bool exists;
-    bool pathExists;
-    bool isDirectory;
+    bool path_exists;
+    bool is_directory;
 };
 
 class Functions{
 public:
-    static ExistItem* checkPath(VFS*, string);
-    static bool isDirectoryEmpty(VFS*, ExistItem*);
-    static void moveToPath(VFS*, string);
-    static bool isBitmapWritable(VFS*, long);
-    static void writeToDataBlock(VFS*, MftItem*);
-    static void removeFromDataBlock(VFS*, MftItem*);
-    static void writeToClusters(VFS*, MftItem*, FILE*);
-    static void copyToClusters(VFS*,MftItem*, MftItem*);
-    static void saveVfsToFile(VFS*);
-    static void printBitmap(VFS*);
-    static MftItem* getMftItem(VFS*, int);
-    static void printClusters(VFS*, MftItem*);
-    static void printMFT(VFS* );
-    static void exportFile(VFS*, MftItem*, FILE*);
-    static VFS* loadVFS(FILE*);
-    static void deleteLinks(VFS*, MftItem*);
-    static void printBootRecord(VFS*);
+    static Exist_Item* Check_Path(VFS*, string);
+    static bool Is_Directory_Empty(VFS*, Exist_Item*);
+    static void Move_To_Path(VFS*, string);
+    static bool Is_Bitmap_Writable(VFS*, long);
+    static void Write_To_Data_Block(VFS*, Mft_Item*);
+    static void Remove_From_Data_Block(VFS*, Mft_Item*);
+    static void Write_To_Clusters(VFS*, Mft_Item*, FILE*);
+    static void Copy_To_Clusters(VFS*,Mft_Item*, Mft_Item*);
+    static void Save_Vfs_To_File(VFS*);
+    static void Print_Bitmap(VFS*);
+    static Mft_Item* Get_Mft_Item(VFS*, int);
+    static void Print_Clusters(VFS*, Mft_Item*);
+    static void Print_MFT(VFS* );
+    static void Export_File(VFS*, Mft_Item*, FILE*);
+    static VFS* Load_VFS(FILE*);
+    static void Delete_Links(VFS*, Mft_Item*);
+    static void Print_Boot_Record(VFS*);
     
 };
 

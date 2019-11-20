@@ -1,18 +1,18 @@
 #include "Header.h"
 
-MftItem::MftItem(int uid, bool isDirectory, string name, long item_size, int parentID, bool isSymlink, int linkedUID){
+Mft_Item::Mft_Item(int uid, bool is_directory, string name, long item_size, int parent_ID, bool is_symlink, int linked_UID){
     
     this->uid = uid;
-    this->isDirectory = isDirectory;
+    this->is_directory = is_directory;
     strcpy_s(this->item_name, 12, name.c_str());
     this->item_order = 1;
     this->item_order_total = 1;
     this->item_size = item_size;
-    this->parentID = parentID;
-    this->isSymlink = isSymlink;
-    this->linkedUID = linkedUID;
+    this->parent_ID = parent_ID;
+    this->is_symlink = is_symlink;
+    this->linked_UID = linked_UID;
     for (int i = 0; i < MFT_FRAGMENTS_COUNT; i++) {
-        this->fragments[i] = new MftFragment(0, 0, 0);
+        this->fragments[i] = new Mft_Fragment(0, 0, 0);
     }
     
     
