@@ -1,8 +1,8 @@
-#include "Header.h"
+#include "header.h"
 
-VFS::VFS(FILE* file, long disk_size){
+VFS::VFS(FILE* file, uint64_t cluster_count, uint16_t cluster_size){
     this->file = file;
-    this->boot_record = new Boot_Record(disk_size);
+    this->boot_record = new Boot_Record(cluster_count, cluster_size);
     this->mft = new MFT();
     this->bitmap = new bool[boot_record->Get_Cluster_Count()];
     for (int i = 0; i<this->boot_record->Get_Cluster_Count(); i++) {

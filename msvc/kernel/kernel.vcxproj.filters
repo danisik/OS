@@ -45,19 +45,7 @@
     <ClCompile Include="..\..\src\kernel\VFS\boot_record.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\Commands.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\existingItem.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\Functions.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\kernel\VFS\main.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\MFT.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\kernel\VFS\mft_fragment.cpp">
@@ -66,7 +54,19 @@
     <ClCompile Include="..\..\src\kernel\VFS\mft_item.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\VFS.cpp">
+    <ClCompile Include="..\..\src\kernel\VFS\existing_item.cpp">
+      <Filter>Source Files\VFS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\VFS\commands.cpp">
+      <Filter>Source Files\VFS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\VFS\functions.cpp">
+      <Filter>Source Files\VFS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\VFS\mft.cpp">
+      <Filter>Source Files\VFS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\VFS\vfs.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
   </ItemGroup>
@@ -101,10 +101,10 @@
     <ClInclude Include="..\..\src\kernel\globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\Constants.hpp">
+    <ClInclude Include="..\..\src\kernel\VFS\constants.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\Header.h">
+    <ClInclude Include="..\..\src\kernel\VFS\header.h">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,4 +1,4 @@
-#include "Header.h"
+#include "header.h"
 
 
 
@@ -301,10 +301,11 @@ void Functions::Print_Clusters(VFS * vfs, Mft_Item * mftItem){
 
 VFS* Functions::Load_VFS(FILE * file){
     //bootrecord
-    Boot_Record *bootRecord = new Boot_Record(1);
+	// TODO Load_VFS: change 1??
+    Boot_Record *bootRecord = new Boot_Record(1, 1);
     fseek(file, 0, SEEK_SET);
     fread(bootRecord, sizeof(Boot_Record), 1, file);
-    VFS* vfs = new VFS(file, bootRecord->disk_size);
+    VFS* vfs = new VFS(file, bootRecord->cluster_count, bootRecord->cluster_size);
     vfs->boot_record = bootRecord;
     //bitmap
     fseek(vfs->file, vfs->boot_record->bitmap_start_address, SEEK_SET);

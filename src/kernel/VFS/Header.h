@@ -39,17 +39,17 @@ public:
 
 class Boot_Record{
 public:
-    Boot_Record(long);
+    Boot_Record(uint64_t, uint16_t);
     void initBootRecord(long);
-    long Get_Cluster_Count() { return this->cluster_count;};
+	uint64_t Get_Cluster_Count() { return this->cluster_count;};
     char signature[9];              //login autora FS
     char volume_descriptor[251];    //popis vygenerovaného FS
-    long disk_size;              //celkova velikost VFS
-    long cluster_size;           //velikost clusteru
-    long cluster_count;          //pocet clusteru
-    long mft_start_address;      //adresa pocatku mft
-    long bitmap_start_address;   //adresa pocatku bitmapy
-    long data_start_address;     //adresa pocatku datovych bloku
+	uint64_t disk_size;              //celkova velikost VFS			bytes_per_sector * absolute_number_of_sectors
+    uint16_t cluster_size;           //velikost clusteru			TDrive_Parameters::bytes_per_sector
+    uint64_t cluster_count;          //pocet clusteru				TDrive_Parameters::absolute_number_of_sectors
+    long mft_start_address;      //adresa pocatku mft				NENI POTREBA
+    long bitmap_start_address;   //adresa pocatku bitmapy			NENI POTREBA
+    long data_start_address;     //adresa pocatku datovych bloku	NENI POTREBA
     long mft_max_fragment_count; //maximalni pocet fragmentu v jednom zaznamu v mft (pozor, ne souboru)
     // stejne jako   MFT_FRAGMENTS_COUNT
 };
@@ -67,7 +67,7 @@ public:
 
 class VFS{
 public:
-    VFS(FILE*, long);
+    VFS(FILE*, uint64_t, uint16_t);
     FILE* file;
     static void Print_Current_Path(VFS*);
     Boot_Record* boot_record;

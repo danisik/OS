@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include "Header.h"
+#include "header.h"
 
 using namespace std;
 
@@ -13,7 +13,7 @@ int main(int argc, const char * argv[]) {
 	fopen_s(&file, "ntfs.dat", "r+");
     if(file==NULL){
         fopen_s(&file, "ntfs.dat", "w+");
-        vfs = new VFS(file, 150000);
+        vfs = new VFS(file, 1500, 100);
         Mft_Item* mftItem = new Mft_Item(0, true, "", 1, -1, false, -1);
         vfs->mft->UID_counter++;
         vfs->current_path.push_back(mftItem);

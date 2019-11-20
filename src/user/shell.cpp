@@ -65,7 +65,6 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 		}
 		else {
-			// TODO shell: Really ? Ask teacher.
 			break;	// EOF.
 		}
 	}

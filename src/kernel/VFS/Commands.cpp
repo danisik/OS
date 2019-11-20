@@ -1,4 +1,4 @@
-#include "Header.h"
+#include "header.h"
 
 
 void Commands::Create_Directory(VFS* vfs, string path){
@@ -282,6 +282,8 @@ void Commands::Info(VFS* vfs, string path){
     }
 }
 VFS* Commands::Format(VFS* vfs, string command){
+	/*
+	// TODO Format: ????
     size_t point = command.find(SPLIT);
     string tok = command.substr(0, point);
     string type = command.substr(point + 1);
@@ -300,6 +302,8 @@ VFS* Commands::Format(VFS* vfs, string command){
     }
     cout << size << endl;
     return new VFS(vfs->file, size);
+	*/
+	return NULL;
 }
 
 void Commands::Create_Symlink(VFS *vfs, string link, string source){

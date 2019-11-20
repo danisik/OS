@@ -2,7 +2,7 @@
 
 #include "io.h"
 
-
+std::mutex working_directory_mutex;
 std::mutex io_mutex;
 std::mutex pipe_mutex;
 
@@ -66,7 +66,11 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 
 	// TODO Open_File: functional code.
 
-	/*			HANDLE result = CreateFileA((char*)regs.rdx.r, GENERIC_READ | GENERIC_WRITE, (DWORD)regs.rcx.r, 0, OPEN_EXISTING, 0, 0);
+	/*
+	Nasledujici dve vetve jsou ukazka, ze starsiho zadani, ktere ukazuji, jak mate mapovat 
+	Windows HANDLE na kiv_os handle a zpet, vcetne jejich alokace a uvolneni
+
+	HANDLE result = CreateFileA((char*)regs.rdx.r, GENERIC_READ | GENERIC_WRITE, (DWORD)regs.rcx.r, 0, OPEN_EXISTING, 0, 0);
 			//zde je treba podle Rxc doresit shared_read, shared_write, OPEN_EXISING, etc. podle potreby
 			regs.flags.carry = result == INVALID_HANDLE_VALUE;
 			if (!regs.flags.carry) regs.rax.x = Convert_Native_Handle(result);
@@ -77,6 +81,10 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 }
 
 void IO::Write_File(kiv_hal::TRegisters &regs) {
+	//Spravne bychom nyni meli pouzit interni struktury kernelu a 
+	//zadany handle resolvovat na konkretni objekt, ktery pise na konkretni zarizeni/souboru/roury.
+	//Ale protoze je tohle jenom kostra, tak to rovnou biosem posleme na konzoli.
+
 	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
@@ -156,6 +164,7 @@ void IO::Delete_File(kiv_hal::TRegisters &regs) {
 }
 
 void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) {
+	std::lock_guard<std::mutex> lock_mutex(working_directory_mutex);
 	char *new_directory = reinterpret_cast<char*>(regs.rdx.r);
 
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
@@ -171,6 +180,7 @@ void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) {
 }
 
 void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
+	std::lock_guard<std::mutex> lock_mutex(working_directory_mutex);
 	char *path = reinterpret_cast<char*>(regs.rdx.r);
 	size_t path_size = static_cast<size_t>(regs.rcx.r);
 	size_t written_chars = 0;
