@@ -101,34 +101,10 @@
     <ClInclude Include="..\..\src\kernel\globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\boot_record.hpp">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\Commands.hpp">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\kernel\VFS\Constants.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\existingItem.hpp">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\Functions.hpp">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\kernel\VFS\Header.h">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\MFT.hpp">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\mft_fragment.hpp">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\mft_item.hpp">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\VFS.hpp">
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
   </ItemGroup>

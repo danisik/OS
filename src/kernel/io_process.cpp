@@ -104,8 +104,10 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	char *export_name = reinterpret_cast<char*>(regs.rdx.r);
 	char *arguments = reinterpret_cast<char*>(regs.rdi.r);
 
-	// TODO Clone_Process: working directory.
-	char *working_directory = "";
+	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
+	size_t current_process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
+
+	char *working_directory = processes[current_process_ID]->working_directory;
 
 	//   |stdin|stdout| in hex
 	//    |....|....| 
@@ -149,7 +151,7 @@ void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 	thread_registers.rdi.r = regs.rdi.r;				// Arguments.
 
 	// Get current process and create new thread.
-	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
 
 	size_t cloned_thread_ID = processes.find(process_ID)->second->Create_Thread(entry_point, thread_registers);
@@ -168,7 +170,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 	kiv_os::THandle *handles = reinterpret_cast<kiv_os::THandle*>(regs.rdx.r);
 	size_t handles_count = static_cast<size_t>(regs.rcx.r);
 
-	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID[current_thread_ID];
 	
 	{
@@ -233,7 +235,7 @@ void IO_Process::Exit(kiv_hal::TRegisters &regs) {
 
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
-	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
 	
 	if (current_thread_ID == processes[process_ID]->process_thread_ID) {
@@ -300,7 +302,7 @@ void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) {
 	kiv_os::NSignal_Id signal = static_cast<kiv_os::NSignal_Id>(regs.rcx.r);
 	kiv_os::TThread_Proc process_handle = reinterpret_cast<kiv_os::TThread_Proc>(regs.rdx.r);
 	
-	size_t current_thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
 	processes.find(process_ID)->second->threads.find(current_thread_ID)->second->terminate_handlers.insert(std::pair<kiv_os::NSignal_Id, kiv_os::TThread_Proc>(signal, process_handle));
 }

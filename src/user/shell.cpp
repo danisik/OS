@@ -1,7 +1,8 @@
 #include "shell.h"
 
 const char* new_line = "\n";
-const char* prompt = "C:\\>";
+const char* prompt = "C:\\";
+const char* beak = ">";
 const char* welcome_message = "Welcome in OS";
 
 extern bool echo_on;
@@ -30,7 +31,13 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	while(1) {
 
 		if (echo_on) {
+			char working_dir[PATH_MAX];
+			size_t working_dir_size = 0;
+			kiv_os_rtl::Get_Working_Dir(working_dir, PATH_MAX, working_dir_size);
+
 			kiv_os_rtl::Write_File(std_out, prompt, strlen(prompt), counter);
+			kiv_os_rtl::Write_File(std_out, working_dir, working_dir_size, counter);
+			kiv_os_rtl::Write_File(std_out, beak, strlen(beak), counter);
 		}
 
 		if (kiv_os_rtl::Read_File(std_in, buffer, buffer_size, counter) && (counter > 0)) {

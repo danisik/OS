@@ -3,14 +3,15 @@
 #include "kernel.h"
 
 HMODULE User_Programs;
-IO_Process *io_process = new IO_Process();
+IO_Process *io_process;
+IO *io;
 
 kiv_os::THandle std_in_shell;
 kiv_os::THandle std_out_shell;
 
-
 void Initialize_Kernel() {
 	io_process = new IO_Process();
+	io = new IO(io_process);
 	User_Programs = LoadLibraryW(L"user.dll");
 }
 
@@ -32,11 +33,11 @@ kiv_os::THandle Create_Kernel_Process() {
 	// Create process and thread.
 	std::unique_ptr<Process> process = std::make_unique<Process>(io_process->Get_Free_Process_ID(), name, working_directory);
 	std::unique_ptr<Thread> thread = std::make_unique<Thread>(process->process_ID);
-	thread->thread_ID = Get_Thread_ID(std::this_thread::get_id());
+	thread->thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t thread_ID = thread->thread_ID;
 	kiv_os::THandle kernel_handler = io_process->Get_Free_Thread_ID();
 
-	// Set states.
+	// Set attributes.
 	process->state = State::Running;
 	process->process_thread_ID = thread_ID;
 
@@ -64,6 +65,8 @@ void Remove_Kernel_Process(kiv_os::THandle kernel_handler) {
 	regs.rdx.x = kernel_handler;
 
 	io_process->Read_Exit_Code(regs);
+	delete io_process;
+	delete io;
 }
 
 kiv_os::THandle Shell_Clone() {
@@ -93,11 +96,11 @@ void Shell_Close(kiv_os::THandle shell_handle, kiv_os::THandle std_in, kiv_os::T
 	
 	// Close std_in handle.
 	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_in);
-	Handle_IO(regs);
+	io->Handle_IO(regs);
 
 	// Close std_out handle.
 	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_out);
-	Handle_IO(regs);
+	io->Handle_IO(regs);
 
 	// Delete shell process.
 	regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
@@ -110,7 +113,7 @@ void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
 	switch (static_cast<kiv_os::NOS_Service_Major>(regs.rax.h)) {
 
 	case kiv_os::NOS_Service_Major::File_System:
-		Handle_IO(regs);
+		io->Handle_IO(regs);
 		break;
 
 	case kiv_os::NOS_Service_Major::Process:
@@ -132,7 +135,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 		kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Disk_IO, regs);
 
 		if (!regs.flags.carry) {
-
+			// Load boot block.
 		}
 
 		if (regs.rdx.l == 255) break;

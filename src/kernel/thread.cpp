@@ -2,7 +2,7 @@
 
 std::condition_variable condition;
 
-size_t Get_Thread_ID(std::thread::id thread_ID) {
+size_t Thread::Get_Thread_ID(std::thread::id thread_ID) {
 	return std::hash<std::thread::id>()(thread_ID);
 }
 

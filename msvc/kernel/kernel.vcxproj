@@ -47,16 +47,8 @@
     <ClInclude Include="..\..\src\kernel\process.h" />
     <ClInclude Include="..\..\src\kernel\state.h" />
     <ClInclude Include="..\..\src\kernel\thread.h" />
-    <ClInclude Include="..\..\src\kernel\VFS\boot_record.hpp" />
-    <ClInclude Include="..\..\src\kernel\VFS\Commands.hpp" />
     <ClInclude Include="..\..\src\kernel\VFS\Constants.hpp" />
-    <ClInclude Include="..\..\src\kernel\VFS\existingItem.hpp" />
-    <ClInclude Include="..\..\src\kernel\VFS\Functions.hpp" />
     <ClInclude Include="..\..\src\kernel\VFS\Header.h" />
-    <ClInclude Include="..\..\src\kernel\VFS\MFT.hpp" />
-    <ClInclude Include="..\..\src\kernel\VFS\mft_fragment.hpp" />
-    <ClInclude Include="..\..\src\kernel\VFS\mft_item.hpp" />
-    <ClInclude Include="..\..\src\kernel\VFS\VFS.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B4305463-59C5-40C3-9A1A-92976A40562D}</ProjectGuid>

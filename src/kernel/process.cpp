@@ -4,7 +4,7 @@ Process::Process(size_t p_process_ID, char *p_name, char *p_working_directory) {
 	process_ID = p_process_ID;
 	name = p_name;
 	state = State::Runnable;
-	working_directory = p_working_directory;
+	strcpy_s(working_directory, PATH_MAX, p_working_directory);
 }
 
 
