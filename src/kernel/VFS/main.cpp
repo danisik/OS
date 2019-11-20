@@ -14,7 +14,7 @@ int main(int argc, const char * argv[]) {
     if(file==NULL){
         fopen_s(&file, "ntfs.dat", "w+");
         vfs = new VFS(file, 150000);
-        Mft_Item* mftItem = new Mft_Item(0, true, "root", 1, -1, false, -1);
+        Mft_Item* mftItem = new Mft_Item(0, true, "", 1, -1, false, -1);
         vfs->mft->UID_counter++;
         vfs->current_path.push_back(mftItem);
         Functions::Save_Vfs_To_File(vfs);

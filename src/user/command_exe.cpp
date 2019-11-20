@@ -2,6 +2,16 @@
 
 #include <string>
 
+void cd(const char *new_directory, kiv_os::THandle out) {
+	bool setted = kiv_os_rtl::Set_Working_Dir(new_directory);
+	if (!setted) {
+		char *error_message = "Systém nemùže nalézt uvedenou cestu.";
+
+		size_t written = 0;
+		kiv_os_rtl::Write_File(out, error_message, strlen(error_message), written);
+	}
+}
+
 void command_exe::Execute_Commands(std::vector<command_parser::Command> commands, kiv_os::THandle in, kiv_os::THandle out) {
 	kiv_os::THandle *handles = new kiv_os::THandle[commands.size()];
 	int handles_count = 0;
@@ -18,13 +28,21 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 			kiv_os_rtl::Write_File(out, output.data(), output.size(), written);
 			return;
 		}
-		kiv_os::THandle handle;
+		else {
+			if (command.base == "cd") {
+				cd(command.parameters.data(), out);
+				return;
+			}
+			else {
+				kiv_os::THandle handle;
 
-		// Create process for new command.
-		kiv_os_rtl::Clone_Process(command.base.data(), command.parameters.data(), in, out, handle);
+				// Create process for new command.
+				kiv_os_rtl::Clone_Process(command.base.data(), command.parameters.data(), in, out, handle);
 
-		handles[handles_count] = handle;
-		handles_count++;
+				handles[handles_count] = handle;
+				handles_count++;
+			}
+		}
 	}
 
 	// Wait for commands to be executed.

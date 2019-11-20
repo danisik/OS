@@ -99,7 +99,7 @@ bool kiv_os_rtl::Delete_File(char *file_name) {
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Set_Working_Dir(char *new_directory) {
+bool kiv_os_rtl::Set_Working_Dir(const char *new_directory) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Set_Working_Dir));
 
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(new_directory);

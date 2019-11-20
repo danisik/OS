@@ -41,6 +41,7 @@ void Commands::Move_To_Directory(VFS* vfs, string path){
         cout << "PATH NOT FOUND" << endl;
     }     
 }
+
 void Commands::Move_To_Root(VFS *vfs){
     while(vfs->current_path[vfs->current_path.size()-1]->uid != 0){
         vfs->current_path.pop_back();

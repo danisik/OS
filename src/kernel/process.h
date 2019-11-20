@@ -4,6 +4,8 @@
 
 #include <map>
 
+#define PATH_MAX 4096
+
 
 class Process {
 public:
@@ -11,7 +13,7 @@ public:
 	size_t process_thread_ID;
 	State state;
 	char *name;
-	char *working_directory;
+	char working_directory[PATH_MAX];
 	std::map<size_t, std::unique_ptr<Thread>> threads;
 
 	Process(size_t p_process_ID, char *p_name, char *p_working_directory);

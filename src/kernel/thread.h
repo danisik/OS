@@ -31,6 +31,5 @@ public:
 	void Join(uint16_t t_exit_code);
 	void Stop();
 	void Remove_Handler_From_Handlers_Waiting_For(size_t thread_ID);
+	static size_t Get_Thread_ID(std::thread::id thread_ID);
 };
-
-size_t Get_Thread_ID(std::thread::id thread_ID);
