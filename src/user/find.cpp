@@ -5,24 +5,33 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);
 
 	const char *arguments = reinterpret_cast<const char *>(regs.rdi.r);
-	std::vector<char> copy(arguments, arguments + strlen(arguments) + 1);
-
-	std::string other = "";
-
-	char *next_token = NULL;
-	char *part1 = strtok_s(copy.data(), " ", &next_token);
-
-	char *part2 = strtok_s(NULL, " ", &next_token);
-
-	char *token = strtok_s(NULL, " ", &next_token);
-	while (token != NULL) {
-		other.append(token);
-		token = strtok_s(NULL, " ", &next_token);
-	}
 
 	std::string output;
 	size_t written;
-	if (strcmp(part1, "/v") == 0 && strcmp(part2, "/c\"\"") == 0 && other.size() == 0) {
+
+	if (strlen(arguments) == 0) {
+		output = "Wrong arguments.\n";
+		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Invalid_Argument);
+		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
+		kiv_os_rtl::Exit(exit_code);
+		return 0;
+	}
+
+	std::stringstream stream(arguments);
+
+	std::string part1;
+	std::string part2;
+	std::string other_part;
+	std::string other = "";
+
+	stream >> part1;
+	stream >> part2;
+
+	while (stream >> other_part) {
+		other.append(other_part);
+	}
+
+	if (part1 == "/v" && part2 == "/c\"\"" && other.size() == 0) {
 		size_t read;
 		char buffer[512];
 		std::string complete = "";

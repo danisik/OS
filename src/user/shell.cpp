@@ -47,7 +47,7 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 			
-			std::vector<command_parser::Command> commands = command_parser::Get_Commands(buffer);
+			std::vector<command_parser::Command> commands = command_parser::Find_Commands(buffer);
 			
 			command_exe::Execute_Commands(commands, std_in, std_out);
 		
