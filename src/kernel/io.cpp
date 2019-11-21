@@ -179,9 +179,15 @@ void IO::Close_Handle(kiv_hal::TRegisters &regs) {
 }
 
 void IO::Delete_File(kiv_hal::TRegisters &regs) {
-	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	std::lock_guard<std::mutex> lock_mutex_process(io_process->io_process_mutex);
 
-	char *fileName = reinterpret_cast<char*>(regs.rdx.r);
+	char *file_name = reinterpret_cast<char*>(regs.rdx.r);
+
+	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
+	size_t current_process_ID = io_process->thread_ID_to_process_ID.find(current_thread_ID)->second;
+
+	Commands::Remove_Directory(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
 
 	// TODO Delete_File: functional code.
 }

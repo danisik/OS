@@ -90,7 +90,7 @@ public:
     static void Move_To_Root(VFS*);
     static void List_With_Params(VFS*, std::string);
     static void List(VFS*);
-    static void Remove_Directory(VFS*, std::string);
+    static void Remove_Directory(VFS*, std::string, std::vector<Mft_Item*> &);
     static void removeFile(VFS*, std::string);
 	static void Print_MFT(VFS*);
     static void Print_File(VFS*, std::string);

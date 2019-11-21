@@ -57,6 +57,7 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
 
 bool Functions::Is_Directory_Empty(VFS* vfs, Exist_Item * item){
     for(size_t i = 0; i < vfs->mft->mft_items.size(); i++){
+		printf("%d %d %d\n", vfs->mft->mft_items[i]->parent_ID, vfs->mft->mft_items[i]->uid, item->uid);
         if(vfs->mft->mft_items[i]->parent_ID == item->uid){
             return false;
         }

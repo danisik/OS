@@ -94,7 +94,8 @@ bool kiv_os_rtl::Close_Handle(kiv_os::THandle file_handle) {
 bool kiv_os_rtl::Delete_File(char *file_name) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Delete_File));
 	
-	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(file_name);
+	std::string str = std::string(file_name, strlen(file_name));
+	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(str.data());
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
 	return syscall_result;

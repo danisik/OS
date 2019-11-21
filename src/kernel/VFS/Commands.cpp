@@ -27,12 +27,12 @@ void Commands::Create_Directory(VFS* vfs, std::string path, std::vector<Mft_Item
 }
 
 bool Commands::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_Item*> &current_path){
-    
+	path.push_back('\0');
 	if (strcmp(path.c_str(), ".") == 0) {
 		return true;
 	}
 	if(strcmp(path.c_str(), "..")==0){
-        if(current_path[current_path.size()-1]->uid != 0){
+        if(current_path[current_path.size()-1]->uid != -1){
 			current_path.pop_back();
             return true;
         }
@@ -91,19 +91,17 @@ void Commands::List(VFS* vfs){
     }
 }
 
-void Commands::Remove_Directory(VFS * vfs, std::string path){
-	/*
-    Exist_Item* item = Functions::Check_Path(vfs, path);
+void Commands::Remove_Directory(VFS * vfs, std::string path, std::vector<Mft_Item*> &current_path){
+    Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
     
     if(item->exists && item->path_exists){
         if(Functions::Is_Directory_Empty(vfs, item)){
             for(size_t i = 0; i < vfs->mft->mft_items.size(); i++){
                 if(vfs->mft->mft_items[i]->uid == item->uid){
-                    Functions::Delete_Links(vfs, vfs->mft->mft_items[i]);
                     Functions::Remove_From_Data_Block(vfs, vfs->mft->mft_items[i]);
                     vfs->mft->mft_items.erase(vfs->mft->mft_items.begin() + i);
                     vfs->mft->size--;
-                    Functions::Save_Vfs_To_File(vfs);
+                    //Functions::Save_Vfs_To_File(vfs);
                 }
             }
             //Functions::printBitmap(vfs);
@@ -115,7 +113,6 @@ void Commands::Remove_Directory(VFS * vfs, std::string path){
     else if(!item->exists || !item->path_exists){
 		std::cout << "DIRECTORY NOT FOUND" << std::endl;
     }
-	*/
 }
 void Commands::removeFile(VFS * vfs, std::string path){
 	/*

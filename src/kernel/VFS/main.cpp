@@ -89,7 +89,7 @@ int main(int argc, const char * argv[]) {
                 cout << "FOLDER NOT SPECIFIED" << endl;
             }
             else {
-                Commands::Remove_Directory(vfs, command);
+                //Commands::Remove_Directory(vfs, command);
             }
         }
         else if(strcmp(tok.data(), PRINT_FILE)==0){

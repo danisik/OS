@@ -19,7 +19,7 @@ public:
 
 	void Print_VFS();
 
-	void Open_File(kiv_hal::TRegisters &regs); // Not implemented yet.
+	void Open_File(kiv_hal::TRegisters &regs); // Creating empty folders only.
 	void Write_File(kiv_hal::TRegisters &regs); // Not implemented yet.
 	void Read_File(kiv_hal::TRegisters &regs); // Not implemented yet.
 	void Seek(kiv_hal::TRegisters &regs); // Not implemented yet.
