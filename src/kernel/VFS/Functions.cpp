@@ -63,7 +63,7 @@ bool Functions::Is_Directory_Empty(VFS* vfs, Exist_Item * item){
     }
     return true;
 }
-void Functions::Move_To_Path(VFS* vfs, std::string path, std::vector<Mft_Item*> current_path){
+void Functions::Move_To_Path(VFS* vfs, std::string path, std::vector<Mft_Item*> &current_path){
     Exist_Item* item = new Exist_Item;
     item->uid = current_path[current_path.size()-1]->uid;
     item->parent_ID = current_path[current_path.size()-1]->parent_ID;

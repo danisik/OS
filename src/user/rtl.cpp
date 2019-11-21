@@ -10,8 +10,7 @@ kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uin
 }
 
 uint16_t str_to_uint16(const char *str) {
-	char *end;
-	long val = strtol(str, &end, 10);
+	uint16_t val = strtol(str, NULL, 0);
 	return (uint16_t)val;
 }
 
@@ -24,7 +23,9 @@ void kiv_os_rtl::Default_Signal_Handler() {
 bool kiv_os_rtl::Open_File(const char *file_name, kiv_os::NOpen_File flags, kiv_os::NFile_Attributes attributes, kiv_os::THandle &open) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Open_File));
 
-	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(str_to_uint16(file_name));	
+	// Put it into string (dunno why this works with string and not only with const char*).
+	std::string str = std::string(file_name, strlen(file_name));
+	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(str.data());	
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(flags);
 	regs.rdi.r = static_cast<decltype(regs.rdi.r)>(attributes);
 

@@ -1,9 +1,9 @@
 #include "header.h"
 
 
-void Commands::Create_Directory(VFS* vfs, std::string path){
-	/*
-    Exist_Item* item = Functions::Check_Path(vfs, path);
+void Commands::Create_Directory(VFS* vfs, std::string path, std::vector<Mft_Item*> current_path){
+	
+    Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
     size_t i = path.find_last_of(FOLDER_SPLIT);
     path = path.substr(i+1);
 
@@ -24,10 +24,9 @@ void Commands::Create_Directory(VFS* vfs, std::string path){
     else if(item->exists){
 		std::cout << "FOLDER ALREADY EXISTS"<< std::endl;
     }
-	*/
 }
 
-bool Commands::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_Item*> current_path){
+bool Commands::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_Item*> &current_path){
     
 	if (strcmp(path.c_str(), ".") == 0) {
 		return true;

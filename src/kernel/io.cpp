@@ -58,12 +58,31 @@ size_t Read_Line_From_Console(char *buffer, const size_t buffer_size) {
 }
 
 void IO::Open_File(kiv_hal::TRegisters &regs) {
-	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	std::lock_guard<std::mutex> lock_mutex_process(io_process->io_process_mutex);
 
-	char* fileName = reinterpret_cast<char*>(regs.rdx.x);
+	char* file_name = reinterpret_cast<char*>(regs.rdx.r);
 	kiv_os::NOpen_File flags = static_cast<kiv_os::NOpen_File>(regs.rcx.r);
 	kiv_os::NFile_Attributes attributes = static_cast<kiv_os::NFile_Attributes>(regs.rdi.r);
 	HANDLE handle = NULL;
+
+	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
+	size_t current_process_ID = io_process->thread_ID_to_process_ID.find(current_thread_ID)->second;
+
+	
+	Exist_Item* item = Functions::Check_Path(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
+
+	if (item->path_exists && item->exists && item->is_directory) {
+		// TODO Open_File: Open existing directory.
+	}
+	else if (item->path_exists && !item->exists) {
+		// TODO Open_File: Create a directory.
+		Commands::Create_Directory(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
+	}
+	else if (!item->path_exists) {
+		// TODO Open_File: Path did not exists. 
+	}
+	
 
 	// TODO Open_File: functional code.
 
@@ -86,7 +105,7 @@ void IO::Write_File(kiv_hal::TRegisters &regs) {
 	//zadany handle resolvovat na konkretni objekt, ktery pise na konkretni zarizeni/souboru/roury.
 	//Ale protoze je tohle jenom kostra, tak to rovnou biosem posleme na konzoli.
 
-	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	HANDLE file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
@@ -129,12 +148,6 @@ void IO::Read_File(kiv_hal::TRegisters &regs) {
 	// TODO Read_File: functional code.
 
 	//regs.rax.x = read;
-
-	//Commands::Create_Directory(vfs, "a");
-	//Commands::Create_Directory(vfs, "a/b");
-	//Commands::Create_Directory(vfs, "b");
-
-	//Print_VFS();
 
 	regs.rax.r = Read_Line_From_Console(reinterpret_cast<char*>(regs.rdi.r), regs.rcx.r);	
 }
@@ -200,8 +213,9 @@ void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
 
 	for (int i = 0; i < current_path.size(); i++) {
 		path_string += io_process->processes[current_process_ID]->working_dir[i]->item_name;
-		if (i < current_path.size() - 1) {
-			path_string += '/';
+		if (i > 0 && i < current_path.size() - 1) {
+			path_string += '\\';
+			written_chars++;
 		}
 		written_chars += strlen(current_path[i]->item_name);
 	}

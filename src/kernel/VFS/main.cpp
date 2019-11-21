@@ -61,7 +61,7 @@ int main(int argc, const char * argv[]) {
                 cout << "FOLDER NOT SPECIFIED" << endl;
             }
             else{
-                Commands::Create_Directory(vfs, command);
+                //Commands::Create_Directory(vfs, command);
             }
         
         }

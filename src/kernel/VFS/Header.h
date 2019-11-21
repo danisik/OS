@@ -85,8 +85,8 @@ public:
 
 class Commands{
 public:
-    static void Create_Directory(VFS*, std::string);
-    static bool Move_To_Directory(VFS*, std::string, std::vector<Mft_Item*>);
+    static void Create_Directory(VFS*, std::string, std::vector<Mft_Item*>);
+    static bool Move_To_Directory(VFS*, std::string, std::vector<Mft_Item*>&);
     static void Move_To_Root(VFS*);
     static void List_With_Params(VFS*, std::string);
     static void List(VFS*);
@@ -112,7 +112,7 @@ class Functions{
 public:
     static Exist_Item* Check_Path(VFS*, std::string, std::vector<Mft_Item*>);
     static bool Is_Directory_Empty(VFS*, Exist_Item*);
-    static void Move_To_Path(VFS*, std::string, std::vector<Mft_Item*>);
+    static void Move_To_Path(VFS*, std::string, std::vector<Mft_Item*>&);
     static bool Is_Bitmap_Writable(VFS*, long);
     static void Write_To_Data_Block(VFS*, Mft_Item*);
     static void Remove_From_Data_Block(VFS*, Mft_Item*);

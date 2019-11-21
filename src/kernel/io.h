@@ -25,7 +25,7 @@ public:
 	void Seek(kiv_hal::TRegisters &regs); // Not implemented yet.
 	void Close_Handle(kiv_hal::TRegisters &regs); // Not implemented yet.
 	void Delete_File(kiv_hal::TRegisters &regs); // Not implemented yet.
-	void Set_Working_Dir(kiv_hal::TRegisters &regs); // 1 / 2 implemented (need to check if directory exists).
+	void Set_Working_Dir(kiv_hal::TRegisters &regs); // Tested.
 	void Get_Working_Dir(kiv_hal::TRegisters &regs); // Tested.
 	void Create_Pipe(kiv_hal::TRegisters &regs); // Not implemented yet.
 };
