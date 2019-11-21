@@ -3,6 +3,7 @@
 IDE: MS Visual Studio 2017 (MS Visual C++)
 
 ## Hotové commandy:
+
   ✔ echo
   
   ✔ cd
@@ -13,15 +14,16 @@ IDE: MS Visual Studio 2017 (MS Visual C++)
   
   ✔ rgen
 
+## In Progress:
+
+  ? md
+  
+  ? rd
 
 
 ## Nevytvořené commandy:
 
   ✘ dir
-  
-  ✘ md
-  
-  ✘ rd
   
   ✘ type
   
