@@ -11,7 +11,6 @@ kiv_os::THandle std_out_shell;
 
 void Initialize_Kernel() {
 	io_process = new IO_Process();
-	io = new IO(io_process);
 	User_Programs = LoadLibraryW(L"user.dll");
 }
 
@@ -31,7 +30,7 @@ kiv_os::THandle Create_Kernel_Process() {
 	char *working_directory = "";
 	char *name = "kernel";
 	// Create process and thread.
-	std::unique_ptr<Process> process = std::make_unique<Process>(io_process->Get_Free_Process_ID(), name, working_directory);
+	std::unique_ptr<Process> process = std::make_unique<Process>(io_process->Get_Free_Process_ID(), name);
 	std::unique_ptr<Thread> thread = std::make_unique<Thread>(process->process_ID);
 	thread->thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t thread_ID = thread->thread_ID;
@@ -40,6 +39,7 @@ kiv_os::THandle Create_Kernel_Process() {
 	// Set attributes.
 	process->state = State::Running;
 	process->process_thread_ID = thread_ID;
+	process->working_dir.push_back(io->vfs->mft->mft_items[0]);
 
 	process->threads.insert(std::pair<size_t, std::unique_ptr<Thread>>(thread->thread_ID, std::move(thread)));
 
@@ -91,15 +91,15 @@ void Shell_Wait(kiv_os::THandle handle) {
 	io_process->Handle_Process(regs);
 }
 
-void Shell_Close(kiv_os::THandle shell_handle, kiv_os::THandle std_in, kiv_os::THandle std_out) {
+void Shell_Close(kiv_os::THandle shell_handle) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Close_Handle));
 	
 	// Close std_in handle.
-	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_in);
+	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_in_shell);
 	io->Handle_IO(regs);
 
 	// Close std_out handle.
-	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_out);
+	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_out_shell);
 	io->Handle_IO(regs);
 
 	// Delete shell process.
@@ -129,13 +129,24 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	kiv_hal::TRegisters regs;
 	for (regs.rdx.l = 0; ; regs.rdx.l++) {
+
+		// Get Drive parameters.
 		kiv_hal::TDrive_Parameters params;
 		regs.rax.h = static_cast<uint8_t>(kiv_hal::NDisk_IO::Drive_Parameters);
 		regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(&params);
 		kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Disk_IO, regs);
 
 		if (!regs.flags.carry) {
+
 			// Load boot block.
+			uint16_t bytes_per_sector = params.bytes_per_sector;
+			uint64_t number_of_sectors = NUMBER_OF_SECTORS;		 // We cant use absolute_number_of_sectors -> because bitmap init will end in next century.
+
+			// Create VFS.
+			VFS *vfs = new VFS(number_of_sectors, bytes_per_sector);
+			// TODO Bootstrap_Loader: Load_VFS() ??
+
+			io = new IO(io_process, vfs);
 		}
 
 		if (regs.rdx.l == 255) break;
@@ -144,7 +155,6 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 	kiv_os::THandle kernel_handler;
 	kernel_handler = Create_Kernel_Process();
 	
-	// regs.rax.h = static_cast<uint8_t>(kiv_hal::NDisk_IO::Drive_Parameters); -> stdin 1, stdout 52428.
 	std_in_shell = regs.rax.x;
 	std_out_shell = regs.rbx.x;
 
@@ -155,7 +165,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 	Shell_Wait(handle);
 
 	// Close std_in and std_out handles + destroy shell process.
-	Shell_Close(handle, std_in_shell, std_out_shell);
+	Shell_Close(handle);
 
 	Remove_Kernel_Process(kernel_handler);
 

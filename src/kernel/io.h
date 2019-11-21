@@ -4,6 +4,7 @@
 
 #include "handles.h"
 #include "io_process.h"
+#include "VFS/header.h"
 
 #include <mutex>
 
@@ -11,8 +12,12 @@ class IO {
 private:
 	IO_Process* io_process;
 public:
-	IO(IO_Process *i_io_process);
+	VFS *vfs;
+
+	IO(IO_Process *i_io_process, VFS *i_vfs);
 	void Handle_IO(kiv_hal::TRegisters &regs);
+
+	void Print_VFS();
 
 	void Open_File(kiv_hal::TRegisters &regs); // Not implemented yet.
 	void Write_File(kiv_hal::TRegisters &regs); // Not implemented yet.

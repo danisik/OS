@@ -1,6 +1,6 @@
 #include "header.h"
 
-Mft_Item::Mft_Item(int uid, bool is_directory, string name, long item_size, int parent_ID, bool is_symlink, int linked_UID){
+Mft_Item::Mft_Item(int uid, bool is_directory, std::string name, long item_size, int parent_ID, bool is_symlink, int linked_UID){
     
     this->uid = uid;
     this->is_directory = is_directory;

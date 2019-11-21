@@ -2,16 +2,16 @@
 
 
 
-Exist_Item* Functions::Check_Path(VFS* vfs, string path){
+Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_Item*> current_path){
     Exist_Item* item = new Exist_Item;
-    item->uid = vfs->current_path[vfs->current_path.size()-1]->uid;
-    item->parent_ID = vfs->current_path[vfs->current_path.size()-1]->parent_ID;
+    item->uid = current_path[current_path.size()-1]->uid;
+    item->parent_ID = current_path[current_path.size()-1]->parent_ID;
     item->exists = false;
     item->path_exists = false;
     item->is_directory = true;
     size_t i;
-    string tok;
-    while((i = path.find(FOLDER_SPLIT)) != string::npos){
+	std::string tok;
+    while((i = path.find(FOLDER_SPLIT)) != std::string::npos){
         item->path_exists = false;
         tok = path.substr(0, i);
         path = path.substr(i+1);
@@ -63,13 +63,13 @@ bool Functions::Is_Directory_Empty(VFS* vfs, Exist_Item * item){
     }
     return true;
 }
-void Functions::Move_To_Path(VFS* vfs, string path){
+void Functions::Move_To_Path(VFS* vfs, std::string path, std::vector<Mft_Item*> current_path){
     Exist_Item* item = new Exist_Item;
-    item->uid = vfs->current_path[vfs->current_path.size()-1]->uid;
-    item->parent_ID = vfs->current_path[vfs->current_path.size()-1]->parent_ID;
+    item->uid = current_path[current_path.size()-1]->uid;
+    item->parent_ID = current_path[current_path.size()-1]->parent_ID;
     size_t i;
-    string tok;
-    while((i = path.find(FOLDER_SPLIT)) != string::npos){
+	std::string tok;
+    while((i = path.find(FOLDER_SPLIT)) != std::string::npos){
         tok = path.substr(0, i);
         path = path.substr(i+1);
         for(size_t j = 0; j < vfs->mft->mft_items.size(); j++){
@@ -77,7 +77,7 @@ void Functions::Move_To_Path(VFS* vfs, string path){
                &&(strcmp(vfs->mft->mft_items[j]->item_name, tok.c_str())==0)){
                 item->uid = vfs->mft->mft_items[j]->uid;
                 item->parent_ID = vfs->mft->mft_items[j]->parent_ID;
-                vfs->current_path.push_back(vfs->mft->mft_items[j]);
+				current_path.push_back(vfs->mft->mft_items[j]);
                 break;
             }
         }
@@ -90,7 +90,7 @@ void Functions::Move_To_Path(VFS* vfs, string path){
             item->uid = vfs->mft->mft_items[j]->uid;
             item->parent_ID = vfs->mft->mft_items[j]->parent_ID;
             item->exists = true;
-            vfs->current_path.push_back(vfs->mft->mft_items[j]);
+			current_path.push_back(vfs->mft->mft_items[j]);
             return;
         }
     }
@@ -121,7 +121,7 @@ void Functions::Write_To_Data_Block(VFS * vfs, Mft_Item * mftItem){
         if(!vfs->bitmap[i]){
             if(mftItem->fragments[fragmentID]->fragment_count<1){
                 mftItem->fragments[fragmentID]->bitmap_start_ID = i;
-                mftItem->fragments[fragmentID]->fragment_start_address = vfs->boot_record->data_start_address + i*vfs->boot_record->cluster_size;
+                mftItem->fragments[fragmentID]->fragment_start_address = vfs->boot_record->data_start_cluster + i*vfs->boot_record->cluster_size;
                 mftItem->fragments[fragmentID]->fragment_count++;
                 vfs->bitmap[i] = true;
             }
@@ -162,34 +162,13 @@ void Functions::Write_To_Clusters(VFS * vfs, Mft_Item* mftItem, FILE* file){
         fragmentID++;
     }
 }
-void Functions::Export_File(VFS * vfs, Mft_Item * mftItem, FILE* file){
-    int fragmentID=0;
-    long size = mftItem->item_size;
-    char buffer[CLUSTER_SIZE];
-    while(mftItem->fragments[fragmentID]->fragment_start_address!=0){
-        for (int j = 0; j<mftItem->fragments[fragmentID]->fragment_count; j++) {
-            if(size>vfs->boot_record->cluster_size){
-                fseek(vfs->file, mftItem->fragments[fragmentID]->fragment_start_address + j*vfs->boot_record->cluster_size, SEEK_SET);
-                fread(buffer, vfs->boot_record->cluster_size, 1, vfs->file);
-                fwrite(buffer, vfs->boot_record->cluster_size, 1, file);
-                size = size - vfs->boot_record->cluster_size;
-            }
-            else{
-                fseek(vfs->file, mftItem->fragments[fragmentID]->fragment_start_address + j*vfs->boot_record->cluster_size, SEEK_SET);
-                fread(buffer, size, 1, vfs->file);
-                fwrite(buffer, size, 1, file);
-                return;
-            }
-        }
-        fragmentID++;
-    }
-}
+
 void Functions::Copy_To_Clusters(VFS* vfs, Mft_Item* srcFile, Mft_Item* destFile){
     int fragmentID = 0;
     int filePointer;
     long size = srcFile->item_size;
     int bufferPointer = 0;
-    vector<string> bufferVector;
+	std::vector<std::string> bufferVector;
     char buffer[CLUSTER_SIZE];
     while (srcFile->fragments[fragmentID]->fragment_start_address != 0) {
         filePointer = srcFile->fragments[fragmentID]->fragment_start_address;
@@ -224,15 +203,15 @@ void Functions::Copy_To_Clusters(VFS* vfs, Mft_Item* srcFile, Mft_Item* destFile
     }
 }
 void Functions::Print_Bitmap(VFS * vfs){
-    for (int i = 0; i<vfs->boot_record->cluster_count; i++) {
-        if(vfs->bitmap[i]){
-            cout << "1";
-        }
-        else{
-            cout <<"0";
-        }
-    }
-    cout << endl <<endl;
+	for (int i = 0; i<vfs->boot_record->cluster_count; i++) {
+		if(vfs->bitmap[i]){
+			std::cout << "1";
+		}
+		else{
+			std::cout <<"0";
+		}
+	}
+	std::cout << std::endl << std::endl;
 }
 
 void Functions::Remove_From_Data_Block(VFS* vfs, Mft_Item* mftItem){
@@ -249,23 +228,24 @@ void Functions::Save_Vfs_To_File(VFS* vfs){
     fwrite(vfs->boot_record, sizeof(Boot_Record), 1, vfs->file);
     fflush(vfs->file);
     //zapis mft
-    fseek(vfs->file, vfs->boot_record->mft_start_address, SEEK_SET);
+    fseek(vfs->file, vfs->boot_record->mft_start_cluster, SEEK_SET);
     fwrite(vfs->mft, sizeof(MFT), 1, vfs->file);
     fflush(vfs->file);
     //zapis mftItems
     for (size_t i = 0; i<vfs->mft->mft_items.size(); i++) {
-        fseek(vfs->file, (long)(vfs->boot_record->mft_start_address+sizeof(MFT)+i*sizeof(Mft_Item)+ i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment)), SEEK_SET);
+        fseek(vfs->file, (long)(vfs->boot_record->mft_start_cluster+sizeof(MFT)+i*sizeof(Mft_Item)+ i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment)), SEEK_SET);
         fwrite(vfs->mft->mft_items[i], sizeof(Mft_Item), 1, vfs->file);
         fflush(vfs->file);
         for (int j = 0; j<vfs->boot_record->mft_max_fragment_count; j++) {
-            fseek(vfs->file, (long)(vfs->boot_record->mft_start_address+sizeof(MFT)+i*sizeof(Mft_Item)+i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment) +sizeof(Mft_Item)+j*sizeof(Mft_Fragment)), SEEK_SET);
+            fseek(vfs->file, (long)(vfs->boot_record->mft_start_cluster+sizeof(MFT)+i*sizeof(Mft_Item)+i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment) +sizeof(Mft_Item)+j*sizeof(Mft_Fragment)), SEEK_SET);
             fwrite(vfs->mft->mft_items[i]->fragments[j], sizeof(Mft_Fragment), 1, vfs->file);
             fflush(vfs->file);
         }
     }
     //zapis bitmapy
-    fseek(vfs->file, vfs->boot_record->bitmap_start_address, SEEK_SET);
-    fwrite(vfs->bitmap, sizeof(bool), vfs->boot_record->cluster_count, vfs->file);
+    fseek(vfs->file, vfs->boot_record->bitmap_start_cluster, SEEK_SET);
+	//TODO
+    //fwrite(vfs->bitmap, sizeof(bool), vfs->boot_record->cluster_count, vfs->file);
     fflush(vfs->file);
 }
 void Functions::Print_Clusters(VFS * vfs, Mft_Item * mftItem){
@@ -280,7 +260,7 @@ void Functions::Print_Clusters(VFS * vfs, Mft_Item * mftItem){
             if(size>=vfs->boot_record->cluster_size){
                 fread(buffer, vfs->boot_record->cluster_size, 1, vfs->file);
                 for(int i = 0; i<vfs->boot_record->cluster_size;i++){
-                    cout << buffer[i];
+					std::cout << buffer[i];
                 }
                 size = size - vfs->boot_record->cluster_size;
                 filePointer++;
@@ -289,9 +269,9 @@ void Functions::Print_Clusters(VFS * vfs, Mft_Item * mftItem){
                 memset(buffer, 0, vfs->boot_record->cluster_size);
                 fread(buffer, size, 1, vfs->file);
                 for(int i = 0; i<size;i++){
-                    cout << buffer[i];
+					std::cout << buffer[i];
                 }
-                cout << endl;
+				std::cout << std::endl;
                 return;
             }
         }
@@ -305,24 +285,25 @@ VFS* Functions::Load_VFS(FILE * file){
     Boot_Record *bootRecord = new Boot_Record(1, 1);
     fseek(file, 0, SEEK_SET);
     fread(bootRecord, sizeof(Boot_Record), 1, file);
-    VFS* vfs = new VFS(file, bootRecord->cluster_count, bootRecord->cluster_size);
+    VFS* vfs = new VFS(bootRecord->cluster_count, bootRecord->cluster_size);
     vfs->boot_record = bootRecord;
     //bitmap
-    fseek(vfs->file, vfs->boot_record->bitmap_start_address, SEEK_SET);
-    fread(vfs->bitmap, sizeof(bool), vfs->boot_record->Get_Cluster_Count(), vfs->file);
+    fseek(vfs->file, vfs->boot_record->bitmap_start_cluster, SEEK_SET);
+    //TODO
+	//fread(vfs->bitmap, sizeof(bool), vfs->boot_record->Get_Cluster_Count(), vfs->file);
     //MFT
     MFT* mft = new MFT();
-    fseek(vfs->file, vfs->boot_record->mft_start_address, SEEK_SET);
+    fseek(vfs->file, vfs->boot_record->mft_start_cluster, SEEK_SET);
     fread(mft, sizeof(MFT), 1, vfs->file);
     vfs->mft->size = mft->size;
     vfs->mft->UID_counter = mft->UID_counter;
     //MFTItems
     for (int i = 0; i<=vfs->mft->size; i++) {
-        fseek(vfs->file,vfs->boot_record->mft_start_address+sizeof(MFT)+i*sizeof(Mft_Item)+ i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment), SEEK_SET);
+        fseek(vfs->file,vfs->boot_record->mft_start_cluster+sizeof(MFT)+i*sizeof(Mft_Item)+ i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment), SEEK_SET);
         Mft_Item* item = new Mft_Item(0, false, "", 0, 0, false, 0);
         fread(item, sizeof(Mft_Item), 1, vfs->file);
         for (int j = 0; j<vfs->boot_record->mft_max_fragment_count; j++) {
-            fseek(vfs->file, vfs->boot_record->mft_start_address+sizeof(MFT)+i*sizeof(Mft_Item)+i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment) +sizeof(Mft_Item)+j*sizeof(Mft_Fragment), SEEK_SET);
+            fseek(vfs->file, vfs->boot_record->mft_start_cluster+sizeof(MFT)+i*sizeof(Mft_Item)+i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment) +sizeof(Mft_Item)+j*sizeof(Mft_Fragment), SEEK_SET);
             Mft_Fragment * fragment = new Mft_Fragment(0, 0, 0);           
             fread(fragment,sizeof(Mft_Fragment), 1, vfs->file);
             item->fragments[j]=fragment;
@@ -348,32 +329,21 @@ Mft_Item* Functions::Get_Mft_Item(VFS* vfs, int uid){
     }
     return NULL;
 }
-
 void  Functions::Print_MFT(VFS* vfs){
-    for (size_t i = 0; i<vfs->mft->mft_items.size(); i++) {
-        if(vfs->mft->mft_items[i]->is_symlink){
-            cout << "*";
-        }
-        else if(vfs->mft->mft_items[i]->is_directory){
-            cout << "+";
-        }
-        else{
-            cout << "-";
-        }
-        cout << vfs->mft->mft_items[i]->item_name << ": "
-        << "UID: "<< vfs->mft->mft_items[i]->uid << " "
-        << "PUID: "<< vfs->mft->mft_items[i]->parent_ID << " "
-        << "SIZE: "<<vfs->mft->mft_items[i]->item_size << endl;
-    }
-    cout << endl;
-}
-void Functions::Print_Boot_Record(VFS *vfs){
-    cout <<"SIGNATURE: " << vfs->boot_record->signature<<endl
-    << "DISK_SIZE: " << vfs->boot_record->disk_size<<endl
-    << "CLUSTER_SIZE: " << vfs->boot_record->cluster_size<<endl
-    << "CLUSTE_COUNT: " << vfs->boot_record->cluster_count<<endl
-    << "MFT_ADRESS: " << vfs->boot_record->mft_start_address<<endl
-    << "BITMAP_ADRESS: " << vfs->boot_record->bitmap_start_address<<endl
-    << "DATA_ADRESS: "<< vfs->boot_record->data_start_address<<endl
-    << "FRAGMENT_COUNT: "<< vfs->boot_record->mft_max_fragment_count<<endl;
+	for (size_t i = 0; i<vfs->mft->mft_items.size(); i++) {
+		if(vfs->mft->mft_items[i]->is_symlink){
+			std::cout << "*";
+		}
+		else if(vfs->mft->mft_items[i]->is_directory){
+			std::cout << "+";
+		}
+		else{
+			std::cout << "-";
+		}
+		std::cout << vfs->mft->mft_items[i]->item_name << ": "
+			<< "UID: "<< vfs->mft->mft_items[i]->uid << " "
+			<< "PUID: "<< vfs->mft->mft_items[i]->parent_ID << " "
+			<< "SIZE: "<<vfs->mft->mft_items[i]->item_size << std::endl;
+	}
+	std::cout << std::endl;
 }

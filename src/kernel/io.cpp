@@ -6,8 +6,9 @@ std::mutex working_directory_mutex;
 std::mutex io_mutex;
 std::mutex pipe_mutex;
 
-IO::IO(IO_Process *i_io_process) {
+IO::IO(IO_Process *i_io_process, VFS *i_vfs) {
 	io_process = i_io_process;
+	vfs = i_vfs;
 }
 
 size_t Read_Line_From_Console(char *buffer, const size_t buffer_size) {
@@ -104,12 +105,17 @@ void IO::Write_File(kiv_hal::TRegisters &regs) {
 	kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
 	regs.flags.carry |= (registers.rax.r == 0 ? 1 : 0);	//jestli jsme nezapsali zadny znak, tak jiste doslo k nejake chybe
 	regs.rax = registers.rcx;	//VGA BIOS nevraci pocet zapsanych znaku, tak predpokladame, ze zapsal vsechny
-	
 
 	//IN : dx je handle souboru, rdi je pointer na buffer, rcx je pocet bytu v bufferu k zapsani
 	//OUT : rax je pocet zapsanych bytu
 
 	//regs.rax.r = size_t
+}
+
+void IO::Print_VFS() {
+	printf("\n");
+	Functions::Print_MFT(vfs);
+	Functions::Print_Bitmap(vfs);
 }
 
 void IO::Read_File(kiv_hal::TRegisters &regs) {
@@ -124,7 +130,11 @@ void IO::Read_File(kiv_hal::TRegisters &regs) {
 
 	//regs.rax.x = read;
 
+	//Commands::Create_Directory(vfs, "a");
+	//Commands::Create_Directory(vfs, "a/b");
+	//Commands::Create_Directory(vfs, "b");
 
+	//Print_VFS();
 
 	regs.rax.r = Read_Line_From_Console(reinterpret_cast<char*>(regs.rdi.r), regs.rcx.r);	
 }
@@ -170,13 +180,9 @@ void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) {
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t current_process_ID = io_process->thread_ID_to_process_ID.find(current_thread_ID)->second;
 
-	// TODO Set_Working_Dir: Check if new directory is "." or ".." and handle it.
-	//												   without parameter -> print current path
-	//												   "."				 -> do nothing.
-	//												   ".."				 -> go to parent folder of current folder.
-	// TODO Set_Working_Dir: Check if directory exists in VFS.
+	bool success = Commands::Move_To_Directory(vfs, new_directory, io_process->processes[current_process_ID]->working_dir);
 
-	strcpy_s(io_process->processes[current_process_ID]->working_directory, PATH_MAX, new_directory);
+	regs.rax.x = static_cast<decltype(regs.rax.x)>(success);
 }
 
 void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
@@ -188,10 +194,19 @@ void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t current_process_ID = io_process->thread_ID_to_process_ID.find(current_thread_ID)->second;
 
-	size_t working_directory_size = strlen(io_process->processes[current_process_ID]->working_directory);
+	std::vector<Mft_Item*> current_path = io_process->processes[current_process_ID]->working_dir;
 
-	strcpy_s(path, path_size, io_process->processes[current_process_ID]->working_directory);
-	written_chars = working_directory_size;
+	std::string path_string;
+
+	for (int i = 0; i < current_path.size(); i++) {
+		path_string += io_process->processes[current_process_ID]->working_dir[i]->item_name;
+		if (i < current_path.size() - 1) {
+			path_string += '/';
+		}
+		written_chars += strlen(current_path[i]->item_name);
+	}
+
+	strcpy_s(path, path_size, path_string.c_str());
 
 	regs.rax.r = written_chars;
 }

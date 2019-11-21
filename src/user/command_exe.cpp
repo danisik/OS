@@ -3,9 +3,10 @@
 #include <string>
 
 void cd(const char *new_directory, kiv_os::THandle out) {
-	bool setted = kiv_os_rtl::Set_Working_Dir(new_directory);
+	bool setted = true;
+	kiv_os_rtl::Set_Working_Dir(new_directory, setted);
 	if (!setted) {
-		char *error_message = "Systém nemùže nalézt uvedenou cestu.";
+		char *error_message = "The system cannot find the listed path.";
 
 		size_t written = 0;
 		kiv_os_rtl::Write_File(out, error_message, strlen(error_message), written);

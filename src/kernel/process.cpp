@@ -1,10 +1,16 @@
 #include "process.h"
 
-Process::Process(size_t p_process_ID, char *p_name, char *p_working_directory) {
+Process::Process(size_t p_process_ID, char *p_name, std::vector<Mft_Item*> p_working_dir) {
 	process_ID = p_process_ID;
 	name = p_name;
 	state = State::Runnable;
-	strcpy_s(working_directory, PATH_MAX, p_working_directory);
+	working_dir = p_working_dir;
+}
+
+Process::Process(size_t p_process_ID, char *p_name) {
+	process_ID = p_process_ID;
+	name = p_name;
+	state = State::Runnable;
 }
 
 

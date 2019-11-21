@@ -107,8 +107,6 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t current_process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
 
-	char *working_directory = processes[current_process_ID]->working_directory;
-
 	//   |stdin|stdout| in hex
 	//    |....|....| 
 	//	  
@@ -123,7 +121,7 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	process_registers.rbx.x = regs.rbx.e & 0x0000FFFF;	// Stdout.
 	process_registers.rdi.r = regs.rdi.r;				// Arguments.
 
-	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), export_name, working_directory);
+	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), export_name, processes[current_process_ID]->working_dir);
 	
 	// Create first thread.
 	kiv_os::TThread_Proc entry_point = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, export_name);
