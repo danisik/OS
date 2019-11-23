@@ -71,6 +71,10 @@ void Remove_Kernel_Process(kiv_os::THandle kernel_handler) {
 
 kiv_os::THandle Shell_Clone() {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
+
+	std_in_shell = Convert_Native_Handle(new STD_Handle_In());
+	std_out_shell = Convert_Native_Handle(new STD_Handle_Out());
+
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>("shell");
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>("");
 
@@ -153,10 +157,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 	}
 
 	kiv_os::THandle kernel_handler;
-	kernel_handler = Create_Kernel_Process();
-	
-	std_in_shell = regs.rax.x;
-	std_out_shell = regs.rbx.x;
+	kernel_handler = Create_Kernel_Process();	
 
 	// Create shell.
 	kiv_os::THandle handle = Shell_Clone();

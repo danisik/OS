@@ -13,7 +13,6 @@ std::mt19937 gen(rd());
 std::uniform_int_distribution<> dis(1, 6);
 
 
-
 kiv_os::THandle Convert_Native_Handle(const HANDLE hnd) {
 	std::lock_guard<std::mutex> guard(Handles_Guard);
 
@@ -39,4 +38,122 @@ bool Remove_Handle(const kiv_os::THandle hnd) {
 	std::lock_guard<std::mutex> guard(Handles_Guard);
 
 	return Handles.erase(hnd) == 1;
+}
+
+//------------------------
+//-----Handle methods-----
+//------------------------
+
+size_t IO_Handle::Read(char *buffer, size_t buffer_length) {
+	// Do nothing.
+	return 0;
+}
+
+size_t IO_Handle::Write(char *buffer, size_t buffer_length) {
+	// Do nothing.
+	return 0;
+}
+
+void IO_Handle::Close() {
+	// Do nothing.
+	return;
+}
+
+//------------------------
+//---STD handle methods---
+//------------------------
+
+size_t STD_Handle_In::Read(char *buffer, size_t buffer_length) {
+	kiv_hal::TRegisters registers;
+
+	size_t pos = 0;
+	while (pos < buffer_length) {
+		//read char
+		registers.rax.h = static_cast<decltype(registers.rax.l)>(kiv_hal::NKeyboard::Read_Char);
+		kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Keyboard, registers);
+
+		if (!registers.flags.non_zero) break;	//nic jsme neprecetli, 
+												//pokud je rax.l EOT, pak byl zrejme vstup korektne ukoncen
+												//jinak zrejme doslo k chybe zarizeni
+
+		char ch = registers.rax.l;
+
+		//osetrime zname kody
+		switch (static_cast<kiv_hal::NControl_Codes>(ch)) {
+		case kiv_hal::NControl_Codes::BS: {
+			//mazeme znak z bufferu
+			if (pos > 0) pos--;
+
+			registers.rax.h = static_cast<decltype(registers.rax.l)>(kiv_hal::NVGA_BIOS::Write_Control_Char);
+			registers.rdx.l = ch;
+			kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
+		}
+										  break;
+
+		case kiv_hal::NControl_Codes::LF:  break;	//jenom pohltime, ale necteme
+		case kiv_hal::NControl_Codes::NUL:			//chyba cteni?
+		case kiv_hal::NControl_Codes::CR:  return pos;	//docetli jsme az po Enter
+
+
+		default: buffer[pos] = ch;
+			pos++;
+			registers.rax.h = static_cast<decltype(registers.rax.l)>(kiv_hal::NVGA_BIOS::Write_String);
+			registers.rdx.r = reinterpret_cast<decltype(registers.rdx.r)>(&ch);
+			registers.rcx.r = 1;
+			kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
+			break;
+		}
+	}
+
+	return pos;
+}
+
+size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length) {
+	kiv_hal::TRegisters registers;
+	registers.rax.h = static_cast<decltype(registers.rax.h)>(kiv_hal::NVGA_BIOS::Write_String);
+	registers.rdx.r = reinterpret_cast<decltype(registers.rdx.r)>(buffer);
+	registers.rcx.r = buffer_length;
+	kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
+
+	return registers.rcx.r;
+}
+
+//------------------------
+//---File handle methods--
+//------------------------
+
+size_t File_Handle::Read(char *buffer, size_t buffer_length) {
+	return 0;
+}
+
+size_t File_Handle::Write(char *buffer, size_t buffer_length) {
+	return 0;
+}
+
+//------------------------
+//Direcotry handle methods
+//------------------------
+
+size_t Directory_Handle::Read(char *buffer, size_t buffer_length) {
+	return 0;
+}
+
+size_t Directory_Handle::Write(char *buffer, size_t buffer_length) {
+	return 0;
+}
+
+//------------------------
+//---Pipe handle methods--
+//------------------------
+
+size_t Pipe_Handle::Read(char *buffer, size_t buffer_length) {
+	return 0;
+}
+
+size_t Pipe_Handle::Write(char *buffer, size_t buffer_length) {
+	return 0;
+}
+
+void Pipe_Handle::Close() {
+
 }
