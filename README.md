@@ -19,16 +19,16 @@ IDE: MS Visual Studio 2017 (MS Visual C++)
   ? md
   
   ? rd
+  
+  ? dir
+  
+  ? type
+  
+  ? freq
 
 
 ## Nevytvořené commandy:
 
-  ✘ dir
-  
-  ✘ type
-  
   ✘ sort
   
   ✘ tasklist / ps
-  
-  ✘ freq
