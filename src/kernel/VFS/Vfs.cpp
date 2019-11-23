@@ -32,7 +32,7 @@ VFS::VFS(uint64_t cluster_count, uint16_t cluster_size){
     }
 
 	// Init root.
-	Mft_Item* mftItem = new Mft_Item(-1, true, "", 1, -2, false, -1);
+	Mft_Item* mftItem = new Mft_Item(-1, kiv_os::NFile_Attributes::Directory, "", 1, -2, false, -1);
 	if (Functions::Is_Bitmap_Writable(this, mftItem->item_size)) {
 		Functions::Write_To_Data_Block(this, mftItem);
 	}

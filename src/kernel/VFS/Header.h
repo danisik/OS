@@ -10,6 +10,8 @@
 #include <map>
 #include "Constants.hpp"
 #include "../../api/hal.h"
+#include "../../api/api.h"
+
 //#include "../../api/api.h"
 
 //using namespace std;
@@ -26,11 +28,12 @@ public:
 class Mft_Item {
     
 public:
-    Mft_Item(int, bool, std::string, long, int, bool, int);
+    Mft_Item(size_t, kiv_os::NFile_Attributes, std::string, long, size_t, bool, int);
     
-    int uid;                                        //UID polozky, pokud UID = UID_ITEM_FREE, je polozka volna
-    int parent_ID;
-    bool is_directory;                                   //soubor, nebo adresar
+	size_t uid;                                        //UID polozky, pokud UID = UID_ITEM_FREE, je polozka volna
+	size_t parent_ID;
+	//kiv_os::NFile_Attributes::Directory
+	kiv_os::NFile_Attributes is_directory;                                   //soubor, nebo adresar
     int item_order;                                  //poradi v MFT pri vice souborech, jinak 1
     int item_order_total;                            //celkovy pocet polozek v MFT
     char item_name[12];                                 //8+3 + /0 C/C++ ukoncovaci string znak
@@ -43,7 +46,6 @@ public:
 class Boot_Record{
 public:
     Boot_Record(uint64_t, uint16_t);
-    void initBootRecord(long);
 	uint64_t Get_Cluster_Count() { return this->cluster_count;};
     char signature[9];              //login autora FS
     char volume_descriptor[251];    //popis vygenerovaného FS
@@ -63,7 +65,7 @@ public:
     MFT();
     bool Is_In_MFT(std::string);
 	std::vector<Mft_Item*> mft_items;
-    int UID_counter;
+	size_t UID_counter;
     int32_t size;
     
 };
@@ -85,7 +87,7 @@ public:
 
 class Commands{
 public:
-    static void Create_Directory(VFS*, std::string, std::vector<Mft_Item*>);
+    static size_t Create_Item(VFS*, std::string, std::vector<Mft_Item*>, kiv_os::NFile_Attributes);
     static bool Move_To_Directory(VFS*, std::string, std::vector<Mft_Item*>&);
     static void Move_To_Root(VFS*);
     static void List_With_Params(VFS*, std::string);
@@ -101,11 +103,11 @@ public:
 
 class Exist_Item{
 public:
-    int parent_ID;
-    int uid;
+	size_t parent_ID;
+	size_t uid;
     bool exists;
     bool path_exists;
-    bool is_directory;
+	kiv_os::NFile_Attributes is_directory;
 };
 
 class Functions{
@@ -120,7 +122,7 @@ public:
     static void Copy_To_Clusters(VFS*,Mft_Item*, Mft_Item*);
     static void Save_Vfs_To_File(VFS*);
 	static void Print_Bitmap(VFS*);
-    static Mft_Item* Get_Mft_Item(VFS*, int);
+    static Mft_Item* Get_Mft_Item(VFS*, size_t);
     static void Print_Clusters(VFS*, Mft_Item*);
 	static void Print_MFT(VFS* );
     static VFS* Load_VFS(FILE*);

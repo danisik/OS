@@ -18,26 +18,59 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 	char* file_name = reinterpret_cast<char*>(regs.rdx.r);
 	kiv_os::NOpen_File flags = static_cast<kiv_os::NOpen_File>(regs.rcx.r);
 	kiv_os::NFile_Attributes attributes = static_cast<kiv_os::NFile_Attributes>(regs.rdi.r);
-	HANDLE handle = NULL;
 
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t current_process_ID = io_process->thread_ID_to_process_ID.find(current_thread_ID)->second;
-
 	
 	Exist_Item* item = Functions::Check_Path(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
 
-	if (item->path_exists && item->exists && item->is_directory) {
-		// TODO Open_File: Open existing directory.
-	}
-	else if (item->path_exists && !item->exists) {
-		// TODO Open_File: Set handler.
-		Commands::Create_Directory(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
-	}
-	else if (!item->path_exists) {
+	if (!item->path_exists) {
 		// Path did not exists. 
+		printf("Path did not exists.");
 		return;
 	}
-	
+
+	if (flags == kiv_os::NOpen_File::fmOpen_Always) {
+		// Item must exists.
+
+		if (!item->exists) {
+			// File did not exists.
+			printf("File did not exists.");
+			return;
+		}
+
+		if (attributes == kiv_os::NFile_Attributes::Directory) {
+			Directory_Handle *dir_handle = new Directory_Handle();
+			dir_handle->directory_id = item->uid;
+			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(dir_handle));
+		}
+		else {
+			File_Handle *file_handle = new File_Handle();
+			file_handle->file_id = item->uid;
+			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(file_handle));
+		}
+	}
+	else {
+		// Item did not exists. 
+		size_t item_uid = Commands::Create_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir, attributes);
+		
+		if (item_uid == -2) {
+			return;
+		}
+
+		if (attributes == kiv_os::NFile_Attributes::Directory) {
+			Directory_Handle *dir_handle = new Directory_Handle();
+			dir_handle->directory_id = item_uid;
+			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(dir_handle));
+		}
+		else {
+			File_Handle *file_handle = new File_Handle();
+			file_handle->file_id = item_uid;
+			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(file_handle));
+		}
+	}
+
+	return;
 
 	// TODO Open_File: functional code.
 
@@ -53,7 +86,7 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 	*/
 
 	// Return handler.
-	regs.rax.x = Convert_Native_Handle(static_cast<HANDLE>(handle));
+	//regs.rax.x = Convert_Native_Handle(static_cast<HANDLE>(handle));
 }
 
 void IO::Write_File(kiv_hal::TRegisters &regs) {
@@ -63,7 +96,7 @@ void IO::Write_File(kiv_hal::TRegisters &regs) {
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
 	size_t buffer_length = regs.rcx.r;	
 
-	regs.rax.r = file_handle->Write(buffer, buffer_length);
+	regs.rax.r = file_handle->Write(buffer, buffer_length, vfs);
 }
 
 void IO::Print_VFS() {
@@ -77,7 +110,7 @@ void IO::Read_File(kiv_hal::TRegisters &regs) {
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
 	size_t buffer_length = regs.rcx.r;
 
-	regs.rax.r = file_handle->Read(buffer, buffer_length);
+	regs.rax.r = file_handle->Read(buffer, buffer_length, vfs);
 }
 
 void IO::Seek(kiv_hal::TRegisters &regs) {
@@ -106,8 +139,6 @@ void IO::Delete_File(kiv_hal::TRegisters &regs) {
 	size_t current_process_ID = io_process->thread_ID_to_process_ID.find(current_thread_ID)->second;
 
 	Commands::Remove_Directory(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
-
-	// TODO Delete_File: functional code.
 }
 
 void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) {

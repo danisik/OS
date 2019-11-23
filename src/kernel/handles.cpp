@@ -44,12 +44,12 @@ bool Remove_Handle(const kiv_os::THandle hnd) {
 //-----Handle methods-----
 //------------------------
 
-size_t IO_Handle::Read(char *buffer, size_t buffer_length) {
+size_t IO_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	// Do nothing.
 	return 0;
 }
 
-size_t IO_Handle::Write(char *buffer, size_t buffer_length) {
+size_t IO_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 	// Do nothing.
 	return 0;
 }
@@ -63,7 +63,7 @@ void IO_Handle::Close() {
 //---STD handle methods---
 //------------------------
 
-size_t STD_Handle_In::Read(char *buffer, size_t buffer_length) {
+size_t STD_Handle_In::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	kiv_hal::TRegisters registers;
 
 	size_t pos = 0;
@@ -108,7 +108,7 @@ size_t STD_Handle_In::Read(char *buffer, size_t buffer_length) {
 	return pos;
 }
 
-size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length) {
+size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 	kiv_hal::TRegisters registers;
 	registers.rax.h = static_cast<decltype(registers.rax.h)>(kiv_hal::NVGA_BIOS::Write_String);
 	registers.rdx.r = reinterpret_cast<decltype(registers.rdx.r)>(buffer);
@@ -122,11 +122,11 @@ size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length) {
 //---File handle methods--
 //------------------------
 
-size_t File_Handle::Read(char *buffer, size_t buffer_length) {
+size_t File_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	return 0;
 }
 
-size_t File_Handle::Write(char *buffer, size_t buffer_length) {
+size_t File_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 	return 0;
 }
 
@@ -134,11 +134,7 @@ size_t File_Handle::Write(char *buffer, size_t buffer_length) {
 //Direcotry handle methods
 //------------------------
 
-size_t Directory_Handle::Read(char *buffer, size_t buffer_length) {
-	return 0;
-}
-
-size_t Directory_Handle::Write(char *buffer, size_t buffer_length) {
+size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	return 0;
 }
 
@@ -146,11 +142,11 @@ size_t Directory_Handle::Write(char *buffer, size_t buffer_length) {
 //---Pipe handle methods--
 //------------------------
 
-size_t Pipe_Handle::Read(char *buffer, size_t buffer_length) {
+size_t Pipe_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	return 0;
 }
 
-size_t Pipe_Handle::Write(char *buffer, size_t buffer_length) {
+size_t Pipe_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 	return 0;
 }
 

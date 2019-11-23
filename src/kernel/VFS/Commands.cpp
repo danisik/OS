@@ -1,7 +1,7 @@
 #include "header.h"
 
 
-void Commands::Create_Directory(VFS* vfs, std::string path, std::vector<Mft_Item*> current_path){
+size_t Commands::Create_Item(VFS* vfs, std::string path, std::vector<Mft_Item*> current_path, kiv_os::NFile_Attributes is_directory){
 	
     Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
     size_t i = path.find_last_of(FOLDER_SPLIT);
@@ -14,16 +14,18 @@ void Commands::Create_Directory(VFS* vfs, std::string path, std::vector<Mft_Item
         int size  = 1;
         if(Functions::Is_Bitmap_Writable(vfs, size)){
             
-            Mft_Item *mftItem = new Mft_Item(vfs->mft->UID_counter, true, path, size, item->uid, false, -1);
+            Mft_Item *mftItem = new Mft_Item(vfs->mft->UID_counter, is_directory, path, size, item->uid, false, -1);
             vfs->mft->UID_counter++;
             vfs->mft->size++;
             Functions::Write_To_Data_Block(vfs, mftItem);
             //Functions::Save_Vfs_To_File(vfs);
+			return mftItem->uid;
         }
     }
     else if(item->exists){
-		std::cout << "FOLDER ALREADY EXISTS"<< std::endl;
+		std::cout << "ITEM ALREADY EXISTS"<< std::endl;
     }
+	return -2;
 }
 
 bool Commands::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_Item*> &current_path){
@@ -39,7 +41,12 @@ bool Commands::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_Ite
     }
     Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
         
-    if(item->path_exists && item->exists && item->is_directory){
+    if(item->path_exists && item->exists){
+		if (item->is_directory != kiv_os::NFile_Attributes::Directory) {
+			printf("Item is not directory.\n");
+			return false;
+		}
+
         Functions::Move_To_Path(vfs, path, current_path);
 		return true;
     }
@@ -82,7 +89,7 @@ void Commands::List(VFS* vfs){
             if(vfs->mft->mft_items[i]->is_symlink){
 				std::cout << "*" << vfs->mft->mft_items[i]->item_name << std::endl;
             }
-            else if(vfs->mft->mft_items[i]->is_directory){
+            else if(vfs->mft->mft_items[i]->is_directory == kiv_os::NFile_Attributes::Directory){
 				std::cout <<"+"<< vfs->mft->mft_items[i]->item_name << std::endl;
             } else{
 				std::cout <<"-"<< vfs->mft->mft_items[i]->item_name << std::endl;
@@ -111,7 +118,7 @@ void Commands::Remove_Directory(VFS * vfs, std::string path, std::vector<Mft_Ite
         }
     }
     else if(!item->exists || !item->path_exists){
-		std::cout << "DIRECTORY NOT FOUND" << std::endl;
+		std::cout << "ITEM NOT FOUND" << std::endl;
     }
 }
 void Commands::removeFile(VFS * vfs, std::string path){

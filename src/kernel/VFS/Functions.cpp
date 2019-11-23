@@ -8,7 +8,7 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
     item->parent_ID = current_path[current_path.size()-1]->parent_ID;
     item->exists = false;
     item->path_exists = false;
-    item->is_directory = true;
+    item->is_directory = kiv_os::NFile_Attributes::Directory;
     size_t i;
 	std::string tok;
     while((i = path.find(FOLDER_SPLIT)) != std::string::npos){
@@ -21,13 +21,14 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
                 item->uid = vfs->mft->mft_items[j]->uid;
                 item->parent_ID = vfs->mft->mft_items[j]->parent_ID;
                 item->path_exists = true;
-                if(vfs->mft->mft_items[j]->is_directory){
+                if(vfs->mft->mft_items[j]->is_directory == kiv_os::NFile_Attributes::Directory){
                     item->path_exists = true;
-                    item->is_directory = true;
+                    item->is_directory = kiv_os::NFile_Attributes::Directory;
                 }
                 else {
+					printf("Item is not a directory.\n");
                     item->path_exists = false;
-                    item->is_directory = false;
+                    item->is_directory = kiv_os::NFile_Attributes::Archive;
                     return item;
                 }
                 break;
@@ -46,8 +47,8 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
             item->uid = vfs->mft->mft_items[j]->uid;
             item->parent_ID = vfs->mft->mft_items[j]->parent_ID;
             item->exists = true;
-            if(vfs->mft->mft_items[j]->is_directory) item->is_directory = true;
-            else item->is_directory = false;
+            if(vfs->mft->mft_items[j]->is_directory == kiv_os::NFile_Attributes::Directory) item->is_directory = kiv_os::NFile_Attributes::Directory;
+            else item->is_directory = kiv_os::NFile_Attributes::Archive;
             return item;
         }
     }
@@ -56,8 +57,10 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
 }
 
 bool Functions::Is_Directory_Empty(VFS* vfs, Exist_Item * item){
+	if (item->is_directory != kiv_os::NFile_Attributes::Directory) {
+		return true;
+	}
     for(size_t i = 0; i < vfs->mft->mft_items.size(); i++){
-		printf("%d %d %d\n", vfs->mft->mft_items[i]->parent_ID, vfs->mft->mft_items[i]->uid, item->uid);
         if(vfs->mft->mft_items[i]->parent_ID == item->uid){
             return false;
         }
@@ -301,7 +304,7 @@ VFS* Functions::Load_VFS(FILE * file){
     //MFTItems
     for (int i = 0; i<=vfs->mft->size; i++) {
         fseek(vfs->file,vfs->boot_record->mft_start_cluster+sizeof(MFT)+i*sizeof(Mft_Item)+ i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment), SEEK_SET);
-        Mft_Item* item = new Mft_Item(0, false, "", 0, 0, false, 0);
+        Mft_Item* item = new Mft_Item(0, kiv_os::NFile_Attributes::Archive, "", 0, 0, false, 0);
         fread(item, sizeof(Mft_Item), 1, vfs->file);
         for (int j = 0; j<vfs->boot_record->mft_max_fragment_count; j++) {
             fseek(vfs->file, vfs->boot_record->mft_start_cluster+sizeof(MFT)+i*sizeof(Mft_Item)+i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment) +sizeof(Mft_Item)+j*sizeof(Mft_Fragment), SEEK_SET);
@@ -322,7 +325,7 @@ void Functions::Delete_Links(VFS* vfs, Mft_Item* mftItem){
     }
 }
 
-Mft_Item* Functions::Get_Mft_Item(VFS* vfs, int uid){
+Mft_Item* Functions::Get_Mft_Item(VFS* vfs, size_t uid){
     for (size_t i = 0; i<vfs->mft->mft_items.size(); i++) {
         if(vfs->mft->mft_items[i]->uid == uid){
             return vfs->mft->mft_items[i];
@@ -335,7 +338,7 @@ void  Functions::Print_MFT(VFS* vfs){
 		if(vfs->mft->mft_items[i]->is_symlink){
 			std::cout << "*";
 		}
-		else if(vfs->mft->mft_items[i]->is_directory){
+		else if(vfs->mft->mft_items[i]->is_directory == kiv_os::NFile_Attributes::Directory){
 			std::cout << "+";
 		}
 		else{
