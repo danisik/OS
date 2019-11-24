@@ -135,6 +135,12 @@ size_t File_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 //------------------------
 
 size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
+	std::vector<size_t> directory_items = Functions::Get_Items_In_Directory(vfs, this->directory_id);
+
+	for (size_t i = 0; i < directory_items.size(); i++) {
+		printf("%s\n", Functions::Get_Mft_Item(vfs, directory_items.at(i))->item_name);
+	}
+
 	return 0;
 }
 

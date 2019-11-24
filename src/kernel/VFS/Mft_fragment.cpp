@@ -1,7 +1,7 @@
 #include "header.h"
 
-Mft_Fragment::Mft_Fragment(int bitmap_start_ID, int32_t start_address, int32_t count){
+Mft_Fragment::Mft_Fragment(int bitmap_start_ID, size_t start_cluster, size_t cluster_count){
     this->bitmap_start_ID = bitmap_start_ID;
-    this->fragment_start_address = start_address;
-    this->fragment_count = count;
+    this->fragment_start_cluster = start_cluster;
+    this->fragment_cluster_count = cluster_count;
 }

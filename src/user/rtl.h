@@ -21,7 +21,7 @@ namespace kiv_os_rtl {
 	bool Read_File(kiv_os::THandle file_handle, const char *buffer, size_t buffer_size, size_t &read);
 	bool Seek(kiv_os::THandle file_handle, kiv_os::NFile_Seek seek_operation, kiv_os::NFile_Seek new_position, size_t &position);
 	bool Close_Handle(kiv_os::THandle file_handle);
-	bool Delete_File(char *file_name);
+	bool Delete_File(const char *file_name);
 	bool Set_Working_Dir(const char *new_directory, bool &success);
 	bool Get_Working_Dir(char *path, size_t path_size, size_t &written_chars);
 	bool Create_Pipe(kiv_os::THandle pipein_handle, kiv_os::THandle pipeout_handle);

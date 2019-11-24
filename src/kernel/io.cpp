@@ -39,7 +39,7 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 			return;
 		}
 
-		if (attributes == kiv_os::NFile_Attributes::Directory) {
+		if (attributes == kiv_os::NFile_Attributes::Directory && item->is_directory == kiv_os::NFile_Attributes::Directory) {
 			Directory_Handle *dir_handle = new Directory_Handle();
 			dir_handle->directory_id = item->uid;
 			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(dir_handle));
@@ -71,22 +71,6 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 	}
 
 	return;
-
-	// TODO Open_File: functional code.
-
-	/*
-	Nasledujici dve vetve jsou ukazka, ze starsiho zadani, ktere ukazuji, jak mate mapovat 
-	Windows HANDLE na kiv_os handle a zpet, vcetne jejich alokace a uvolneni
-
-	HANDLE result = CreateFileA((char*)regs.rdx.r, GENERIC_READ | GENERIC_WRITE, (DWORD)regs.rcx.r, 0, OPEN_EXISTING, 0, 0);
-			//zde je treba podle Rxc doresit shared_read, shared_write, OPEN_EXISING, etc. podle potreby
-			regs.flags.carry = result == INVALID_HANDLE_VALUE;
-			if (!regs.flags.carry) regs.rax.x = Convert_Native_Handle(result);
-			else regs.rax.r = GetLastError();
-	*/
-
-	// Return handler.
-	//regs.rax.x = Convert_Native_Handle(static_cast<HANDLE>(handle));
 }
 
 void IO::Write_File(kiv_hal::TRegisters &regs) {

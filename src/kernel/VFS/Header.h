@@ -18,9 +18,9 @@
 
 class Mft_Fragment {
 public:
-    Mft_Fragment(int, int32_t, int32_t);
-    int32_t fragment_start_address;     //start adresa
-    int32_t fragment_count;             //pocet clusteru ve fragmentu
+    Mft_Fragment(int, size_t, size_t);
+    size_t fragment_start_cluster;			//start adresa
+    size_t fragment_cluster_count;             //pocet clusteru ve fragmentu
     int bitmap_start_ID;
 };
 
@@ -32,7 +32,6 @@ public:
     
 	size_t uid;                                        //UID polozky, pokud UID = UID_ITEM_FREE, je polozka volna
 	size_t parent_ID;
-	//kiv_os::NFile_Attributes::Directory
 	kiv_os::NFile_Attributes is_directory;                                   //soubor, nebo adresar
     int item_order;                                  //poradi v MFT pri vice souborech, jinak 1
     int item_order_total;                            //celkovy pocet polozek v MFT
@@ -127,6 +126,7 @@ public:
 	static void Print_MFT(VFS* );
     static VFS* Load_VFS(FILE*);
     static void Delete_Links(VFS*, Mft_Item*);
+	static std::vector<size_t> Get_Items_In_Directory(VFS*, size_t);
     
 };
 

@@ -19,12 +19,12 @@ public:
 
 	void Print_VFS();
 
-	void Open_File(kiv_hal::TRegisters &regs); // Creating empty folders only.
-	void Write_File(kiv_hal::TRegisters &regs); // Not implemented yet.
-	void Read_File(kiv_hal::TRegisters &regs); // Not implemented yet.
+	void Open_File(kiv_hal::TRegisters &regs); // Tested.
+	void Write_File(kiv_hal::TRegisters &regs); // Tested only for STD (missing file and pipe).
+	void Read_File(kiv_hal::TRegisters &regs); // Tested only for STD (missing file, directory and pipe).
 	void Seek(kiv_hal::TRegisters &regs); // Not implemented yet.
-	void Close_Handle(kiv_hal::TRegisters &regs); // Not implemented yet.
-	void Delete_File(kiv_hal::TRegisters &regs); // Not implemented yet.
+	void Close_Handle(kiv_hal::TRegisters &regs); // Tested.
+	void Delete_File(kiv_hal::TRegisters &regs); // Tested.
 	void Set_Working_Dir(kiv_hal::TRegisters &regs); // Tested.
 	void Get_Working_Dir(kiv_hal::TRegisters &regs); // Tested.
 	void Create_Pipe(kiv_hal::TRegisters &regs); // Not implemented yet.

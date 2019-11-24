@@ -21,7 +21,7 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 		if (command.base != "cd" && command.base != "echo" && command.base != "ps" && command.base != "rd"
 			&& command.base != "md" && command.base != "type" && command.base != "find" && command.base != "sort"
 			&& command.base != "dir" && command.base != "rgen" && command.base != "freq" && command.base != "shell"
-			&& command.base != "shutdown" && command.base != "exit") {
+			&& command.base != "shutdown" && command.base != "exit" && command.base != "test") {
 
 			std::string output = "Unknown command.\n";
 			size_t written;
