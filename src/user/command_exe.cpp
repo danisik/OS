@@ -18,7 +18,7 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 	int handles_count = 0;
 
 	for each (command_parser::Command command in commands) {
-		if (command.base != "cd" && command.base != "echo" && command.base != "ps" && command.base != "rd"
+		if (command.base != "cd" && command.base != "echo" && command.base != "tasklist" && command.base != "rd"
 			&& command.base != "md" && command.base != "type" && command.base != "find" && command.base != "sort"
 			&& command.base != "dir" && command.base != "rgen" && command.base != "freq" && command.base != "shell"
 			&& command.base != "shutdown" && command.base != "exit" && command.base != "test") {

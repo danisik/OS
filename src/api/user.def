@@ -11,6 +11,6 @@ EXPORTS
 	sort
 	rgen
 	freq
-	ps
+	tasklist
 	shutdown
 	test

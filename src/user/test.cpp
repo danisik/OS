@@ -8,7 +8,7 @@ size_t __stdcall test(const kiv_hal::TRegisters &regs) {
 	std::vector<kiv_os::THandle> handles;
 	int n = 100;
 
-	printf("\Creating directories\n");
+	printf("\nCreating directories\n");
 	// Create directories.
 	for (size_t i = 0; i < n; i++) {
 		kiv_os::THandle handle;
@@ -22,7 +22,7 @@ size_t __stdcall test(const kiv_hal::TRegisters &regs) {
 		kiv_os_rtl::Open_File(file_name.c_str(), flags, kiv_os::NFile_Attributes::Directory, handle);
 		handles.push_back(handle);
 	}
-	printf("\End creating directories\n");
+	printf("\nEnd creating directories\n");
 	// Remove directories
 	printf("\nRemoving directories\n");
 	for (size_t i = 0; i < handles.size(); i++) {

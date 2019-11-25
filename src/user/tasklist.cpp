@@ -1,6 +1,6 @@
-#include "ps.h"
+#include "tasklist.h"
 
-size_t __stdcall ps(const kiv_hal::TRegisters &regs) {
+size_t __stdcall tasklist(const kiv_hal::TRegisters &regs) {
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	
 	const char *file_name = reinterpret_cast<const char*>(regs.rdi.r);

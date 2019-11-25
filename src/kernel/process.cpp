@@ -1,10 +1,12 @@
 #include "process.h"
 
-Process::Process(size_t p_process_ID, char *p_name, std::vector<Mft_Item*> p_working_dir) {
+Process::Process(size_t p_process_ID, char *p_name, std::vector<Mft_Item*> p_working_dir, kiv_os::THandle p_handle_in, kiv_os::THandle p_handle_out) {
 	process_ID = p_process_ID;
 	name = p_name;
 	state = State::Runnable;
 	working_dir = p_working_dir;
+	handle_in = p_handle_in;
+	handle_out = p_handle_out;
 }
 
 Process::Process(size_t p_process_ID, char *p_name) {

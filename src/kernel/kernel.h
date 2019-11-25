@@ -8,7 +8,7 @@
 #include "io_process.h"
 #include "VFS/header.h"
 
-#define NUMBER_OF_SECTORS 5000
+#define NUMBER_OF_SECTORS 2880
 
 
 void Set_Error(const bool failed, kiv_hal::TRegisters &regs);

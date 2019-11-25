@@ -121,7 +121,7 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	process_registers.rbx.x = regs.rbx.e & 0x0000FFFF;	// Stdout.
 	process_registers.rdi.r = regs.rdi.r;				// Arguments.
 
-	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), export_name, processes[current_process_ID]->working_dir);
+	std::unique_ptr<Process> process = std::make_unique<Process>(Get_Free_Process_ID(), export_name, processes[current_process_ID]->working_dir, process_registers.rax.x, process_registers.rbx.x);
 	
 	// Create first thread.
 	kiv_os::TThread_Proc entry_point = (kiv_os::TThread_Proc)GetProcAddress(User_Programs, export_name);
@@ -151,6 +151,9 @@ void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
 	// Get current process and create new thread.
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
+
+	thread_registers.rax.x = processes[process_ID]->handle_in;
+	thread_registers.rbx.x = processes[process_ID]->handle_out;
 
 	size_t cloned_thread_ID = processes.find(process_ID)->second->Create_Thread(entry_point, thread_registers);
 	thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(cloned_thread_ID, processes.find(process_ID)->second->process_ID));
