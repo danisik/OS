@@ -28,7 +28,7 @@ public:
 class Mft_Item {
     
 public:
-    Mft_Item(size_t, kiv_os::NFile_Attributes, std::string, long, size_t, bool, int);
+    Mft_Item(size_t, kiv_os::NFile_Attributes, std::string, size_t, size_t, bool, int);
     
 	size_t uid;                                        //UID polozky, pokud UID = UID_ITEM_FREE, je polozka volna
 	size_t parent_ID;
@@ -36,7 +36,7 @@ public:
     int item_order;                                  //poradi v MFT pri vice souborech, jinak 1
     int item_order_total;                            //celkovy pocet polozek v MFT
     char item_name[12];                                 //8+3 + /0 C/C++ ukoncovaci string znak
-    long item_size;                                  //velikost souboru v bytech
+	size_t item_size;                                  //velikost souboru v bytech
     bool is_symlink;
     int linked_UID;
     Mft_Fragment* fragments[MFT_FRAGMENTS_COUNT]; //fragmenty souboru
@@ -91,7 +91,7 @@ public:
     static void Move_To_Root(VFS*);
     static void List_With_Params(VFS*, std::string);
     static void List(VFS*);
-    static void Remove_Directory(VFS*, std::string, std::vector<Mft_Item*> &);
+    static void Remove_Item(VFS*, std::string, std::vector<Mft_Item*> &);
     static void removeFile(VFS*, std::string);
 	static void Print_MFT(VFS*);
     static void Print_File(VFS*, std::string);
@@ -114,7 +114,7 @@ public:
     static Exist_Item* Check_Path(VFS*, std::string, std::vector<Mft_Item*>);
     static bool Is_Directory_Empty(VFS*, Exist_Item*);
     static void Move_To_Path(VFS*, std::string, std::vector<Mft_Item*>&);
-    static bool Is_Bitmap_Writable(VFS*, long);
+    static bool Is_Bitmap_Writable(VFS*, size_t);
     static void Write_To_Data_Block(VFS*, Mft_Item*);
     static void Remove_From_Data_Block(VFS*, Mft_Item*);
     static void Write_To_Clusters(VFS*, Mft_Item*, FILE*);
@@ -126,7 +126,7 @@ public:
 	static void Print_MFT(VFS* );
     static VFS* Load_VFS(FILE*);
     static void Delete_Links(VFS*, Mft_Item*);
-	static std::vector<size_t> Get_Items_In_Directory(VFS*, size_t);
+	static std::vector<Mft_Item*> Get_Items_In_Directory(VFS*, size_t);
     
 };
 

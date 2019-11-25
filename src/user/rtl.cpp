@@ -9,11 +9,6 @@ kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uin
 	return regs;
 }
 
-uint16_t str_to_uint16(const char *str) {
-	uint16_t val = strtol(str, NULL, 0);
-	return (uint16_t)val;
-}
-
 void kiv_os_rtl::Default_Signal_Handler() {
 	// Do nothing.
 	return;
@@ -67,10 +62,11 @@ bool kiv_os_rtl::Seek(kiv_os::THandle file_handle, kiv_os::NFile_Seek seek_opera
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Seek));
 	
 	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(file_handle);
-	regs.rdi.r = static_cast<decltype(regs.rdi.r)>(new_position);
+	regs.rdi.r = static_cast<decltype(regs.rdi.r)>(position);
+	regs.rcx.x = static_cast<decltype(regs.rcx.x)>(seek_operation);
 	
-	if (kiv_os::NFile_Seek::Set_Size == seek_operation) {
-		// TODO Seek: Set size of file (NEEDED).
+	if (kiv_os::NFile_Seek::Set_Position == seek_operation) {
+		regs.rcx.x = static_cast<decltype(regs.rcx.x)>(new_position);
 	}	
 
 	bool syscall_result = kiv_os::Sys_Call(regs);

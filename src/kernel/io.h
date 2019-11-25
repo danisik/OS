@@ -22,7 +22,7 @@ public:
 	void Open_File(kiv_hal::TRegisters &regs); // Tested.
 	void Write_File(kiv_hal::TRegisters &regs); // Tested only for STD (missing file and pipe).
 	void Read_File(kiv_hal::TRegisters &regs); // Tested only for STD (missing file, directory and pipe).
-	void Seek(kiv_hal::TRegisters &regs); // Not implemented yet.
+	void Seek(kiv_hal::TRegisters &regs); // Tested.
 	void Close_Handle(kiv_hal::TRegisters &regs); // Tested.
 	void Delete_File(kiv_hal::TRegisters &regs); // Tested.
 	void Set_Working_Dir(kiv_hal::TRegisters &regs); // Tested.

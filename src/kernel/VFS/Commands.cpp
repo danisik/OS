@@ -19,6 +19,8 @@ size_t Commands::Create_Item(VFS* vfs, std::string path, std::vector<Mft_Item*> 
             vfs->mft->size++;
             Functions::Write_To_Data_Block(vfs, mftItem);
             //Functions::Save_Vfs_To_File(vfs);
+
+			Functions::Get_Mft_Item(vfs, item->uid)->item_size++;
 			return mftItem->uid;
         }
     }
@@ -98,7 +100,7 @@ void Commands::List(VFS* vfs){
     }
 }
 
-void Commands::Remove_Directory(VFS * vfs, std::string path, std::vector<Mft_Item*> &current_path){
+void Commands::Remove_Item(VFS * vfs, std::string path, std::vector<Mft_Item*> &current_path){
     Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
     
     if(item->exists && item->path_exists){
@@ -108,6 +110,7 @@ void Commands::Remove_Directory(VFS * vfs, std::string path, std::vector<Mft_Ite
                     Functions::Remove_From_Data_Block(vfs, vfs->mft->mft_items[i]);
                     vfs->mft->mft_items.erase(vfs->mft->mft_items.begin() + i);
                     vfs->mft->size--;
+					Functions::Get_Mft_Item(vfs, item->uid)->item_size--;
                     //Functions::Save_Vfs_To_File(vfs);
                 }
             }

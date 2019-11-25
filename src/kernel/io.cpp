@@ -41,13 +41,13 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 
 		if (attributes == kiv_os::NFile_Attributes::Directory && item->is_directory == kiv_os::NFile_Attributes::Directory) {
 			Directory_Handle *dir_handle = new Directory_Handle();
-			dir_handle->directory_id = item->uid;
-			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(dir_handle));
+			dir_handle->uid = item->uid;
+			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(dir_handle));
 		}
 		else {
 			File_Handle *file_handle = new File_Handle();
-			file_handle->file_id = item->uid;
-			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(file_handle));
+			file_handle->uid = item->uid;
+			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(file_handle));
 		}
 	}
 	else {
@@ -60,12 +60,12 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 
 		if (attributes == kiv_os::NFile_Attributes::Directory) {
 			Directory_Handle *dir_handle = new Directory_Handle();
-			dir_handle->directory_id = item_uid;
+			dir_handle->uid = item_uid;
 			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(dir_handle));
 		}
 		else {
 			File_Handle *file_handle = new File_Handle();
-			file_handle->file_id = item_uid;
+			file_handle->uid = item_uid;
 			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(file_handle));
 		}
 	}
@@ -90,23 +90,39 @@ void IO::Print_VFS() {
 }
 
 void IO::Read_File(kiv_hal::TRegisters &regs) {
-	auto file_handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
+	auto file_handle = static_cast<Item_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
 	size_t buffer_length = regs.rcx.r;
-
 	regs.rax.r = file_handle->Read(buffer, buffer_length, vfs);
 }
 
 void IO::Seek(kiv_hal::TRegisters &regs) {
-	//std::lock_guard<std::mutex> lock_mutex(io_mutex);
+	auto file_handle = static_cast<Item_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
+	kiv_os::NFile_Seek new_position = static_cast<kiv_os::NFile_Seek>(regs.rcx.x);
+	size_t position = static_cast<size_t>(regs.rdi.r);
+	Mft_Item *item = Functions::Get_Mft_Item(vfs, file_handle->uid);
+	size_t item_size = item->item_size;
 
-	auto file_handle = Resolve_kiv_os_Handle(regs.rdx.x);
-	kiv_os::NFile_Seek new_position = static_cast<kiv_os::NFile_Seek>(regs.rdi.r);
-	kiv_os::THandle position = NULL;
-
-	// TODO Seek: functional code.
-
-	regs.rax.x = position;
+	// TODO Seek: Maybe write it to virtual drive ?
+	if (new_position == kiv_os::NFile_Seek::Set_Size) {
+		if (position == 0) {
+			position = 1;
+		}
+		item->item_size = position;
+		Functions::Remove_From_Data_Block(vfs, item);
+		Functions::Write_To_Data_Block(vfs, item);
+		printf("Seek size: %zd", position);
+		return;
+	}
+	else if (new_position == kiv_os::NFile_Seek::Get_Position) {
+		regs.rax.r = file_handle->seek;
+		printf("Seek get: %zd\n", regs.rax.r);
+		return;
+	}
+	else {
+		file_handle->Seek(new_position, position, item->item_size);
+		return;
+	}
 }
 
 void IO::Close_Handle(kiv_hal::TRegisters &regs) {
@@ -122,7 +138,7 @@ void IO::Delete_File(kiv_hal::TRegisters &regs) {
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t current_process_ID = io_process->thread_ID_to_process_ID.find(current_thread_ID)->second;
 
-	Commands::Remove_Directory(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
+	Commands::Remove_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
 }
 
 void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) {

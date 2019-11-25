@@ -28,7 +28,7 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
                 else {
 					printf("Item is not a directory.\n");
                     item->path_exists = false;
-                    item->is_directory = kiv_os::NFile_Attributes::Archive;
+                    item->is_directory = kiv_os::NFile_Attributes::System_File;
                     return item;
                 }
                 break;
@@ -48,7 +48,7 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
             item->parent_ID = vfs->mft->mft_items[j]->parent_ID;
             item->exists = true;
             if(vfs->mft->mft_items[j]->is_directory == kiv_os::NFile_Attributes::Directory) item->is_directory = kiv_os::NFile_Attributes::Directory;
-            else item->is_directory = kiv_os::NFile_Attributes::Archive;
+            else item->is_directory = kiv_os::NFile_Attributes::System_File;
             return item;
         }
     }
@@ -110,8 +110,8 @@ void Functions::Move_To_Path(VFS* vfs, std::string path, std::vector<Mft_Item*> 
     }
 }
 
-bool Functions::Is_Bitmap_Writable(VFS* vfs, long size){
-    long neededBitCount = size/vfs->boot_record->cluster_size;
+bool Functions::Is_Bitmap_Writable(VFS* vfs, size_t size){
+	size_t neededBitCount = size/vfs->boot_record->cluster_size;
     if(size % vfs->boot_record->cluster_size != 0) neededBitCount++;
     long bitCount = 0;
     for(int i = 0; i < vfs->boot_record->cluster_count; i++){
@@ -123,8 +123,8 @@ bool Functions::Is_Bitmap_Writable(VFS* vfs, long size){
 
 void Functions::Write_To_Data_Block(VFS * vfs, Mft_Item * mftItem){
     vfs->mft->mft_items.push_back(mftItem);
-    long size = mftItem->item_size;
-    long neededBitCount = size/vfs->boot_record->cluster_size;
+	size_t size = mftItem->item_size;
+	size_t neededBitCount = size/vfs->boot_record->cluster_size;
     if(size % vfs->boot_record->cluster_size != 0) neededBitCount++;
     long writtenBitCount = 0;
     int fragmentID = 0;
@@ -155,7 +155,7 @@ void Functions::Write_To_Data_Block(VFS * vfs, Mft_Item * mftItem){
 void Functions::Write_To_Clusters(VFS * vfs, Mft_Item* mftItem, FILE* file){
     int fragmentID = 0;
     int filePointer = 0;
-    long size = mftItem->item_size;
+	size_t size = mftItem->item_size;
     char buffer[CLUSTER_SIZE];
     while (mftItem->fragments[fragmentID]->fragment_start_cluster != 0) {
         for (int j = 0; j<mftItem->fragments[fragmentID]->fragment_cluster_count; j++) {
@@ -179,8 +179,8 @@ void Functions::Write_To_Clusters(VFS * vfs, Mft_Item* mftItem, FILE* file){
 
 void Functions::Copy_To_Clusters(VFS* vfs, Mft_Item* srcFile, Mft_Item* destFile){
     int fragmentID = 0;
-    int filePointer;
-    long size = srcFile->item_size;
+	size_t filePointer;
+	size_t size = srcFile->item_size;
     int bufferPointer = 0;
 	std::vector<std::string> bufferVector;
     char buffer[CLUSTER_SIZE];
@@ -265,7 +265,7 @@ void Functions::Save_Vfs_To_File(VFS* vfs){
 void Functions::Print_Clusters(VFS * vfs, Mft_Item * mftItem){
     int fragmentID = 0;
     int filePointer = 0;
-    long size = mftItem->item_size;
+	size_t size = mftItem->item_size;
     char buffer[CLUSTER_SIZE];
     while (mftItem->fragments[fragmentID]->fragment_start_cluster != 0) {
         for (int j = 0; j<mftItem->fragments[fragmentID]->fragment_cluster_count; j++) {
@@ -314,7 +314,7 @@ VFS* Functions::Load_VFS(FILE * file){
     //MFTItems
     for (int i = 0; i<=vfs->mft->size; i++) {
         fseek(vfs->file,vfs->boot_record->mft_start_cluster+sizeof(MFT)+i*sizeof(Mft_Item)+ i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment), SEEK_SET);
-        Mft_Item* item = new Mft_Item(0, kiv_os::NFile_Attributes::Archive, "", 0, 0, false, 0);
+        Mft_Item* item = new Mft_Item(0, kiv_os::NFile_Attributes::System_File, "", 0, 0, false, 0);
         fread(item, sizeof(Mft_Item), 1, vfs->file);
         for (int j = 0; j<vfs->boot_record->mft_max_fragment_count; j++) {
             fseek(vfs->file, vfs->boot_record->mft_start_cluster+sizeof(MFT)+i*sizeof(Mft_Item)+i*vfs->boot_record->mft_max_fragment_count*sizeof(Mft_Fragment) +sizeof(Mft_Item)+j*sizeof(Mft_Fragment), SEEK_SET);
@@ -362,7 +362,7 @@ void  Functions::Print_MFT(VFS* vfs){
 	std::cout << std::endl;
 }
 
-std::vector<size_t> Functions::Get_Items_In_Directory(VFS *vfs, size_t directory_id) {
+std::vector<Mft_Item*> Functions::Get_Items_In_Directory(VFS *vfs, size_t directory_id) {
 	std::map<size_t, Mft_Item*> directory_items;
 
 	size_t position = 0;
@@ -390,9 +390,9 @@ std::vector<size_t> Functions::Get_Items_In_Directory(VFS *vfs, size_t directory
 
 	}
 
-	std::vector<size_t> sorted_uid;
+	std::vector<Mft_Item*> sorted_uid;
 	for (size_t i = 0; i < directory_items.size(); i++) {
-		sorted_uid.push_back(directory_items[i]->uid);
+		sorted_uid.push_back(directory_items[i]);
 	}
 
 	return sorted_uid;

@@ -59,6 +59,38 @@ void IO_Handle::Close() {
 	return;
 }
 
+size_t IO_Handle::Seek(kiv_os::NFile_Seek new_position, size_t position, size_t size) {
+
+	switch (new_position) {
+		case kiv_os::NFile_Seek::Beginning:
+			seek = position;
+			if (seek > size) {
+				seek = size;
+			}
+			if (seek < 1) {
+				seek = 1;
+			}
+			break;
+		case kiv_os::NFile_Seek::Current:
+			seek += position;
+			if (seek > size) {
+				seek = size;
+			}
+			if (seek < 1) {
+				seek == 1;
+			}
+			break;
+		case kiv_os::NFile_Seek::End:
+			seek = size - position;
+			if (seek < 1) {
+				seek = 1;
+			}
+			break;
+	}
+	printf("Seek position: %zd\n", seek);
+	return seek;
+}
+
 //------------------------
 //---STD handle methods---
 //------------------------
@@ -135,13 +167,17 @@ size_t File_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 //------------------------
 
 size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
-	std::vector<size_t> directory_items = Functions::Get_Items_In_Directory(vfs, this->directory_id);
+	std::vector<Mft_Item*> directory_items = Functions::Get_Items_In_Directory(vfs, this->uid);
+	size_t writed = 0;
+
+	Mft_Item *item = Functions::Get_Mft_Item(vfs, this->uid);
+	printf("%s %zd\n", item->item_name, item->item_size);
 
 	for (size_t i = 0; i < directory_items.size(); i++) {
-		printf("%s\n", Functions::Get_Mft_Item(vfs, directory_items.at(i))->item_name);
+		printf("%s\n", directory_items.at(i)->item_name);
 	}
 
-	return 0;
+	return writed;
 }
 
 //------------------------
