@@ -63,31 +63,15 @@ size_t IO_Handle::Seek(kiv_os::NFile_Seek new_position, size_t position, size_t 
 
 	switch (new_position) {
 		case kiv_os::NFile_Seek::Beginning:
-			seek = position;
-			if (seek > size) {
-				seek = size;
-			}
-			if (seek < 1) {
-				seek = 1;
-			}
+			seek = position + 1;
 			break;
 		case kiv_os::NFile_Seek::Current:
-			seek += position;
-			if (seek > size) {
-				seek = size;
-			}
-			if (seek < 1) {
-				seek == 1;
-			}
+			seek += position + 1;	
 			break;
 		case kiv_os::NFile_Seek::End:
 			seek = size - position;
-			if (seek < 1) {
-				seek = 1;
-			}
 			break;
 	}
-	printf("Seek position: %zd\n", seek);
 	return seek;
 }
 
@@ -170,14 +154,23 @@ size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	std::vector<Mft_Item*> directory_items = Functions::Get_Items_In_Directory(vfs, this->uid);
 	size_t writed = 0;
 
-	Mft_Item *item = Functions::Get_Mft_Item(vfs, this->uid);
-	printf("%s %zd\n", item->item_name, item->item_size);
+	// 14*20 = 280.
 
-	for (size_t i = 0; i < directory_items.size(); i++) {
-		printf("%s\n", directory_items.at(i)->item_name);
+	size_t actual_buffer_position = 0;
+
+	for (size_t i = (seek - 1); i < directory_items.size(); i++) {
+		Mft_Item* item = directory_items.at(i);
+
+		kiv_os::TDir_Entry entry;
+
+		entry.file_attributes = static_cast<uint16_t>(item->is_directory);
+		strcpy_s(entry.file_name, item->item_name);
+
+		memcpy(buffer + actual_buffer_position, &entry, sizeof(kiv_os::TDir_Entry));
+		actual_buffer_position += sizeof(kiv_os::TDir_Entry);
 	}
 
-	return writed;
+	return actual_buffer_position;
 }
 
 //------------------------

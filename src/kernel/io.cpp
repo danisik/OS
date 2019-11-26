@@ -26,7 +26,7 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 
 	if (!item->path_exists) {
 		// Path did not exists. 
-		printf("Path did not exists.");
+		printf("Path did not exists.\n");
 		return;
 	}
 
@@ -35,7 +35,8 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 
 		if (!item->exists) {
 			// File did not exists.
-			printf("File did not exists.");
+			printf("File did not exists.\n");
+			regs.rax.x = -1;
 			return;
 		}
 
@@ -98,6 +99,10 @@ void IO::Read_File(kiv_hal::TRegisters &regs) {
 
 void IO::Seek(kiv_hal::TRegisters &regs) {
 	auto file_handle = static_cast<Item_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
+	if (file_handle == INVALID_HANDLE_VALUE) {
+		return;
+	}
+
 	kiv_os::NFile_Seek new_position = static_cast<kiv_os::NFile_Seek>(regs.rcx.x);
 	size_t position = static_cast<size_t>(regs.rdi.r);
 	Mft_Item *item = Functions::Get_Mft_Item(vfs, file_handle->uid);
@@ -111,12 +116,10 @@ void IO::Seek(kiv_hal::TRegisters &regs) {
 		item->item_size = position;
 		Functions::Remove_From_Data_Block(vfs, item);
 		Functions::Write_To_Data_Block(vfs, item);
-		printf("Seek size: %zd", position);
 		return;
 	}
 	else if (new_position == kiv_os::NFile_Seek::Get_Position) {
 		regs.rax.r = file_handle->seek;
-		printf("Seek get: %zd\n", regs.rax.r);
 		return;
 	}
 	else {
