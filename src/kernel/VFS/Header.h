@@ -12,10 +12,6 @@
 #include "../../api/hal.h"
 #include "../../api/api.h"
 
-//#include "../../api/api.h"
-
-//using namespace std;
-
 class Mft_Fragment {
 public:
     Mft_Fragment(int, size_t, size_t);
@@ -84,22 +80,6 @@ public:
     
 };
 
-class Commands{
-public:
-    static size_t Create_Item(VFS*, std::string, std::vector<Mft_Item*>, kiv_os::NFile_Attributes);
-    static bool Move_To_Directory(VFS*, std::string, std::vector<Mft_Item*>&);
-    static void Move_To_Root(VFS*);
-    static void List_With_Params(VFS*, std::string);
-    static void List(VFS*);
-    static void Remove_Item(VFS*, std::string, std::vector<Mft_Item*> &);
-    static void removeFile(VFS*, std::string);
-	static void Print_MFT(VFS*);
-    static void Print_File(VFS*, std::string);
-    static void Move_File(VFS*, std::string, std::string);
-    static void Copy_File(VFS*, std::string, std::string);
-    static void Info(VFS*, std::string);
-};
-
 class Exist_Item{
 public:
 	size_t parent_ID;
@@ -111,21 +91,18 @@ public:
 
 class Functions{
 public:
+	static size_t Create_Item(VFS*, std::string, std::vector<Mft_Item*>, kiv_os::NFile_Attributes);
+	static bool Move_To_Directory(VFS*, std::string, std::vector<Mft_Item*>&);
+	static void Remove_Item(VFS*, std::string, std::vector<Mft_Item*> &);
     static Exist_Item* Check_Path(VFS*, std::string, std::vector<Mft_Item*>);
     static bool Is_Directory_Empty(VFS*, Exist_Item*);
     static void Move_To_Path(VFS*, std::string, std::vector<Mft_Item*>&);
     static bool Is_Bitmap_Writable(VFS*, size_t);
     static void Write_To_Data_Block(VFS*, Mft_Item*);
     static void Remove_From_Data_Block(VFS*, Mft_Item*);
-    static void Write_To_Clusters(VFS*, Mft_Item*, FILE*);
-    static void Copy_To_Clusters(VFS*,Mft_Item*, Mft_Item*);
-    static void Save_Vfs_To_File(VFS*);
 	static void Print_Bitmap(VFS*);
     static Mft_Item* Get_Mft_Item(VFS*, size_t);
-    static void Print_Clusters(VFS*, Mft_Item*);
 	static void Print_MFT(VFS* );
-    static VFS* Load_VFS(FILE*);
-    static void Delete_Links(VFS*, Mft_Item*);
 	static std::vector<Mft_Item*> Get_Items_In_Directory(VFS*, size_t);
     
 };

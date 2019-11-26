@@ -12,6 +12,7 @@ IO::IO(IO_Process *i_io_process, VFS *i_vfs) {
 }
 
 void IO::Open_File(kiv_hal::TRegisters &regs) {
+	Print_VFS();
 	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 	std::lock_guard<std::mutex> lock_mutex_process(io_process->io_process_mutex);
 
@@ -25,16 +26,13 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 	Exist_Item* item = Functions::Check_Path(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
 
 	if (!item->path_exists) {
-		// Path did not exists. 
 		printf("Path did not exists.\n");
 		return;
 	}
 
 	if (flags == kiv_os::NOpen_File::fmOpen_Always) {
-		// Item must exists.
 
 		if (!item->exists) {
-			// File did not exists.
 			printf("File did not exists.\n");
 			regs.rax.x = -1;
 			return;
@@ -52,8 +50,7 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 		}
 	}
 	else {
-		// Item did not exists. 
-		size_t item_uid = Commands::Create_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir, attributes);
+		size_t item_uid = Functions::Create_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir, attributes);
 		
 		if (item_uid == -2) {
 			return;
@@ -141,7 +138,7 @@ void IO::Delete_File(kiv_hal::TRegisters &regs) {
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t current_process_ID = io_process->thread_ID_to_process_ID.find(current_thread_ID)->second;
 
-	Commands::Remove_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
+	Functions::Remove_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
 }
 
 void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) {
@@ -151,7 +148,7 @@ void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) {
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t current_process_ID = io_process->thread_ID_to_process_ID.find(current_thread_ID)->second;
 
-	bool success = Commands::Move_To_Directory(vfs, new_directory, io_process->processes[current_process_ID]->working_dir);
+	bool success = Functions::Move_To_Directory(vfs, new_directory, io_process->processes[current_process_ID]->working_dir);
 
 	regs.rax.x = static_cast<decltype(regs.rax.x)>(success);
 }

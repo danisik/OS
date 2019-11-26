@@ -154,8 +154,6 @@ size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	std::vector<Mft_Item*> directory_items = Functions::Get_Items_In_Directory(vfs, this->uid);
 	size_t writed = 0;
 
-	// 14*20 = 280.
-
 	size_t actual_buffer_position = 0;
 
 	for (size_t i = (seek - 1); i < directory_items.size(); i++) {

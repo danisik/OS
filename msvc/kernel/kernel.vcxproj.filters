@@ -45,19 +45,10 @@
     <ClCompile Include="..\..\src\kernel\VFS\boot_record.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\main.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\kernel\VFS\mft_fragment.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\kernel\VFS\mft_item.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\existing_item.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\commands.cpp">
       <Filter>Source Files\VFS</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\kernel\VFS\functions.cpp">

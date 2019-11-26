@@ -27,10 +27,7 @@
     <ClCompile Include="..\..\src\kernel\process.cpp" />
     <ClCompile Include="..\..\src\kernel\thread.cpp" />
     <ClCompile Include="..\..\src\kernel\VFS\boot_record.cpp" />
-    <ClCompile Include="..\..\src\kernel\VFS\commands.cpp" />
-    <ClCompile Include="..\..\src\kernel\VFS\existing_item.cpp" />
     <ClCompile Include="..\..\src\kernel\VFS\functions.cpp" />
-    <ClCompile Include="..\..\src\kernel\VFS\main.cpp" />
     <ClCompile Include="..\..\src\kernel\VFS\mft.cpp" />
     <ClCompile Include="..\..\src\kernel\VFS\mft_fragment.cpp" />
     <ClCompile Include="..\..\src\kernel\VFS\mft_item.cpp" />
