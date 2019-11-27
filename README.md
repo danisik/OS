@@ -13,6 +13,10 @@ IDE: MS Visual Studio 2017 (MS Visual C++)
   ✔ shutdown
   
   ✔ rgen
+  
+  ✔ dir
+  
+  ✔ freq
 
 ## In Progress:
 
@@ -20,11 +24,7 @@ IDE: MS Visual Studio 2017 (MS Visual C++)
   
   ? rd
   
-  ? dir
-  
   ? type
-  
-  ? freq
 
 
 ## Nevytvořené commandy:
