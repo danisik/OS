@@ -157,6 +157,9 @@ size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	size_t actual_buffer_position = 0;
 
 	for (size_t i = (seek - 1); i < directory_items.size(); i++) {
+		if (writed >= 20) {
+			break;
+		}
 		Mft_Item* item = directory_items.at(i);
 
 		kiv_os::TDir_Entry entry;
@@ -166,6 +169,7 @@ size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 
 		memcpy(buffer + actual_buffer_position, &entry, sizeof(kiv_os::TDir_Entry));
 		actual_buffer_position += sizeof(kiv_os::TDir_Entry);
+		writed++;
 	}
 
 	return actual_buffer_position;
