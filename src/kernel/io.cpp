@@ -98,7 +98,6 @@ void IO::Seek(kiv_hal::TRegisters &regs) {
 	Mft_Item *item = file_handle->item;
 	size_t item_size = item->item_size;
 
-	// TODO Seek: Maybe write it to virtual drive ?
 	if (new_position == kiv_os::NFile_Seek::Set_Size) {
 		if (position == 0) {
 			position = 1;

@@ -139,10 +139,61 @@ size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 //------------------------
 
 size_t File_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
-	return 0;
+	// TODO File_Handle::Read: Functional code.
+
+	size_t actual_buffer_position = 0;
+
+	size_t sectors_count = item->item_size / vfs->boot_record->cluster_size;
+	if (item->item_size % vfs->boot_record->cluster_size != 0) sectors_count++;
+
+	size_t seek_sector = (seek - 1) / vfs->boot_record->cluster_size;
+	
+	std::vector<unsigned char> read_buffer_vector(vfs->boot_record->cluster_size);
+	
+
+	size_t item_current_sector_count = 0;
+	size_t item_current_sector_position = 0;
+
+	for (size_t i = seek_sector; i < sectors_count; i++) {
+		
+		if (actual_buffer_position >= buffer_length) {
+			break;
+		}
+
+		// Read from fragment_start_sector + current_sector_position.
+		Functions::Read_Sectors(vfs->drive_id, 1, item->fragment_start_cluster[item_current_sector_position] + item_current_sector_count, static_cast<void*>(read_buffer_vector.data()));
+		auto read_buffer = reinterpret_cast<char*>(read_buffer_vector.data());
+		// memcpy read_buffer -> buffer
+
+
+		// Move to next sector.
+		item_current_sector_count++;
+
+		// If current sector count is more or equal of current_fragment_sector_count, move to next fragment.
+		if (item_current_sector_count >= item->fragment_cluster_count[item_current_sector_position]) {
+			item_current_sector_position++;
+			item_current_sector_count = 0;
+		}
+
+		// If currently l
+		if (seek_sector == i) {
+			size_t specific_size_in_seek_sector = vfs->boot_record->cluster_size - ((seek - 1) % vfs->boot_record->cluster_size);
+
+			actual_buffer_position += specific_size_in_seek_sector;
+			continue;
+		}
+	}
+
+	return actual_buffer_position;
 }
 
 size_t File_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
+	// TODO File_Handle::Write: Functional code.
+	// zapisovat podle toho kde je nastaven seek
+	// jak to bude s velikostí souboru ? 
+	//	zapisovat všechno a podle toho potom nastavit velikost ?
+	//		k èemu je pak ale seek::set_size ??
+	//	zapisovat jen do velikosti souboru ?
 	return 0;
 }
 
@@ -152,14 +203,14 @@ size_t File_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 
 size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	std::vector<Mft_Item*> directory_items = Functions::Get_Items_In_Directory(vfs, this->item->uid);
-	size_t writed = 0;
 
 	size_t actual_buffer_position = 0;
 
 	for (size_t i = (seek - 1); i < directory_items.size(); i++) {
-		if (writed >= 20) {
+		if (actual_buffer_position >= buffer_length) {
 			break;
 		}
+
 		Mft_Item* item = directory_items.at(i);
 
 		kiv_os::TDir_Entry entry;
@@ -169,7 +220,6 @@ size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 
 		memcpy(buffer + actual_buffer_position, &entry, sizeof(kiv_os::TDir_Entry));
 		actual_buffer_position += sizeof(kiv_os::TDir_Entry);
-		writed++;
 	}
 
 	return actual_buffer_position;
@@ -180,13 +230,15 @@ size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 //------------------------
 
 size_t Pipe_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
+	// TODO Pipe_Handle::Read: Functional code.
 	return 0;
 }
 
 size_t Pipe_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
+	// TODO Pipe_Handle::Write: Functional code.
 	return 0;
 }
 
 void Pipe_Handle::Close() {
-
+	// TODO Pipe_Handle::Close: Functional code.
 }
