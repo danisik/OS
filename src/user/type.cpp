@@ -14,7 +14,7 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 	std::string output = "";
 
 	if (strlen(arguments) == 0) {
-		in_handle = std_out;
+		in_handle = std_in;
 		is_file = false;
 	}
 	else {
