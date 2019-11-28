@@ -14,10 +14,8 @@ private:
 public:
 	VFS *vfs;
 
-	IO(IO_Process *i_io_process, VFS *i_vfs);
+	IO(IO_Process *i_io_process, uint64_t cluster_count, uint16_t cluster_size, int v_drive_i);
 	void Handle_IO(kiv_hal::TRegisters &regs);
-
-	void Print_VFS();
 
 	void Open_File(kiv_hal::TRegisters &regs); // Tested (only creating in VFS, not in virtual drive).
 	void Write_File(kiv_hal::TRegisters &regs); // Tested only for STD (missing file and pipe).

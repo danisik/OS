@@ -61,7 +61,7 @@ class MFT{
 public:
     MFT();
 	size_t UID_counter;
-    int32_t size;
+	size_t size;
     
 };
 

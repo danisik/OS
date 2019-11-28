@@ -22,19 +22,10 @@ bool VFS::Load_MFT() {
 		char item_buffer[sizeof(Mft_Item)];
 		memcpy(item_buffer, buffer, sizeof(Mft_Item));
 		Mft_Item *item = reinterpret_cast<Mft_Item*>(item_buffer);
-		printf("%s\n", item->item_name);
-		for (size_t j = 0; j < MFT_FRAGMENTS_COUNT; j++) {
-			if (item->fragment_cluster_count[j] == 0) {
-				printf("\t fragment %zd is: %zd %zd %zd\n", j, item->fragment_cluster_count[j], item->fragment_start_cluster[j], item->bitmap_start_ID[j]);
-				continue;
-			}
-			else printf("\t fragment %zd is: %zd %zd %zd\n", j, item->fragment_cluster_count[j], item->fragment_start_cluster[j], item->bitmap_start_ID[j]);
-		}
 		Mft_Item *itm = new Mft_Item(item->uid, item->is_directory, std::string(item->item_name), item->item_size, item->parent_ID);
 		Functions::Write_To_Data_Block(this, itm);
 		this->mft_items.insert(std::pair<size_t, Mft_Item*>(itm->uid, itm));
 	}
-
 	return true;
 }
 
@@ -47,7 +38,6 @@ bool VFS::Load_MFT() {
 		this->bitmap[i] = false;
 	}
 
-	//printf("before %d\n", this->mft->size);
 	bool success = false;
 	success = Load_MFT();
 	if (!success) {
@@ -62,17 +52,7 @@ bool VFS::Load_MFT() {
 			Functions::Write_To_Data_Block(this, mftItem);
 		}
 
-		printf("mft\n");
 		Functions::Save_VFS_MFT(this);
 		Functions::Save_VFS_MFT_Item(this, mftItem->uid);
 	}
-
-   
-
-
-
-
-
-
-
 }

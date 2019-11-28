@@ -1,13 +1,15 @@
 #include "header.h"
 
 size_t Functions::Create_Item(VFS* vfs, std::string path, std::vector<Mft_Item*> current_path, kiv_os::NFile_Attributes is_directory) {
-
 	Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
 	size_t i = path.find_last_of(FOLDER_SPLIT);
 	path = path.substr(i + 1);
 
+	vfs->mft->size = vfs->mft_items.size();
+	vfs->mft->UID_counter = vfs->mft_items.size();
+
 	if (!item->path_exists) {
-		std::cout << "PATH NOT FOUND" << std::endl;
+		printf("PATH NOT FOUND\n");
 	}
 	else if (!item->exists && item->path_exists) {
 		int size = 1;
@@ -30,7 +32,7 @@ size_t Functions::Create_Item(VFS* vfs, std::string path, std::vector<Mft_Item*>
 		}
 	}
 	else if (item->exists) {
-		std::cout << "ITEM ALREADY EXISTS" << std::endl;
+		printf("ITEM ALREADY EXISTS\n");
 	}
 	return -2;
 }
@@ -62,38 +64,54 @@ bool Functions::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_It
 	}
 }
 
-void Functions::Remove_Item(VFS * vfs, std::string path, std::vector<Mft_Item*> &current_path) {
-	Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
+Mft_Item* Get_Last_Item(VFS *vfs) {
+	if (!vfs->mft_items.empty()) {
+		return (--vfs->mft_items.end())->second;
+	}
+	return nullptr;
+}
 
+void Functions::Remove_Item(VFS * vfs, std::string path, std::vector<Mft_Item*> &current_path) {
+	vfs->mft->size = vfs->mft_items.size();
+	vfs->mft->UID_counter = vfs->mft_items.size();
+	Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
 	if (item->exists && item->path_exists) {
 		if (Functions::Is_Directory_Empty(vfs, item)) {
 			for (size_t i = 0; i < vfs->mft_items.size(); i++) {
 				if (vfs->mft_items[i]->uid == item->uid) {
-					vfs->mft_items.erase(item->uid);
+					if (item->uid == 0) {
+						printf("ITEM IS ROOT DIRECTORY\n");
+						return;
+					}
+
 					Functions::Remove_From_Data_Block(vfs, vfs->mft_items[item->uid]);
+					vfs->mft_items.erase(item->uid);
 
-					Mft_Item* last_item = vfs->mft_items.at(vfs->mft_items.size() - 1);
-					vfs->mft_items.erase(last_item->uid);
-					last_item->uid = item->uid;
-					vfs->mft_items.insert(std::pair<size_t, Mft_Item*>(last_item->uid, last_item));
+					if (vfs->mft->size >= 2) {						
+						Mft_Item* last_item = Get_Last_Item(vfs);
 
-
-					Functions::Get_Mft_Item(vfs, item->parent_ID)->item_size--;
-	
+						if (last_item->uid > item->uid) {
+							vfs->mft_items.erase(last_item->uid);
+							last_item->uid = item->uid;
+							vfs->mft_items.insert(std::pair<size_t, Mft_Item*>(last_item->uid, last_item));
+							Functions::Save_VFS_MFT_Item(vfs, last_item->uid);
+						}
+					}
 					vfs->mft->size--;
 					vfs->mft->UID_counter--;
+					Functions::Get_Mft_Item(vfs, item->parent_ID)->item_size--;
+
 					Functions::Save_VFS_MFT(vfs);
-					Functions::Save_VFS_MFT_Item(vfs, last_item->uid);
+					return;
 				}
 			}
-			//Functions::printBitmap(vfs);
 		}
 		else {
-			std::cout << "DIRECTORY NOT EMPTY" << std::endl;
+			printf("DIRECTORY NOT EMPTY\n");			
 		}
 	}
 	else if (!item->exists || !item->path_exists) {
-		std::cout << "ITEM NOT FOUND" << std::endl;
+		printf("ITEM NOT FOUND\n");
 	}
 }
 
@@ -165,8 +183,8 @@ bool Functions::Is_Directory_Empty(VFS* vfs, Exist_Item * item){
 	if (item->is_directory != kiv_os::NFile_Attributes::Directory) {
 		return true;
 	}
-    for(size_t i = 0; i < vfs->mft_items.size(); i++){
-		// tady to crashovalo TODO
+    for(size_t i = 1; i < vfs->mft_items.size(); i++){
+		// tady to crashovalo pøi remove TODO
         if(vfs->mft_items[i]->parent_ID == item->uid){
             return false;
         }

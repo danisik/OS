@@ -6,13 +6,12 @@ std::mutex working_directory_mutex;
 std::mutex io_mutex;
 std::mutex pipe_mutex;
 
-IO::IO(IO_Process *i_io_process, VFS *i_vfs) {
+IO::IO(IO_Process *i_io_process, uint64_t cluster_count, uint16_t cluster_size, int v_drive_i) {
 	io_process = i_io_process;
-	vfs = i_vfs;
+	vfs = new VFS(cluster_count, cluster_size, v_drive_i);
 }
 
 void IO::Open_File(kiv_hal::TRegisters &regs) {
-	Print_VFS();
 	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 	std::lock_guard<std::mutex> lock_mutex_process(io_process->io_process_mutex);
 
@@ -79,12 +78,6 @@ void IO::Write_File(kiv_hal::TRegisters &regs) {
 	size_t buffer_length = regs.rcx.r;	
 
 	regs.rax.r = file_handle->Write(buffer, buffer_length, vfs);
-}
-
-void IO::Print_VFS() {
-	printf("\n");
-	Functions::Print_MFT(vfs);
-	Functions::Print_Bitmap(vfs);
 }
 
 void IO::Read_File(kiv_hal::TRegisters &regs) {

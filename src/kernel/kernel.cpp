@@ -128,7 +128,6 @@ void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
 void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 	Initialize_Kernel();
 	kiv_hal::Set_Interrupt_Handler(kiv_os::System_Int_Number, Sys_Call);
-		
 	kiv_hal::TRegisters regs;
 	for (regs.rdx.l = 0; ; regs.rdx.l++) {
 
@@ -146,15 +145,15 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 			// Create VFS.
 			VFS *vfs = new VFS(number_of_sectors, bytes_per_sector, regs.rdx.l);
-			// TODO Bootstrap_Loader: Load_VFS() ??
 
-			io = new IO(io_process, vfs);
+			io = new IO(io_process, number_of_sectors, bytes_per_sector, regs.rdx.l);
+			break;
 		}
 
 		if (regs.rdx.l == 255) break;
 	}
 
-	kiv_os::THandle kernel_handler;
+	kiv_os::THandle kernel_handler = 0;
 	kernel_handler = Create_Kernel_Process();	
 
 	// Create shell.
