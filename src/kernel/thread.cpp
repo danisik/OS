@@ -35,11 +35,6 @@ void Thread::Join(uint16_t t_exit_code) {
 
 	exit_code = t_exit_code;
 	state = State::Exited;
-
-	std::map<kiv_os::NSignal_Id, kiv_os::TThread_Proc>::iterator it_handler = terminate_handlers.begin();
-
-	kiv_hal::TRegisters terminate_registers;
-	terminate_registers.rcx.l = static_cast<decltype(terminate_registers.rcx.l)>(kiv_os::NSignal_Id::Terminate);
 	
 	terminate_handlers.clear();
 	sleeped_handlers.clear();

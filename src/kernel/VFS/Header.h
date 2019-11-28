@@ -24,7 +24,7 @@ public:
 class Mft_Item {
     
 public:
-    Mft_Item(size_t, kiv_os::NFile_Attributes, std::string, size_t, size_t, bool, int);
+    Mft_Item(size_t, kiv_os::NFile_Attributes, std::string, size_t, size_t);
     
 	size_t uid;                                        //UID polozky, pokud UID = UID_ITEM_FREE, je polozka volna
 	size_t parent_ID;
@@ -33,9 +33,11 @@ public:
     int item_order_total;                            //celkovy pocet polozek v MFT
     char item_name[12];                                 //8+3 + /0 C/C++ ukoncovaci string znak
 	size_t item_size;                                  //velikost souboru v bytech
-    bool is_symlink;
-    int linked_UID;
-    Mft_Fragment* fragments[MFT_FRAGMENTS_COUNT]; //fragmenty souboru
+    //Mft_Fragment* fragments[MFT_FRAGMENTS_COUNT]; //fragmenty souboru
+	size_t fragment_start_cluster[MFT_FRAGMENTS_COUNT];			//start adresa
+	size_t fragment_cluster_count[MFT_FRAGMENTS_COUNT];             //pocet clusteru ve fragmentu
+	int bitmap_start_ID[MFT_FRAGMENTS_COUNT];
+
 };
 
 class Boot_Record{
@@ -58,8 +60,6 @@ class MFT{
     
 public:
     MFT();
-    bool Is_In_MFT(std::string);
-	std::vector<Mft_Item*> mft_items;
 	size_t UID_counter;
     int32_t size;
     
@@ -67,16 +67,16 @@ public:
 
 class VFS{
 public:
-    VFS(uint64_t, uint16_t);
+    VFS(uint64_t, uint16_t, int);
     FILE* file;
     Boot_Record* boot_record;
     MFT* mft;
+	std::map<size_t, Mft_Item*> mft_items;
     bool* bitmap;
 	std::vector<Mft_Item*> current_path;
+	int drive_id;
 
-	void Load_MFT();
-	void Load_Bitmap();
-	void Load_VFS();
+	bool Load_MFT();
     
 };
 
@@ -100,10 +100,17 @@ public:
     static bool Is_Bitmap_Writable(VFS*, size_t);
     static void Write_To_Data_Block(VFS*, Mft_Item*);
     static void Remove_From_Data_Block(VFS*, Mft_Item*);
-	static void Print_Bitmap(VFS*);
     static Mft_Item* Get_Mft_Item(VFS*, size_t);
-	static void Print_MFT(VFS* );
 	static std::vector<Mft_Item*> Get_Items_In_Directory(VFS*, size_t);
+
+	static void Save_VFS_MFT(VFS*);
+	static void Save_VFS_MFT_Item(VFS*, size_t);
+
+	static void Write_Sectors(int drive_id, kiv_hal::TDisk_Address_Packet dap);
+	static void Read_Sectors(int, size_t, size_t, void*);
+
+	static void Print_Bitmap(VFS*);
+	static void Print_MFT(VFS*);
     
 };
 

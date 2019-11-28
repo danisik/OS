@@ -1,6 +1,6 @@
 #include "header.h"
 
-Mft_Item::Mft_Item(size_t uid, kiv_os::NFile_Attributes is_directory, std::string name, size_t item_size, size_t parent_ID, bool is_symlink, int linked_UID){
+Mft_Item::Mft_Item(size_t uid, kiv_os::NFile_Attributes is_directory, std::string name, size_t item_size, size_t parent_ID){
     
     this->uid = uid;
     this->is_directory = is_directory;
@@ -9,11 +9,11 @@ Mft_Item::Mft_Item(size_t uid, kiv_os::NFile_Attributes is_directory, std::strin
     this->item_order_total = 1;
     this->item_size = item_size;
     this->parent_ID = parent_ID;
-    this->is_symlink = is_symlink;
-    this->linked_UID = linked_UID;
-    for (int i = 0; i < MFT_FRAGMENTS_COUNT; i++) {
-        this->fragments[i] = new Mft_Fragment(0, 0, 0);
-    }
-    
-    
+	
+	for (int i = 0; i < MFT_FRAGMENTS_COUNT; i++) {
+		//this->fragments[i] = new Mft_Fragment(0, 0, 0);
+		this->bitmap_start_ID[i] = 0;
+		this->fragment_start_cluster[i] = 0;
+		this->fragment_cluster_count[i] = 0;
+	}
 }

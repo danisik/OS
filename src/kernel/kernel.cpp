@@ -37,7 +37,7 @@ kiv_os::THandle Create_Kernel_Process() {
 	// Set attributes.
 	process->state = State::Running;
 	process->process_thread_ID = thread_ID;
-	process->working_dir.push_back(io->vfs->mft->mft_items[0]);
+	process->working_dir.push_back(io->vfs->mft_items[0]);
 
 	process->threads.insert(std::pair<size_t, std::unique_ptr<Thread>>(thread->thread_ID, std::move(thread)));
 
@@ -145,7 +145,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 			uint64_t number_of_sectors = NUMBER_OF_SECTORS;		 // We cant use absolute_number_of_sectors -> because bitmap init will end in next century.
 
 			// Create VFS.
-			VFS *vfs = new VFS(number_of_sectors, bytes_per_sector);
+			VFS *vfs = new VFS(number_of_sectors, bytes_per_sector, regs.rdx.l);
 			// TODO Bootstrap_Loader: Load_VFS() ??
 
 			io = new IO(io_process, vfs);

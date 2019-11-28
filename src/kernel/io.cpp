@@ -40,12 +40,12 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 
 		if (attributes == kiv_os::NFile_Attributes::Directory && item->is_directory == kiv_os::NFile_Attributes::Directory) {
 			Directory_Handle *dir_handle = new Directory_Handle();
-			dir_handle->uid = item->uid;
+			dir_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(dir_handle));
 		}
 		else {
 			File_Handle *file_handle = new File_Handle();
-			file_handle->uid = item->uid;
+			file_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(file_handle));
 		}
 	}
@@ -58,12 +58,12 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 
 		if (attributes == kiv_os::NFile_Attributes::Directory) {
 			Directory_Handle *dir_handle = new Directory_Handle();
-			dir_handle->uid = item_uid;
+			dir_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(dir_handle));
 		}
 		else {
 			File_Handle *file_handle = new File_Handle();
-			file_handle->uid = item_uid;
+			file_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(file_handle));
 		}
 	}
@@ -102,7 +102,7 @@ void IO::Seek(kiv_hal::TRegisters &regs) {
 
 	kiv_os::NFile_Seek new_position = static_cast<kiv_os::NFile_Seek>(regs.rcx.x);
 	size_t position = static_cast<size_t>(regs.rdi.r);
-	Mft_Item *item = Functions::Get_Mft_Item(vfs, file_handle->uid);
+	Mft_Item *item = file_handle->item;
 	size_t item_size = item->item_size;
 
 	// TODO Seek: Maybe write it to virtual drive ?
@@ -113,6 +113,8 @@ void IO::Seek(kiv_hal::TRegisters &regs) {
 		item->item_size = position;
 		Functions::Remove_From_Data_Block(vfs, item);
 		Functions::Write_To_Data_Block(vfs, item);
+		Functions::Save_VFS_MFT(vfs);
+		Functions::Save_VFS_MFT_Item(vfs, item->uid);
 		return;
 	}
 	else if (new_position == kiv_os::NFile_Seek::Get_Position) {
@@ -168,7 +170,7 @@ void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
 
 	for (int i = 0; i < current_path.size(); i++) {
 		path_string += io_process->processes[current_process_ID]->working_dir[i]->item_name;
-		if (i > 0 && i < current_path.size() - 1) {
+		if (i < current_path.size() - 1) {
 			path_string += '\\';
 			written_chars++;
 		}

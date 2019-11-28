@@ -151,7 +151,7 @@ size_t File_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 //------------------------
 
 size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
-	std::vector<Mft_Item*> directory_items = Functions::Get_Items_In_Directory(vfs, this->uid);
+	std::vector<Mft_Item*> directory_items = Functions::Get_Items_In_Directory(vfs, this->item->uid);
 	size_t writed = 0;
 
 	size_t actual_buffer_position = 0;

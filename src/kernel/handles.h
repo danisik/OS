@@ -33,7 +33,7 @@ public:
 
 class Item_Handle : public IO_Handle {
 	public:
-		size_t uid;
+		Mft_Item *item;
 };
 
 class File_Handle : public Item_Handle {
