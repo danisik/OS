@@ -39,11 +39,6 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 
 	const char *arguments = reinterpret_cast<const char *>(regs.rdi.r);
 
-	kiv_os::NSignal_Id signal = kiv_os::NSignal_Id::Terminate;
-	kiv_os::TThread_Proc handler = reinterpret_cast<kiv_os::TThread_Proc>(Terminated_Checker);
-
-	kiv_os_rtl::Register_Signal_Handler(signal, handler);
-
 	std::string output;
 	size_t written;
 
@@ -71,12 +66,6 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 	}
 
 	uint16_t checker_exit_code;
-
-	if (terminated) {
-		kiv_os::THandle *handles = &handle;
-		kiv_os::THandle signalized_handle;
-		kiv_os_rtl::Wait_For(handles, 1, signalized_handle);
-	}
 	
 	kiv_os_rtl::Read_Exit_Code(handle, checker_exit_code);
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
