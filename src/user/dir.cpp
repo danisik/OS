@@ -69,21 +69,21 @@ size_t __stdcall dir(const kiv_hal::TRegisters &regs) {
 			printf("dir\n");
 		}*/
 
-	std::ostringstream stream;
-	stream.clear();
+	//std::ostringstream stream;
+	//stream.clear();
 
 	output.append("\n");
-	stream << file_count;
+	//stream << file_count;
 	output.append("File(s): ");
-	output.append(stream.str());
+	output.append(std::to_string(file_count));
 	output.append("\n");
 
-	std::ostringstream sstream;
-	sstream.clear();
+	//std::ostringstream sstream;
+	//sstream.clear();
 
-	sstream << dir_count;
+	//sstream << dir_count;
 	output.append("Dir(s): ");
-	output.append(sstream.str());
+	output.append(std::to_string(dir_count));
 	output.append("\n");
 
 	kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
