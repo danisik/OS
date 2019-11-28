@@ -17,13 +17,13 @@ IDE: MS Visual Studio 2017 (MS Visual C++)
   ✔ dir
   
   ✔ freq
+  
+  ✔ md
+  
+  ✔ rd
 
 ## In Progress:
 
-  ? md
-  
-  ? rd
-  
   ? type
 
 
