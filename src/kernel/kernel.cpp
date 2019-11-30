@@ -141,7 +141,8 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 			// Load boot block.
 			uint16_t bytes_per_sector = params.bytes_per_sector;
-			uint64_t number_of_sectors = NUMBER_OF_SECTORS;		 // We cant use absolute_number_of_sectors -> because bitmap init will end in next century.
+			//uint64_t number_of_sectors = NUMBER_OF_SECTORS;		 // We cant use absolute_number_of_sectors -> because bitmap init will end in next century.
+			uint64_t number_of_sectors = params.absolute_number_of_sectors;
 
 			// Create VFS.
 			VFS *vfs = new VFS(number_of_sectors, bytes_per_sector, regs.rdx.l);

@@ -106,8 +106,7 @@ public:
 	static void Save_VFS_MFT(VFS*);
 	static void Save_VFS_MFT_Item(VFS*, size_t);
 
-	static void Write_Sectors(int drive_id, kiv_hal::TDisk_Address_Packet dap);
-	static void Read_Sectors(int, size_t, size_t, void*);
+	static void Process_Sectors(kiv_hal::NDisk_IO operation, int drive_id, size_t count, size_t lba_index, void* sector);
 
 	static void Print_Bitmap(VFS*);
 	static void Print_MFT(VFS*);

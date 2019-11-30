@@ -42,13 +42,39 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 			dir_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(dir_handle));
 		}
-		else {
+		else if (attributes == kiv_os::NFile_Attributes::System_File && item->is_directory == kiv_os::NFile_Attributes::System_File){
 			File_Handle *file_handle = new File_Handle();
 			file_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(file_handle));
 		}
+		else if (attributes == kiv_os::NFile_Attributes::Directory && item->is_directory == kiv_os::NFile_Attributes::System_File) {
+			printf("Expected directory but item is file.\n");
+			regs.rax.x = -1;
+			return;
+		}
+		else {
+			printf("Expected file but item is directory.\n");
+			regs.rax.x = -1;
+			return;
+		}
 	}
 	else {
+
+		// Check if item exists -> need this because while redirecting, item can exists or not (We don't call Open_File with fmOpen_Always).
+		if (item->exists) {
+			if (attributes == kiv_os::NFile_Attributes::Directory) {
+				Directory_Handle *dir_handle = new Directory_Handle();
+				dir_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
+				regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(dir_handle));
+			}
+			else {
+				File_Handle *file_handle = new File_Handle();
+				file_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
+				regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(file_handle));
+			}
+			return;
+		}
+
 		size_t item_uid = Functions::Create_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir, attributes);
 		
 		if (item_uid == -2) {
@@ -58,12 +84,12 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 		if (attributes == kiv_os::NFile_Attributes::Directory) {
 			Directory_Handle *dir_handle = new Directory_Handle();
 			dir_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
-			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(dir_handle));
+			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(dir_handle));
 		}
 		else {
 			File_Handle *file_handle = new File_Handle();
 			file_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
-			regs.rax.x = Convert_Native_Handle(static_cast<IO_Handle*>(file_handle));
+			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(file_handle));
 		}
 	}
 
@@ -81,7 +107,7 @@ void IO::Write_File(kiv_hal::TRegisters &regs) {
 }
 
 void IO::Read_File(kiv_hal::TRegisters &regs) {
-	auto file_handle = static_cast<Item_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
+	auto file_handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
 	size_t buffer_length = regs.rcx.r;
 	regs.rax.r = file_handle->Read(buffer, buffer_length, vfs);

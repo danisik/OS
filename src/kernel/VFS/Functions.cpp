@@ -270,6 +270,9 @@ void Functions::Remove_From_Data_Block(VFS* vfs, Mft_Item* mftItem){
     for (int i = 0; i < MFT_FRAGMENTS_COUNT; i++) {
         for (int j = 0; j<mftItem->fragment_cluster_count[i]; j++) {
             vfs->bitmap[mftItem->bitmap_start_ID[i]+j] = false;
+			mftItem->fragment_cluster_count[i] = 0;
+			mftItem->fragment_start_cluster[i] = 0;
+			mftItem->bitmap_start_ID[i] = 0;
         }
     }
 }
@@ -320,35 +323,14 @@ std::vector<Mft_Item*> Functions::Get_Items_In_Directory(VFS *vfs, size_t direct
 }
 
 void Functions::Save_VFS_MFT(VFS* vfs) {
-	kiv_hal::TDisk_Address_Packet dap;
-
-	dap.count = 1;
-	dap.sectors = static_cast<void*>(vfs->mft);
-	dap.lba_index = vfs->boot_record->mft_start_cluster;
-
-	Write_Sectors(vfs->drive_id, dap);
+	Process_Sectors(kiv_hal::NDisk_IO::Write_Sectors, vfs->drive_id, 1, vfs->boot_record->mft_start_cluster, static_cast<void*>(vfs->mft));
 }
 
 void Functions::Save_VFS_MFT_Item(VFS* vfs, size_t uid) {
-	kiv_hal::TDisk_Address_Packet dap;
-
-	dap.count = 1;
-	dap.sectors = static_cast<void*>(vfs->mft_items[uid]);
-	dap.lba_index = vfs->boot_record->mft_start_cluster + uid + 1;
-
-	Write_Sectors(vfs->drive_id, dap);
+	Process_Sectors(kiv_hal::NDisk_IO::Write_Sectors, vfs->drive_id, 1, vfs->boot_record->mft_start_cluster + uid + 1, static_cast<void*>(vfs->mft_items[uid]));
 }
 
-void Functions::Write_Sectors(int drive_id, kiv_hal::TDisk_Address_Packet dap) {
-	kiv_hal::TRegisters regs;
-	regs.rdx.l = drive_id;
-	regs.rax.h = static_cast<decltype(regs.rax.h)>(kiv_hal::NDisk_IO::Write_Sectors);
-	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(&dap);
-
-	kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Disk_IO, regs);
-}
-
-void Functions::Read_Sectors(int drive_id, size_t count, size_t lba_index, void* sector) {
+void Functions::Process_Sectors(kiv_hal::NDisk_IO operation, int drive_id, size_t count, size_t lba_index, void* sector) {
 	kiv_hal::TDisk_Address_Packet dap;
 
 	dap.count = count;
@@ -357,7 +339,7 @@ void Functions::Read_Sectors(int drive_id, size_t count, size_t lba_index, void*
 
 	kiv_hal::TRegisters regs;
 	regs.rdx.l = drive_id;
-	regs.rax.h = static_cast<decltype(regs.rax.h)>(kiv_hal::NDisk_IO::Read_Sectors);
+	regs.rax.h = static_cast<decltype(regs.rax.h)>(operation);
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(&dap);
 
 	kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Disk_IO, regs);

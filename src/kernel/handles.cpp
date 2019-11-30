@@ -72,6 +72,11 @@ size_t IO_Handle::Seek(kiv_os::NFile_Seek new_position, size_t position, size_t 
 			seek = size - position;
 			break;
 	}
+
+	if (seek < 1) {
+		seek = 1;
+	}
+
 	return seek;
 }
 
@@ -139,7 +144,6 @@ size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length, VFS *vfs) {
 //------------------------
 
 size_t File_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
-	// TODO File_Handle::Read: Functional code.
 
 	size_t actual_buffer_position = 0;
 
@@ -147,8 +151,6 @@ size_t File_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 	if (item->item_size % vfs->boot_record->cluster_size != 0) sectors_count++;
 
 	size_t seek_sector = (seek - 1) / vfs->boot_record->cluster_size;
-	
-	std::vector<unsigned char> read_buffer_vector(vfs->boot_record->cluster_size);
 	
 
 	size_t item_current_sector_count = 0;
@@ -160,11 +162,10 @@ size_t File_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 			break;
 		}
 
+		std::vector<unsigned char> read_buffer_vector(vfs->boot_record->cluster_size);
 		// Read from fragment_start_sector + current_sector_position.
-		Functions::Read_Sectors(vfs->drive_id, 1, item->fragment_start_cluster[item_current_sector_position] + item_current_sector_count, static_cast<void*>(read_buffer_vector.data()));
+		Functions::Process_Sectors(kiv_hal::NDisk_IO::Read_Sectors, vfs->drive_id, 1, item->fragment_start_cluster[item_current_sector_position] + item_current_sector_count, static_cast<void*>(read_buffer_vector.data()));		
 		auto read_buffer = reinterpret_cast<char*>(read_buffer_vector.data());
-		// memcpy read_buffer -> buffer
-
 
 		// Move to next sector.
 		item_current_sector_count++;
@@ -175,26 +176,75 @@ size_t File_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs) {
 			item_current_sector_count = 0;
 		}
 
-		// If currently l
+		if (actual_buffer_position + vfs->boot_record->cluster_size > buffer_length) {
+			size_t difference = actual_buffer_position + vfs->boot_record->cluster_size - buffer_length;
+			memcpy(buffer + actual_buffer_position, &read_buffer, difference);
+
+			actual_buffer_position += difference;
+			break;
+		}
+
+		// If currently processed sector is seek sektor, calculate needed size to fill the buffer
 		if (seek_sector == i) {
 			size_t specific_size_in_seek_sector = vfs->boot_record->cluster_size - ((seek - 1) % vfs->boot_record->cluster_size);
+			memcpy(buffer + actual_buffer_position, &read_buffer, specific_size_in_seek_sector);
 
 			actual_buffer_position += specific_size_in_seek_sector;
-			continue;
 		}
+		else {
+			memcpy(buffer + actual_buffer_position, &read_buffer, vfs->boot_record->cluster_size);
+			actual_buffer_position += vfs->boot_record->cluster_size;
+		}
+		printf("%zd. sector read: %zd\n", i, actual_buffer_position);
 	}
 
 	return actual_buffer_position;
 }
 
 size_t File_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs) {
-	// TODO File_Handle::Write: Functional code.
-	// zapisovat podle toho kde je nastaven seek
-	// jak to bude s velikostí souboru ? 
-	//	zapisovat všechno a podle toho potom nastavit velikost ?
-	//		k èemu je pak ale seek::set_size ??
-	//	zapisovat jen do velikosti souboru ?
-	return 0;
+	size_t actual_buffer_position = 0;
+	seek = 1;
+
+	Functions::Remove_From_Data_Block(vfs, item);
+	item->item_size = buffer_length;
+	Functions::Write_To_Data_Block(vfs, item);
+	Functions::Save_VFS_MFT_Item(vfs, item->uid);
+
+	bool last_sector_not_full = false;
+	size_t sectors_count = buffer_length / vfs->boot_record->cluster_size;
+	if (buffer_length % vfs->boot_record->cluster_size != 0) {
+		sectors_count++;
+		last_sector_not_full = true;
+	}
+	
+	size_t buffer_size = vfs->boot_record->cluster_size;
+
+	size_t item_current_sector_count = 0;
+	size_t item_current_sector_position = 0;
+
+	for (size_t i = 0; i < sectors_count; i++) {
+
+		if (i == (sectors_count - 1) && last_sector_not_full) {
+			buffer_size = buffer_length % vfs->boot_record->cluster_size;
+		}
+
+		std::vector<unsigned char> write_buffer(buffer_size);
+		printf("%zd. writed size: %zd\n", i, buffer_size);
+		memcpy(write_buffer.data(), buffer + actual_buffer_position, buffer_size);
+		printf("%zd. writed: %s\n", i, write_buffer.data());
+		Functions::Process_Sectors(kiv_hal::NDisk_IO::Write_Sectors, vfs->drive_id, 1, item->fragment_start_cluster[item_current_sector_position] + item_current_sector_count, static_cast<void*>(write_buffer.data()));
+		item_current_sector_count++;
+		
+		// If current sector count is more or equal of current_fragment_sector_count, move to next fragment.
+		if (item_current_sector_count >= item->fragment_cluster_count[item_current_sector_position]) {
+			item_current_sector_position++;
+			item_current_sector_count = 0;
+		}
+
+		actual_buffer_position += buffer_size;
+ 	}
+	printf("all writed: %zd\n", actual_buffer_position);
+	return actual_buffer_position;
 }
 
 //------------------------

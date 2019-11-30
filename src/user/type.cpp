@@ -18,7 +18,7 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 		is_file = false;
 	}
 	else {
-		bool open_result = kiv_os_rtl::Open_File(arguments, kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::Read_Only, in_handle);
+		bool open_result = kiv_os_rtl::Open_File(arguments, kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
 		is_file = true;
 		if (!open_result) {
 			output = "File not found";

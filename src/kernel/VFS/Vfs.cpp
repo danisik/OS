@@ -3,7 +3,7 @@
 bool VFS::Load_MFT() {
 
 	std::vector<unsigned char> sector(this->boot_record->cluster_size);
-	Functions::Read_Sectors(this->drive_id, 1, this->boot_record->mft_start_cluster, static_cast<void*>(sector.data()));
+	Functions::Process_Sectors(kiv_hal::NDisk_IO::Read_Sectors, this->drive_id, 1, this->boot_record->mft_start_cluster, static_cast<void*>(sector.data()));
 	auto buffer = reinterpret_cast<char*>(sector.data());
 	char mft_buffer[sizeof(MFT)];
 	memcpy(mft_buffer, buffer, sizeof(MFT));
@@ -17,7 +17,7 @@ bool VFS::Load_MFT() {
 	this->mft_items = std::map<size_t, Mft_Item*>();
 
 	for (size_t i = 0; i < this->mft->size; i++) {
-		Functions::Read_Sectors(this->drive_id, 1, this->boot_record->mft_start_cluster + i + 1, static_cast<void*>(sector.data()));
+		Functions::Process_Sectors(kiv_hal::NDisk_IO::Read_Sectors, this->drive_id, 1, this->boot_record->mft_start_cluster + i + 1, static_cast<void*>(sector.data()));
 		buffer = reinterpret_cast<char*>(sector.data());
 		char item_buffer[sizeof(Mft_Item)];
 		memcpy(item_buffer, buffer, sizeof(Mft_Item));

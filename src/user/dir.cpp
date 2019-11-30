@@ -46,7 +46,6 @@ size_t __stdcall dir(const kiv_hal::TRegisters &regs) {
 				dir_count++;
 			}
 			else {
-				output.append("<FILE>");
 				file_count++;
 			}
 			
@@ -65,28 +64,17 @@ size_t __stdcall dir(const kiv_hal::TRegisters &regs) {
 		kiv_os_rtl::Read_File(handle, entries, sizeof(entries), read);
 	}
 
-	/*if (entr->file_attributes == static_cast<uint16_t>(kiv_os::NFile_Attributes::Directory)) {
-			printf("dir\n");
-		}*/
-
-	//std::ostringstream stream;
-	//stream.clear();
-
 	output.append("\n");
-	//stream << file_count;
 	output.append("File(s): ");
 	output.append(std::to_string(file_count));
 	output.append("\n");
 
-	//std::ostringstream sstream;
-	//sstream.clear();
-
-	//sstream << dir_count;
 	output.append("Dir(s): ");
 	output.append(std::to_string(dir_count));
 	output.append("\n");
 
 	kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
+	kiv_os_rtl::Close_Handle(handle);
 
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	kiv_os_rtl::Exit(exit_code);

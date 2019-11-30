@@ -14,7 +14,7 @@ class IO_Handle {
 	private:
 		std::mutex handle_mutex;
 	public:
-		size_t seek = 0;
+		size_t seek = 1;
 		virtual size_t Read(char *buffer, size_t buffer_length, VFS *vfs);
 		virtual size_t Write(char *buffer, size_t buffer_length, VFS *vfs);
 		virtual size_t Seek(kiv_os::NFile_Seek new_position, size_t position, size_t size);
