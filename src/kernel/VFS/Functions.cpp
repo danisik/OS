@@ -9,7 +9,7 @@ size_t Functions::Create_Item(VFS* vfs, std::string path, std::vector<Mft_Item*>
 	vfs->mft->UID_counter = vfs->mft_items.size();
 
 	if (!item->path_exists) {
-		printf("PATH NOT FOUND\n");
+		printf("Path not found.\n");
 	}
 	else if (!item->exists && item->path_exists) {
 		int size = 1;
@@ -32,9 +32,9 @@ size_t Functions::Create_Item(VFS* vfs, std::string path, std::vector<Mft_Item*>
 		}
 	}
 	else if (item->exists) {
-		printf("ITEM ALREADY EXISTS\n");
+		printf("Item already exists.\n");
 	}
-	return -2;
+	return 0;
 }
 
 bool Functions::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_Item*> &current_path) {
@@ -80,7 +80,7 @@ void Functions::Remove_Item(VFS * vfs, std::string path, std::vector<Mft_Item*> 
 			for (size_t i = 0; i < vfs->mft_items.size(); i++) {
 				if (vfs->mft_items[i]->uid == item->uid) {
 					if (item->uid == 0) {
-						printf("ITEM IS ROOT DIRECTORY\n");
+						printf("Item is root directory.\n");
 						return;
 					}
 
@@ -107,11 +107,11 @@ void Functions::Remove_Item(VFS * vfs, std::string path, std::vector<Mft_Item*> 
 			}
 		}
 		else {
-			printf("DIRECTORY NOT EMPTY\n");			
+			printf("Directory not empty.\n");			
 		}
 	}
 	else if (!item->exists || !item->path_exists) {
-		printf("ITEM NOT FOUND\n");
+		printf("Item not found.\n");
 	}
 }
 

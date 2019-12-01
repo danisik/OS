@@ -10,13 +10,7 @@ size_t __stdcall dir(const kiv_hal::TRegisters &regs) {
 	size_t read;
 	char buffer[1024];
 	
-	if (strlen(arguments) != 0) {
-		strcpy_s(buffer, arguments);
-	}
-	else {
-		strcpy_s(buffer, arguments);
-		//kiv_os_rtl::Get_Working_Dir(buffer, sizeof(buffer), written);
-	}
+	strcpy_s(buffer, arguments);
 	
 	size_t current_index = 0;
 	size_t index = 0;

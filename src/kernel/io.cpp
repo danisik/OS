@@ -76,10 +76,6 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 		}
 
 		size_t item_uid = Functions::Create_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir, attributes);
-		
-		if (item_uid == -2) {
-			return;
-		}
 
 		if (attributes == kiv_os::NFile_Attributes::Directory) {
 			Directory_Handle *dir_handle = new Directory_Handle();

@@ -9,7 +9,9 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 	bool is_file;
 	size_t read = 1;
 	size_t written;
-	char buffer[1024];
+	const size_t buffer_size = 1024;
+	size_t actual_position = 0;
+	char buffer[buffer_size];
 	kiv_os::THandle in_handle;
 	std::string output = "";
 
@@ -20,22 +22,27 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 	else {
 		bool open_result = kiv_os_rtl::Open_File(arguments, kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
 		is_file = true;
-		if (!open_result) {
-			output = "File not found";
-			uint16_t exit_code = static_cast<uint16_t>(static_cast<kiv_os::NOS_Error>(kiv_os_rtl::Last_Error));
-			kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
+		
+		if (in_handle == static_cast<kiv_os::THandle>(-1)) {
+			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::File_Not_Found);
 			kiv_os_rtl::Exit(exit_code);
 			return 0;
 		}
 	}
 
+	// Set seek of file to file beginning.
+	kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
+
 	while (read) {
-		kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
-		output.append(buffer);
+		kiv_os_rtl::Read_File(in_handle, buffer, buffer_size, read);
+		if (read > 0) output.append(buffer, read);
+		//if (read > 0) output.append(buffer);
+		actual_position += buffer_size;
+		kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
 	}
 
 	kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
-	
+
 	if (is_file) {
 		kiv_os_rtl::Close_Handle(in_handle);
 	}
