@@ -11,7 +11,7 @@ public:
 	size_t process_ID;
 	size_t process_thread_ID;
 	State state;
-	char *name;
+	char name[12];
 	std::vector<Mft_Item*> working_dir;
 	std::map<size_t, std::unique_ptr<Thread>> threads;
 	kiv_os::THandle handle_in;

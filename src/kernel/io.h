@@ -3,6 +3,7 @@
 #include "..\api\api.h"
 
 #include "handles.h"
+#include "io_handle.h"
 #include "io_process.h"
 #include "VFS/header.h"
 

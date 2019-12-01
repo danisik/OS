@@ -16,6 +16,13 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex_process(io_process->io_process_mutex);
 
 	char* file_name = reinterpret_cast<char*>(regs.rdx.r);
+
+	if (strcmp(file_name, "procfs") == 0) {
+		Procfs_Handle *handle = new Procfs_Handle();
+		regs.rax.x = Convert_Native_Handle(static_cast<Procfs_Handle*>(handle));
+		return;
+	}
+
 	kiv_os::NOpen_File flags = static_cast<kiv_os::NOpen_File>(regs.rcx.r);
 	kiv_os::NFile_Attributes attributes = static_cast<kiv_os::NFile_Attributes>(regs.rdi.r);
 
@@ -99,14 +106,15 @@ void IO::Write_File(kiv_hal::TRegisters &regs) {
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
 	size_t buffer_length = regs.rcx.r;	
 
-	regs.rax.r = file_handle->Write(buffer, buffer_length, vfs);
+	regs.rax.r = file_handle->Write(buffer, buffer_length, vfs, io_process);
 }
 
 void IO::Read_File(kiv_hal::TRegisters &regs) {
 	auto file_handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
 	size_t buffer_length = regs.rcx.r;
-	regs.rax.r = file_handle->Read(buffer, buffer_length, vfs);
+
+	regs.rax.r = file_handle->Read(buffer, buffer_length, vfs, io_process);
 }
 
 void IO::Seek(kiv_hal::TRegisters &regs) {

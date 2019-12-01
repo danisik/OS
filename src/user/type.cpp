@@ -6,7 +6,6 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 
 	const char *arguments = reinterpret_cast<const char *>(regs.rdi.r);
 
-	bool is_file;
 	size_t read = 1;
 	size_t written;
 	const size_t buffer_size = 1024;
@@ -17,11 +16,9 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 
 	if (strlen(arguments) == 0) {
 		in_handle = std_in;
-		is_file = false;
 	}
 	else {
 		bool open_result = kiv_os_rtl::Open_File(arguments, kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
-		is_file = true;
 		
 		if (in_handle == static_cast<kiv_os::THandle>(-1)) {
 			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::File_Not_Found);
@@ -36,16 +33,13 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 	while (read) {
 		kiv_os_rtl::Read_File(in_handle, buffer, buffer_size, read);
 		if (read > 0) output.append(buffer, read);
-		//if (read > 0) output.append(buffer);
 		actual_position += buffer_size;
 		kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
 	}
 
 	kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 
-	if (is_file) {
-		kiv_os_rtl::Close_Handle(in_handle);
-	}
+	kiv_os_rtl::Close_Handle(in_handle);
 
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	kiv_os_rtl::Exit(exit_code);
