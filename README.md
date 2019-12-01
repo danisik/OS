@@ -21,14 +21,15 @@ IDE: MS Visual Studio 2017 (MS Visual C++)
   ✔ md
   
   ✔ rd
+  
+  ✔ type
+  
+  ✔ tasklist
 
 ## In Progress:
-
-  ? type
 
 
 ## Nevytvořené commandy:
 
   ✘ sort
   
-  ✘ tasklist / ps
