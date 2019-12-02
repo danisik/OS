@@ -37,9 +37,20 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 			}
 			else {
 				kiv_os::THandle handle;
+				kiv_os::THandle in_handle = in;
+				kiv_os::THandle out_handle = out;
+
+				if (command.is_red_in) {
+					kiv_os_rtl::Open_File(command.file_name.data(), kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
+				}
+
+				if (command.is_red_out) {
+					// not sure about that static cast
+					kiv_os_rtl::Open_File(command.file_name.data(), static_cast<kiv_os::NOpen_File>(0), kiv_os::NFile_Attributes::System_File, out_handle);
+				}
 
 				// Create process for new command.
-				kiv_os_rtl::Clone_Process(command.base.data(), command.parameters.data(), in, out, handle);
+				kiv_os_rtl::Clone_Process(command.base.data(), command.parameters.data(), in_handle, out_handle, handle);
 
 				handles[handles_count] = handle;
 				handles_count++;
