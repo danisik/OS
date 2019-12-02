@@ -7,7 +7,7 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 	const char *arguments = reinterpret_cast<const char *>(regs.rdi.r);
 
 	size_t read = 1;
-	size_t written;
+	size_t written = 0;
 	const size_t buffer_size = 1024;
 	size_t actual_position = 0;
 	char buffer[buffer_size];
@@ -15,7 +15,11 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 	std::string output = "";
 
 	if (strlen(arguments) == 0) {
-		in_handle = std_in;
+		char exit_message[40] = "The syntax of the command is incorrect\n";
+		kiv_os_rtl::Write_File(std_out, exit_message, sizeof(exit_message), written);
+		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Invalid_Argument);
+		kiv_os_rtl::Exit(exit_code);
+		return exit_code;
 	}
 	else {
 		bool open_result = kiv_os_rtl::Open_File(arguments, kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
