@@ -5,8 +5,6 @@ size_t __stdcall rd(const kiv_hal::TRegisters &regs) {
 
 	char *file_name = reinterpret_cast<char*>(regs.rdi.r);
 
-	kiv_os::THandle handle;
-
 	kiv_os_rtl::Delete_File(file_name);
 
 	kiv_os_rtl::Exit(exit_code);
