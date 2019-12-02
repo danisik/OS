@@ -186,7 +186,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 				return;
 			}
 
-			processes[process_ID]->threads[current_thread_ID]->handlers_waiting_for.insert(std::pair<size_t, size_t>(waiting_thread_ID, waiting_thread_ID));
+			processes[process_ID]->threads[current_thread_ID]->handlers_waiting_for.insert(std::pair<size_t, size_t>(waiting_thread_ID, i));
 			processes[waiting_process_ID]->threads[waiting_thread_ID]->sleeped_handlers.insert(std::pair<size_t, size_t>(current_thread_ID, current_thread_ID));
 		}
 		shutdown_lock.unlock();

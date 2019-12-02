@@ -58,13 +58,15 @@ void Thread::Stop() {
 
 void Thread::Remove_Handler_From_Handlers_Waiting_For(size_t thread_ID) {
 	std::unique_lock<std::mutex> lock(mutex);
-	handlers_waiting_for.clear();
-	cv.notify_all();
 
-	if (state == State::Blocked) {
-		state = State::Running;
-		waked_by_handler = thread_ID;
+	if (handlers_waiting_for[thread_ID] == 0) {
+		handlers_waiting_for.clear();
+		cv.notify_all();
+
+		if (state == State::Blocked) {
+			state = State::Running;
+			waked_by_handler = thread_ID;
+		}
 	}
-
 	lock.unlock();
 }
