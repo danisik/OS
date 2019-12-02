@@ -29,7 +29,7 @@ bool VFS::Load_MFT() {
 	return true;
 }
 
-	VFS::VFS(uint64_t cluster_count, uint16_t cluster_size, int v_drive_id){
+VFS::VFS(uint64_t cluster_count, uint16_t cluster_size, int v_drive_id) {
     this->boot_record = new Boot_Record(cluster_count, cluster_size);
 	this->drive_id = v_drive_id;
 

@@ -8,7 +8,7 @@ size_t __stdcall tasklist(const kiv_hal::TRegisters &regs) {
 	kiv_os::NOpen_File flags = static_cast<kiv_os::NOpen_File>(0);
 	kiv_os::NFile_Attributes attributes = static_cast<kiv_os::NFile_Attributes>(0);
 
-	const size_t buffer_size = 1024;
+	const size_t buffer_size = 10000;
 	char buffer[buffer_size];
 	std::string output = "";
 	size_t actual_position = 0;

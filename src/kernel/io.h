@@ -19,8 +19,8 @@ public:
 	void Handle_IO(kiv_hal::TRegisters &regs);
 
 	void Open_File(kiv_hal::TRegisters &regs); // Tested.
-	void Write_File(kiv_hal::TRegisters &regs); // Tested only for STD (missing file and pipe).
-	void Read_File(kiv_hal::TRegisters &regs); // Tested only for STD (missing file and pipe).
+	void Write_File(kiv_hal::TRegisters &regs); // Tested (missing pipe).
+	void Read_File(kiv_hal::TRegisters &regs); // Tested (missing pipe).
 	void Seek(kiv_hal::TRegisters &regs); // Tested.
 	void Close_Handle(kiv_hal::TRegisters &regs); // Tested.
 	void Delete_File(kiv_hal::TRegisters &regs); // Tested.

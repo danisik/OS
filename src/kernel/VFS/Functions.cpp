@@ -38,16 +38,35 @@ size_t Functions::Create_Item(VFS* vfs, std::string path, std::vector<Mft_Item*>
 }
 
 bool Functions::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_Item*> &current_path) {
+	if (path.size() == 0) {
+		for (int i = 0; i < current_path.size(); i++) {
+			printf(current_path[i]->item_name);
+			if (i < current_path.size() - 1) {
+				printf("\\");
+			}
+		}
+		printf("\n");
+		return true;
+	}
+
 	path.push_back('\0');
+
 	if (strcmp(path.c_str(), ".") == 0) {
 		return true;
 	}
-	if (strcmp(path.c_str(), "..") == 0) {
-		if (current_path[current_path.size() - 1]->uid != -1) {
-			current_path.pop_back();
-			return true;
+	// Convert '\' to '/'.
+	if (path.find("\\") != std::string::npos) {
+		size_t pos;
+		while ((pos = path.find("\\")) != std::string::npos) {
+			path.replace(pos, 1, "/");
 		}
 	}
+
+	// Remove '/' from string if it is in last position.
+	if (path[path.size() - 2] == '/') {
+		path = path.substr(0, path.size() - 1);
+	}
+
 	Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
 
 	if (item->path_exists && item->exists) {
@@ -124,13 +143,46 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
     item->is_directory = kiv_os::NFile_Attributes::Directory;
     size_t i;
 	std::string tok;
+
+	size_t j;
+	std::string path_tmp = path;
+	std::string tok_tmp;
+	size_t jump_back = 0;
+
+	if (strcmp(path.c_str(), "../") == 0 || strcmp(path.c_str(), "..") == 0) {
+		item->is_directory == kiv_os::NFile_Attributes::Directory;
+		item->exists = true;
+		item->path_exists = true;
+		return item;
+	}
+
+	while ((j = path_tmp.find(FOLDER_SPLIT)) != std::string::npos) {
+		tok_tmp = path_tmp.substr(0, j);
+		path_tmp = path_tmp.substr(j + 1);
+		if (strcmp(tok_tmp.c_str(), "..") == 0) {
+			jump_back++;
+			item->uid = current_path[current_path.size() - jump_back - 1]->uid;
+		}
+	}
+
+	if (jump_back >= current_path.size()) {
+		item->path_exists = false;
+		item->exists = false;
+		return item;
+	}
+
     while((i = path.find(FOLDER_SPLIT)) != std::string::npos){
         item->path_exists = false;
         tok = path.substr(0, i);
         path = path.substr(i+1);
-        for(size_t j = 0; j < vfs->mft_items.size(); j++){
-            if((vfs->mft_items[j]->parent_ID == item->uid)
-               &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
+
+		if (jump_back > 0) {
+			jump_back--;
+			continue;
+		}
+
+        for(size_t j = 0; j < vfs->mft_items.size(); j++) {
+            if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
                 item->uid = vfs->mft_items[j]->uid;
                 item->parent_ID = vfs->mft_items[j]->parent_ID;
                 item->path_exists = true;
@@ -154,9 +206,10 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
     }
     tok = path.substr(0,i);
     item->path_exists = true;
+	const char *name = tok.c_str();
+
     for(size_t j = 0; j < vfs->mft_items.size(); j++){
-        if((vfs->mft_items[j]->parent_ID == item->uid)
-           &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
+        if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, name)==0)){
             item->uid = vfs->mft_items[j]->uid;
             item->parent_ID = vfs->mft_items[j]->parent_ID;
             item->exists = true;
@@ -197,12 +250,38 @@ void Functions::Move_To_Path(VFS* vfs, std::string path, std::vector<Mft_Item*> 
     item->parent_ID = current_path[current_path.size()-1]->parent_ID;
     size_t i;
 	std::string tok;
+
+	if (strcmp(path.c_str(), "../") == 0 || strcmp(path.c_str(), "..") == 0) {
+		if (current_path.size() > 1) current_path.pop_back();
+		return;
+	}
+
+	size_t j;
+	std::string path_tmp = path;
+	std::string tok_tmp;
+	size_t jump_back = 0;
+
+	while ((j = path_tmp.find(FOLDER_SPLIT)) != std::string::npos) {
+		tok_tmp = path_tmp.substr(0, j);
+		path_tmp = path_tmp.substr(j + 1);
+		if (strcmp(tok_tmp.c_str(), "..") == 0) {
+			jump_back++;
+		}
+	}
+
     while((i = path.find(FOLDER_SPLIT)) != std::string::npos){
         tok = path.substr(0, i);
         path = path.substr(i+1);
+
+		if (jump_back > 0) {			
+			current_path.pop_back();
+			item->uid = current_path[current_path.size() - 1]->uid;
+			jump_back--;
+			continue;
+		}
+
         for(size_t j = 0; j < vfs->mft_items.size(); j++){
-            if((vfs->mft_items[j]->parent_ID == item->uid)
-               &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
+            if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
                 item->uid = vfs->mft_items[j]->uid;
                 item->parent_ID = vfs->mft_items[j]->parent_ID;
 				current_path.push_back(vfs->mft_items[j]);

@@ -4,6 +4,7 @@
 
 void cd(const char *new_directory, kiv_os::THandle out) {
 	bool setted = true;
+
 	kiv_os_rtl::Set_Working_Dir(new_directory, setted);
 	if (!setted) {
 		char *error_message = "The system cannot find the listed path.";
