@@ -26,6 +26,7 @@
     <ClCompile Include="..\..\src\kernel\io_process.cpp" />
     <ClCompile Include="..\..\src\kernel\kernel.cpp" />
     <ClCompile Include="..\..\src\kernel\process.cpp" />
+    <ClCompile Include="..\..\src\kernel\semaphore.cpp" />
     <ClCompile Include="..\..\src\kernel\thread.cpp" />
     <ClCompile Include="..\..\src\kernel\VFS\boot_record.cpp" />
     <ClCompile Include="..\..\src\kernel\VFS\functions.cpp" />
@@ -44,6 +45,7 @@
     <ClInclude Include="..\..\src\kernel\io_process.h" />
     <ClInclude Include="..\..\src\kernel\kernel.h" />
     <ClInclude Include="..\..\src\kernel\process.h" />
+    <ClInclude Include="..\..\src\kernel\semaphore.h" />
     <ClInclude Include="..\..\src\kernel\state.h" />
     <ClInclude Include="..\..\src\kernel\thread.h" />
     <ClInclude Include="..\..\src\kernel\VFS\constants.hpp" />

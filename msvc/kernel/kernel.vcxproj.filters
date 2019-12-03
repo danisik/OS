@@ -63,6 +63,9 @@
     <ClCompile Include="..\..\src\kernel\io_handle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\kernel\semaphore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\kernel\kernel.h">
@@ -102,6 +105,9 @@
       <Filter>Header Files\VFS</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\kernel\io_handle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\kernel\semaphore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

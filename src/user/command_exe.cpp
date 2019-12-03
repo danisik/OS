@@ -45,7 +45,6 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 				}
 
 				if (command.is_red_out) {
-					// not sure about that static cast
 					kiv_os_rtl::Open_File(command.file_name.data(), static_cast<kiv_os::NOpen_File>(0), kiv_os::NFile_Attributes::System_File, out_handle);
 				}
 

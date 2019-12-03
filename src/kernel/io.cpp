@@ -33,6 +33,7 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 
 		if (!item->path_exists) {
 		printf("Path did not exists.\n");
+		regs.rax.x = -1;
 		return;
 	}
 
@@ -66,6 +67,13 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 		}
 	}
 	else {
+
+		if (item->exists && attributes == kiv_os::NFile_Attributes::System_File) {
+			File_Handle *file_handle = new File_Handle();
+			file_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
+			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(file_handle));
+			return;
+		}
 
 		size_t item_uid = Functions::Create_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir, attributes);
 
