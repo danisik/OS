@@ -24,7 +24,7 @@ namespace kiv_os_rtl {
 	bool Delete_File(const char *file_name);
 	bool Set_Working_Dir(const char *new_directory, bool &success);
 	bool Get_Working_Dir(char *path, size_t path_size, size_t &written_chars);
-	bool Create_Pipe(kiv_os::THandle pipein_handle, kiv_os::THandle pipeout_handle);
+	bool Create_Pipe(kiv_os::THandle *pipe_handles);
 
 	//NOS_Process
 	bool Clone_Process(const char *export_name, const char *arguments, kiv_os::THandle stdin_handle, kiv_os::THandle stdout_handle, kiv_os::THandle &process);

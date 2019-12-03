@@ -62,22 +62,18 @@ public:
     MFT();
 	size_t UID_counter;
 	size_t size;
-    
 };
 
 class VFS{
 public:
     VFS(uint64_t, uint16_t, int);
-    FILE* file;
     Boot_Record* boot_record;
     MFT* mft;
 	std::map<size_t, Mft_Item*> mft_items;
     bool* bitmap;
-	std::vector<Mft_Item*> current_path;
 	int drive_id;
 
 	bool Load_MFT();
-    
 };
 
 class Exist_Item{
