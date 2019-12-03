@@ -29,23 +29,12 @@ namespace command_parser {
 				commands.push_back(command);
 				break;
 			}
-			/*
-			while ((token != "cd" && token != "echo" && token != "tasklist" && token != "rd" && token != "md" && token != "type"
-				&& token != "find" && token != "sort" && token != "dir" && token != "rgen" && token != "freq"
-				&& token != "shell" && token != "shutdown" && token != "exit" && token != "test")) {
-				command.parameters.append(token);
-				if (!(stream >> token)) {
-					end = true;
-					break;
-				}
-				command.parameters.append(" ");
-			}
-			commands.push_back(command);
-			*/
+		
 			while (true) {
 				if(token == "|") {
 					// pipe
 					command.is_pipe = true;
+
 					break;
 				}
 
@@ -76,10 +65,16 @@ namespace command_parser {
 				command.parameters.append(token);
 				if (!(stream >> token)) {
 					end = true;
+
 					break;
 				}
 				command.parameters.append(" ");
 			}
+
+			if (command.parameters.length() > 0 && command.parameters.at(command.parameters.length() - 1) == ' ') {
+				command.parameters.pop_back();
+			}
+
 			commands.push_back(command);
 		}
 
