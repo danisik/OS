@@ -31,10 +31,6 @@ bool kiv_os_rtl::Open_File(const char *file_name, kiv_os::NOpen_File flags, kiv_
 
 bool kiv_os_rtl::Write_File(kiv_os::THandle file_handle, const char *buffer, size_t buffer_size, size_t &written) {
 	
-	if (buffer_size == 0) {
-		return true;
-	}
-	
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Write_File));
 	regs.rdx.x = static_cast<decltype(regs.rdx.x)>(file_handle);
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(buffer);
@@ -118,14 +114,10 @@ bool kiv_os_rtl::Get_Working_Dir(char *path, size_t path_size, size_t &written_c
 	return syscall_result;
 }
 
-bool kiv_os_rtl::Create_Pipe(kiv_os::THandle pipein_handle, kiv_os::THandle pipeout_handle) {
+bool kiv_os_rtl::Create_Pipe(kiv_os::THandle *pipe_handles) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Create_Pipe));
 
-	kiv_os::THandle pipe_handle[2];
-	pipe_handle[0] = pipein_handle;
-	pipe_handle[1] = pipeout_handle;
-
-	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(pipe_handle);
+	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(pipe_handles);
 
 	bool syscall_result = kiv_os::Sys_Call(regs);
 	return syscall_result;

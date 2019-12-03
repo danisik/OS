@@ -4,7 +4,6 @@
 
 std::mutex working_directory_mutex;
 std::mutex io_mutex;
-std::mutex pipe_mutex;
 
 IO::IO(IO_Process *i_io_process, uint64_t cluster_count, uint16_t cluster_size, int v_drive_i) {
 	io_process = i_io_process;
@@ -143,6 +142,8 @@ void IO::Seek(kiv_hal::TRegisters &regs) {
 }
 
 void IO::Close_Handle(kiv_hal::TRegisters &regs) {
+	auto handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
+	handle->Close();
 	Remove_Handle(regs.rdx.x);
 }
 
@@ -198,13 +199,13 @@ void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
 }
 
 void IO::Create_Pipe(kiv_hal::TRegisters &regs) {
-	//std::lock_guard<std::mutex> lock_mutex(pipe_mutex);
+	Pipe_Handle *pipein_handle = new Pipe_Handle(vfs->boot_record->cluster_size);
 
-	auto pipe_handle = Resolve_kiv_os_Handle(regs.rdx.x);
-	//pipe_handle[0] = pipein_handle;
-	//pipe_handle[1] = pipeout_handle;
+	Pipe_Handle *pipeout_handle = new Pipe_Handle(pipein_handle->pipe);
 
-	// TODO Create_Pipe: functional code.
+	kiv_os::THandle *pipe_handle = reinterpret_cast<kiv_os::THandle*>(regs.rdx.r);
+	*(pipe_handle) = Convert_Native_Handle(static_cast<HANDLE>(pipein_handle));
+	*(pipe_handle + 1) = Convert_Native_Handle(static_cast<HANDLE>(pipeout_handle));
 }
 
 

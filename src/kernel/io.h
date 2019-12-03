@@ -14,6 +14,7 @@ private:
 	IO_Process* io_process;
 public:
 	VFS *vfs;
+	int id_c = 0;
 
 	IO(IO_Process *i_io_process, uint64_t cluster_count, uint16_t cluster_size, int v_drive_i);
 	void Handle_IO(kiv_hal::TRegisters &regs);

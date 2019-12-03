@@ -1,21 +1,27 @@
+#pragma once
+
 #include "semaphore.h"
 
-Semaphore::Semaphore(int s_count = 0) {
-	count = s_count;
+Semaphore::Semaphore(int s_value = 0) {
+	value = s_value;
 }
 
-void Semaphore::notify(int tid) {
+
+void Semaphore::P() {
 	std::unique_lock<std::mutex> lock(mtx);
-
-	count++;
-	cv.notify_one();
-}
-
-void Semaphore::wait(int tid) {
-	std::unique_lock<std::mutex> lock(mtx);
-
-	while (count == 0) {
+	
+	value--;
+	while (value < 0) {
 		cv.wait(lock);
 	}
-	count--;
+
+}
+
+void Semaphore::V() {
+	std::unique_lock<std::mutex> lock(mtx);
+
+	value++;
+	if (value <= 0) {
+		cv.notify_one();
+	}
 }
