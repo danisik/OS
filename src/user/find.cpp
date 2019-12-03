@@ -31,11 +31,19 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 		other.append(other_part);
 	}
 
-	if (part1 == "/v" && part2 == "/c\"\"" && other.size() == 0) {
+	if (part1 == "/v" && part2 == "/c\"\"") {
+		kiv_os::THandle in_handle;
+		bool open_result = kiv_os_rtl::Open_File(arguments, kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
+
+		if (in_handle == static_cast<kiv_os::THandle>(-1)) {
+			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::File_Not_Found);
+			kiv_os_rtl::Exit(exit_code);
+			return 0;
+		}
 		size_t read;
 		char buffer[512];
 		std::string complete = "";
-		bool res = kiv_os_rtl::Read_File(std_in, buffer, sizeof(buffer), read);
+		bool res = kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
 		if (!res) {
 			output = "Read error.\n";
 			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::IO_Error);
