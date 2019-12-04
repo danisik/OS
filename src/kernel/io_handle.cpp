@@ -135,6 +135,10 @@ void Pipe_Handle::Close() {
 
 size_t File_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
 
+	if ((seek - 1) >= item->item_size) {
+		return 0;
+	}
+
 	size_t actual_buffer_position = 0;
 
 	size_t sectors_count = item->item_size / vfs->boot_record->cluster_size;

@@ -53,8 +53,13 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 		kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
 		complete.append(buffer, 0, read);
 		
-		actual_position += read;
-		kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
+		
+		if (is_file) {
+			actual_position += read;
+			kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
+		}
+		
+
 		while (read) {
 			kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
 			complete.append(buffer, 0, read);
