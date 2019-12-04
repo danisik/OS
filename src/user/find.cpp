@@ -21,19 +21,21 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 
 	std::string part1;
 	std::string part2;
-	std::string other_part;
+	std::string rest;
 	std::string other = "";
 
 	stream >> part1;
 	stream >> part2;
 
-	while (stream >> other_part) {
-		other.append(other_part);
+	while (stream >> rest) {
+		other.append(rest);
 	}
 
 	if (part1 == "/v" && part2 == "/c\"\"") {
-		kiv_os::THandle in_handle;
-		bool open_result = kiv_os_rtl::Open_File(arguments, kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
+		kiv_os::THandle in_handle = std_in;
+		if (rest.length() >= 1) {
+			bool open_result = kiv_os_rtl::Open_File(arguments, kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
+		}
 
 		if (in_handle == static_cast<kiv_os::THandle>(-1)) {
 			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::File_Not_Found);
