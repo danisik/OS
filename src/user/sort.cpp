@@ -8,6 +8,7 @@ size_t __stdcall sort(const kiv_hal::TRegisters &regs) {
 	char buffer[512];
 	size_t read = 0;
 	kiv_os_rtl::Read_File(std_in, buffer, 512, read);
+	
 	size_t write = 0;
 	kiv_os_rtl::Write_File(std_out, buffer, read, write);
 

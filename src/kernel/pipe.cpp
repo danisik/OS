@@ -18,6 +18,8 @@ void Pipe::Close(Pipe_Function function) {
 			closed_out = true;
 			consumer->cv.notify_one();
 			break;
+		case Pipe_Function::Read:
+			break;
 	}
 }
 

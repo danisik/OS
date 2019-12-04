@@ -45,27 +45,14 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 		size_t read;
 		char buffer[512];
 		std::string complete = "";
-		bool res = kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
-		if (!res) {
-			output = "Read error.\n";
-			uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::IO_Error);
-			kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
-			kiv_os_rtl::Exit(exit_code);
-			return 0;
-		}
+		kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
 		complete.append(buffer);
+		
 		while (read) {
-			res = kiv_os_rtl::Read_File(std_in, buffer, sizeof(buffer), read);
-			if (!res) {
-				output = "Read error.\n";
-				uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::IO_Error);
-				kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
-				kiv_os_rtl::Exit(exit_code);
-				return 0;
-			}
+			kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
 			complete.append(buffer);
 		}
-
+		
 		std::stringstream data(complete);
 		std::string line;
 		int lines = 0;
@@ -83,8 +70,7 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 		kiv_os_rtl::Exit(exit_code);
 		return 0;
-	}
-	printf("ecc");
+	}	
 	int16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	kiv_os_rtl::Exit(exit_code);
 	return 0;

@@ -56,11 +56,11 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 					kiv_os_rtl::Create_Pipe(pipe_handles);
 					pipes_in.insert(std::pair<size_t, kiv_os::THandle>(current_command_position, pipe_handles[0]));
 					pipes_out.insert(std::pair<size_t, kiv_os::THandle>(current_command_position, pipe_handles[1]));
-					out_handle = pipe_handles[0];
+					out_handle = pipe_handles[1];
 				}
 
-				if (current_command_position > 0 && pipes_out.find(current_command_position - 1) != pipes_out.end()) {
-					in_handle = pipes_out[current_command_position - 1];
+				if (current_command_position > 0 && pipes_in.find(current_command_position - 1) != pipes_in.end()) {
+					in_handle = pipes_in[current_command_position - 1];
 				}
 
 				// Create process for new command.
@@ -82,7 +82,7 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 
 		kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
 
-		if (pipes_in.find(i) != pipes_in.end()) {
+		if (pipes_out.find(i) != pipes_out.end()) {
 			kiv_os_rtl::Close_Handle(pipes_out[i]);
 		}
 		
