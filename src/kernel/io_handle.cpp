@@ -105,26 +105,27 @@ size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Pr
 
 Pipe_Handle::Pipe_Handle(Pipe *p_pipe) {
 	pipe = p_pipe;
+	function = Pipe_Function::Write;
 }
 
-Pipe_Handle::Pipe_Handle(size_t p_buffer_size) {
+Pipe_Handle::Pipe_Handle(int p_buffer_size) {
 	pipe = new Pipe(p_buffer_size);
+	function = Pipe_Function::Read;
 }
 
 size_t Pipe_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
 	size_t read = 0;
-	//read = pipe->Consume(buffer, buffer_length);
+	read = pipe->Consume(buffer, buffer_length);
 	return read;
 }
 
 size_t Pipe_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
 	size_t written = 0;
-	//written = pipe->Produce(buffer, buffer_length);
+	written = pipe->Produce(buffer, buffer_length);
 	return written;
 }
 
-void Pipe_Handle::Close(Pipe_Function function) {
-	// TODO Close: really pipe_function ??
+void Pipe_Handle::Close() {
 	pipe->Close(function);
 }
 

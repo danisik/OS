@@ -26,7 +26,7 @@ kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uin
 }
 
 kiv_os::THandle Create_Kernel_Process() {
-	char name[8] = "wkernel";
+	char name[7] = "kernel";
 	// Create process and thread.
 	std::unique_ptr<Process> process = std::make_unique<Process>(io_process->Get_Free_Process_ID(), name);
 	std::unique_ptr<Thread> thread = std::make_unique<Thread>(process->process_ID);
@@ -165,7 +165,6 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 	Remove_Kernel_Process(kernel_handler);
 
-	printf("shutdowned\n");
 	// Shutdown kernel.
 	Shutdown_Kernel();
 }

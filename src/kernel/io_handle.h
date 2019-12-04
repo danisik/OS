@@ -9,6 +9,7 @@
 
 
 class IO_Handle {
+	
 	public:
 		size_t seek = 1;
 		virtual size_t Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process);
@@ -30,11 +31,12 @@ class STD_Handle_Out : public IO_Handle {
 class Pipe_Handle : public IO_Handle {
 	public:
 		Pipe *pipe;
+		Pipe_Function function;
 		Pipe_Handle(Pipe *p_pipe);
-		Pipe_Handle(size_t p_buffer_size);
+		Pipe_Handle(int p_buffer_size);
 		size_t Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process);
 		size_t Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process);
-		void Close(Pipe_Function function);
+		void Close();
 };
 
 class Item_Handle : public IO_Handle {

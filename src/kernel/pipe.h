@@ -11,12 +11,13 @@ class Pipe {
 	public:
 		Semaphore *producer; // píše, pipe write
 		Semaphore *consumer; // ète, pipe read
-		size_t buffer_size;
-		int values_count;
-		std::vector<char*> buffer;
+		int buffer_size;
+		std::list<char> pipe_buffer;
 		std::mutex mutual_exclusion;
+		
+		bool closed_out;
 
-		Pipe(size_t p_buffer_size);
+		Pipe(int p_buffer_size);
 
 		void Close(Pipe_Function function);
 		size_t Produce(char *buffer, size_t buffer_length);

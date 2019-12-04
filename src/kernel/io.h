@@ -9,6 +9,8 @@
 
 #include <mutex>
 
+#define PIPE_SIZE 4096
+
 class IO {
 private:
 	IO_Process* io_process;
