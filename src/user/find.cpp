@@ -51,16 +51,16 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 		char buffer[512];
 		std::string complete = "";
 		kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
-		complete.append(buffer);
-
-
+		complete.append(buffer, 0, read);
 		
+		actual_position += read;
+		kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
 		while (read) {
 			kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
-			complete.append(buffer);
+			complete.append(buffer, 0, read);
 
 			if (is_file) {
-				actual_position += sizeof(buffer);
+				actual_position += read;
 				kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
 			}
 		}
@@ -76,7 +76,14 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 			lines = lines + 1;
 		}
 
-		output = std::to_string(lines);
+		output = "";
+		if (is_file) {
+			output.append("---------- ");
+			output.append(rest);
+			output.append(": ");
+		}
+		
+		output.append(std::to_string(lines));
 		output.append("\n");
 		kiv_os_rtl::Write_File(std_out, output.data(), output.size(), written);
 	}
