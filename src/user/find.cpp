@@ -31,12 +31,15 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 		other.append(rest);
 	}
 
+	size_t actual_position = 0;
+
 	if (part1 == "/v" && part2 == "/c\"\"") {
 		kiv_os::THandle in_handle = std_in;
 		bool is_file = false;
 		if (rest.length() >= 1) {
 			kiv_os_rtl::Open_File(rest.data(), kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
 			is_file = true;
+			kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
 		}
 
 		if (in_handle == static_cast<kiv_os::THandle>(-1)) {
@@ -49,10 +52,17 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 		std::string complete = "";
 		kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
 		complete.append(buffer);
+
+
 		
 		while (read) {
 			kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
 			complete.append(buffer);
+
+			if (is_file) {
+				actual_position += sizeof(buffer);
+				kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
+			}
 		}
 
 		if (is_file) {
