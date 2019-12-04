@@ -17,6 +17,9 @@ void cd(const char *new_directory, kiv_os::THandle out) {
 void command_exe::Execute_Commands(std::vector<command_parser::Command> commands, kiv_os::THandle in, kiv_os::THandle out) {
 	kiv_os::THandle *handles = new kiv_os::THandle[commands.size()];
 	int handles_count = 0;
+	std::map<size_t, kiv_os::THandle> pipes_in;
+	std::map<size_t, kiv_os::THandle> pipes_out;
+	size_t current_command_position = 0;
 
 	for each (command_parser::Command command in commands) {
 		if (command.base != "cd" && command.base != "echo" && command.base != "tasklist" && command.base != "rd"
@@ -39,6 +42,7 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 				kiv_os::THandle handle;
 				kiv_os::THandle in_handle = in;
 				kiv_os::THandle out_handle = out;
+				kiv_os::THandle pipe_handles[2];
 
 				if (command.is_red_in) {
 					kiv_os_rtl::Open_File(command.file_name.data(), kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::System_File, in_handle);
@@ -48,11 +52,23 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 					kiv_os_rtl::Open_File(command.file_name.data(), static_cast<kiv_os::NOpen_File>(0), kiv_os::NFile_Attributes::System_File, out_handle);
 				}
 
+				if (command.is_pipe) {
+					kiv_os_rtl::Create_Pipe(pipe_handles);
+					pipes_in.insert(std::pair<size_t, kiv_os::THandle>(current_command_position, pipe_handles[0]));
+					pipes_out.insert(std::pair<size_t, kiv_os::THandle>(current_command_position, pipe_handles[1]));
+					out_handle = pipe_handles[0];
+				}
+
+				if (current_command_position > 0 && pipes_out.find(current_command_position - 1) != pipes_out.end()) {
+					in_handle = pipes_out[current_command_position - 1];
+				}
+
 				// Create process for new command.
 				kiv_os_rtl::Clone_Process(command.base.data(), command.parameters.data(), in_handle, out_handle, handle);
 
 				handles[handles_count] = handle;
 				handles_count++;
+				current_command_position++;
 			}
 		}
 	}
@@ -69,7 +85,7 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 		uint16_t exit_code = 0;
 		kiv_os_rtl::Read_Exit_Code(signalized_handler, exit_code);
 	}
-
 	
+
 	delete handles;
 }
