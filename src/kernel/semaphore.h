@@ -12,4 +12,5 @@ class Semaphore {
 		std::mutex mtx;
 		std::condition_variable cv;
 		int value;
+		int waiting;
 };

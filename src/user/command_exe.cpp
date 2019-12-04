@@ -81,10 +81,21 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 		single_handle[0] = handles[i];
 
 		kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
+
+		if (pipes_in.find(i) != pipes_in.end()) {
+			kiv_os_rtl::Close_Handle(pipes_out[i]);
+		}
 		
 		uint16_t exit_code = 0;
 		kiv_os_rtl::Read_Exit_Code(signalized_handler, exit_code);
 	}
+
+	for (size_t i = 0; i < pipes_in.size(); i++) {
+		kiv_os_rtl::Close_Handle(pipes_in[i]);
+	}
+
+	pipes_in.clear();
+	pipes_out.clear();
 	
 
 	delete handles;

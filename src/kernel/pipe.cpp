@@ -2,44 +2,70 @@
 
 #include "pipe.h"
 
-Pipe::Pipe(size_t p_buffer_size) {
+Pipe::Pipe(int p_buffer_size) {
 	buffer_size = p_buffer_size;
-	values_count = 10;
 
-	producer = new Semaphore(values_count);
+	producer = new Semaphore(p_buffer_size);
 	consumer = new Semaphore(0);
+
+	closed_out = false;
 }
 
 void Pipe::Close(Pipe_Function function) {
-	
+
 	switch (function) {
-		case Pipe_Function::Read: 
-			delete consumer;
-			break;
 		case Pipe_Function::Write:
-			delete producer;
+			closed_out = true;
+			consumer->cv.notify_one();
 			break;
 	}
 }
 
 size_t Pipe::Produce(char *buffer, size_t buffer_length) {
-	producer->P();
-	std::unique_lock<std::mutex> locker(mutual_exclusion);
-	
-	// Insert into buffer.
-	
-	locker.unlock();
-	consumer->V();
-	return 0;
+	size_t produced = 0;
+
+	for (size_t i = 0; i < buffer_length; i++) {
+
+		producer->P();
+		std::unique_lock<std::mutex> locker(mutual_exclusion);
+
+		// Insert into buffer.
+		pipe_buffer.push_back(buffer[i]);
+
+		locker.unlock();
+		consumer->V();
+		produced++;
+	}
+
+	return produced;
 }
 
 size_t Pipe::Consume(char *buffer, size_t buffer_length) {
-	consumer->P();
-	std::unique_lock<std::mutex> locker(mutual_exclusion);
+	size_t consumed = 0;
 	
-	// Read from buffer.
-	
-	locker.unlock();
-	producer->V();
-	return 0;
+	for (size_t i = 0; i < buffer_length; i++) {
+		
+		if (closed_out && pipe_buffer.empty()) {
+			return consumed;
+		}
+		
+		consumer->P();
+
+		if (closed_out && pipe_buffer.empty()) {
+			return consumed;
+		}
+
+		std::unique_lock<std::mutex> locker(mutual_exclusion);
+
+		// Read from buffer.
+		buffer[i] = pipe_buffer.front();
+		pipe_buffer.pop_front();
+
+		locker.unlock();
+		
+		producer->V();
+		consumed++;		
+	}
+
+	return consumed;
 }

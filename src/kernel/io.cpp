@@ -199,7 +199,7 @@ void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
 }
 
 void IO::Create_Pipe(kiv_hal::TRegisters &regs) {
-	Pipe_Handle *pipein_handle = new Pipe_Handle(vfs->boot_record->cluster_size);
+	Pipe_Handle *pipein_handle = new Pipe_Handle(PIPE_SIZE);
 
 	Pipe_Handle *pipeout_handle = new Pipe_Handle(pipein_handle->pipe);
 
