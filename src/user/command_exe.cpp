@@ -60,10 +60,16 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 	// Wait for commands to be executed.
 	kiv_os::THandle signalized_handler;
 
-	kiv_os_rtl::Wait_For(handles, handles_count, signalized_handler);
+	for (size_t i = 0; i < handles_count; i++) {
+		kiv_os::THandle single_handle[1];
+		single_handle[0] = handles[i];
 
-	uint16_t exit_code = -1;
-	kiv_os_rtl::Read_Exit_Code(signalized_handler, exit_code);
+		kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
+		
+		uint16_t exit_code = 0;
+		kiv_os_rtl::Read_Exit_Code(signalized_handler, exit_code);
+	}
+
 	
 	delete handles;
 }

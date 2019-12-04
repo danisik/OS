@@ -26,7 +26,7 @@ kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uin
 }
 
 kiv_os::THandle Create_Kernel_Process() {
-	char *name = "kernel";
+	char name[8] = "wkernel";
 	// Create process and thread.
 	std::unique_ptr<Process> process = std::make_unique<Process>(io_process->Get_Free_Process_ID(), name);
 	std::unique_ptr<Thread> thread = std::make_unique<Thread>(process->process_ID);
