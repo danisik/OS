@@ -57,6 +57,14 @@ size_t __stdcall test(const kiv_hal::TRegisters &regs) {
 	kiv_os_rtl::Write_File(handle, buffer, sizeof(buffer), written);
 	*/
 
+	kiv_os::THandle handle;
+	const char *file_name = reinterpret_cast<const char*>(regs.rdi.r);
+	kiv_os_rtl::Open_File(file_name, flags, kiv_os::NFile_Attributes::System_File, handle);
+
+	size_t written = 0;
+	kiv_os_rtl::Write_File(handle, "x\na\nc\ng\nb\nd\nj", sizeof("x\na\nc\ng\nb\nd\nj"), written);
+
+	/*
 	kiv_os::THandle pipe_handles[2];
 	kiv_os_rtl::Create_Pipe(pipe_handles);
 
@@ -69,7 +77,7 @@ size_t __stdcall test(const kiv_hal::TRegisters &regs) {
 	std::string str;
 	str.append(out_buffer, s);
 	kiv_os_rtl::Write_File(std_out, str.data(), str.size(), s);
-
+	*/
 	kiv_os_rtl::Exit(0);
 	return 0;
 }
