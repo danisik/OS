@@ -21,5 +21,5 @@ public:
 	Process(size_t p_process_ID, char *p_name);
 	size_t Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegisters registers);
 	void Join_Thread(size_t thread_ID, uint16_t exit_code);
-	uint16_t Kill_Thread(size_t thread_ID);
+	void Kill_Thread(size_t thread_ID);
 };

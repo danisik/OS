@@ -15,7 +15,7 @@ void cd(const char *new_directory, kiv_os::THandle out) {
 }
 
 void command_exe::Execute_Commands(std::vector<command_parser::Command> commands, kiv_os::THandle in, kiv_os::THandle out) {
-	kiv_os::THandle *handles = new kiv_os::THandle[commands.size()];
+	std::vector<kiv_os::THandle> handless(commands.size());
 	size_t handles_count = 0;
 	std::map<size_t, kiv_os::THandle> pipes_in;
 	std::map<size_t, kiv_os::THandle> pipes_out;
@@ -66,7 +66,7 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 				// Create process for new command.
 				kiv_os_rtl::Clone_Process(command.base.data(), command.parameters.data(), in_handle, out_handle, handle);
 				
-				handles[handles_count] = handle;
+				handless.push_back(handle);
 				handles_count++;
 				current_command_position++;
 			}
@@ -75,19 +75,23 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 
 	// Wait for commands to be executed.
 	kiv_os::THandle signalized_handler;
+	size_t j = 0;
 
-	for (size_t i = 0; i < handles_count; i++) {
+	for (std::vector<kiv_os::THandle>::iterator it = handless.begin(); it != handless.end(); ++it) {
+		if (*it == 0) continue;
+
 		kiv_os::THandle single_handle[1];
-		single_handle[0] = handles[i];
+		single_handle[0] = *it;
 
 		kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
 
-		if (pipes_out.find(i) != pipes_out.end()) {
-			kiv_os_rtl::Close_Handle(pipes_out[i]);
+		if (pipes_out.find(j) != pipes_out.end()) {
+			kiv_os_rtl::Close_Handle(pipes_out[j]);
 		}
-		
+
 		uint16_t exit_code = 0;
 		kiv_os_rtl::Read_Exit_Code(signalized_handler, exit_code);
+		j++;
 	}
 
 	for (size_t i = 0; i < pipes_in.size(); i++) {

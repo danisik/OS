@@ -21,7 +21,7 @@ size_t Eof_Checker(const kiv_hal::TRegisters &regs) {
 	size_t read;
 
 	kiv_os_rtl::Read_File(std_in, buffer, 1, read);
-
+	
 	while (read && !terminated) {
 		kiv_os_rtl::Read_File(std_in, buffer, 1, read);
 	}
@@ -34,6 +34,11 @@ size_t Eof_Checker(const kiv_hal::TRegisters &regs) {
 }
 
 size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {	
+	kiv_os::NSignal_Id signal = kiv_os::NSignal_Id::Terminate;
+	kiv_os::TThread_Proc handler = reinterpret_cast<kiv_os::TThread_Proc>(Terminated_Checker);
+
+	kiv_os_rtl::Register_Signal_Handler(signal, handler);
+
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);
 
@@ -54,6 +59,12 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 
 	kiv_os::THandle handle;
 	bool eof = false;
+	
+	if (terminated) {
+		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
+		kiv_os_rtl::Exit(exit_code);
+		return exit_code;
+	}
 
 	kiv_os_rtl::Clone_Thread(&Eof_Checker, &eof, std_in, std_out, handle);
 
@@ -66,9 +77,18 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 	}
 
 	uint16_t checker_exit_code;
+
+	kiv_os::THandle single_handle[1];
+	single_handle[0] = handle;
+	kiv_os::THandle signalized_handler;
+
+	kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
 	
-	kiv_os_rtl::Read_Exit_Code(handle, checker_exit_code);
+	if (terminated) {
+		kiv_os_rtl::Read_Exit_Code(handle, checker_exit_code);
+	}
+
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	kiv_os_rtl::Exit(exit_code);
-	return 0;
+	return exit_code;
 }
