@@ -104,9 +104,6 @@
     <ClInclude Include="..\..\src\kernel\pipe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\kernel\Constants.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\kernel\Header.h">
       <Filter>Header Files</Filter>
     </ClInclude>

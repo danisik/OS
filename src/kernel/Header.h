@@ -8,9 +8,15 @@
 #include <iterator>
 #include <math.h>
 #include <map>
-#include "Constants.hpp"
 #include "../api/hal.h"
 #include "../api/api.h"
+
+#define ROOT_CHAR "~"
+#define SPLIT " "
+#define FOLDER_SPLIT "/"
+
+const int32_t MFT_FRAGMENTS_COUNT = 32;
+const int32_t UID_ITEM_FREE = 0;
 
 class Mft_Fragment {
 public:

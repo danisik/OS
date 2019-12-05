@@ -2,7 +2,7 @@
 
 
 #include "thread.h"
-#include "header.h"
+#include "Header.h"
 
 #include <map>
 

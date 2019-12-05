@@ -39,7 +39,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\api\api.h" />
     <ClInclude Include="..\..\src\api\hal.h" />
-    <ClInclude Include="..\..\src\kernel\Constants.hpp" />
     <ClInclude Include="..\..\src\kernel\globals.h" />
     <ClInclude Include="..\..\src\kernel\handles.h" />
     <ClInclude Include="..\..\src\kernel\Header.h" />

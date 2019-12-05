@@ -2,6 +2,8 @@
 
 #include "semaphore.h"
 
+#include <list>
+
 enum class Pipe_Function {
 	Read = 0,
 	Write
