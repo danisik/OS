@@ -16,7 +16,7 @@ void cd(const char *new_directory, kiv_os::THandle out) {
 
 void command_exe::Execute_Commands(std::vector<command_parser::Command> commands, kiv_os::THandle in, kiv_os::THandle out) {
 	kiv_os::THandle *handles = new kiv_os::THandle[commands.size()];
-	int handles_count = 0;
+	size_t handles_count = 0;
 	std::map<size_t, kiv_os::THandle> pipes_in;
 	std::map<size_t, kiv_os::THandle> pipes_out;
 	size_t current_command_position = 0;
@@ -65,7 +65,7 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 
 				// Create process for new command.
 				kiv_os_rtl::Clone_Process(command.base.data(), command.parameters.data(), in_handle, out_handle, handle);
-
+				
 				handles[handles_count] = handle;
 				handles_count++;
 				current_command_position++;
@@ -96,7 +96,4 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 
 	pipes_in.clear();
 	pipes_out.clear();
-	
-
-	delete handles;
 }

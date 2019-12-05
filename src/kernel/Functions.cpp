@@ -150,10 +150,10 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
     item->exists = false;
     item->path_exists = false;
     item->is_directory = kiv_os::NFile_Attributes::Directory;
-    size_t i;
+    size_t i = 0;
 	std::string tok;
 
-	size_t j;
+	size_t j = 0;
 	std::string path_tmp = path;
 	std::string tok_tmp;
 	size_t jump_back = 0;
@@ -190,7 +190,7 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
 			continue;
 		}
 
-        for(size_t j = 0; j < vfs->mft_items.size(); j++) {
+        for(j = 0; j < vfs->mft_items.size(); j++) {
             if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
                 item->uid = vfs->mft_items[j]->uid;
                 item->parent_ID = vfs->mft_items[j]->parent_ID;
@@ -217,7 +217,7 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
     item->path_exists = true;
 	const char *name = tok.c_str();
 
-    for(size_t j = 0; j < vfs->mft_items.size(); j++){
+    for(j = 0; j < vfs->mft_items.size(); j++){
         if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, name)==0)){
             item->uid = vfs->mft_items[j]->uid;
             item->parent_ID = vfs->mft_items[j]->parent_ID;
@@ -289,7 +289,7 @@ void Functions::Move_To_Path(VFS* vfs, std::string path, std::vector<Mft_Item*> 
 			continue;
 		}
 
-        for(size_t j = 0; j < vfs->mft_items.size(); j++){
+        for(j = 0; j < vfs->mft_items.size(); j++){
             if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
                 item->uid = vfs->mft_items[j]->uid;
                 item->parent_ID = vfs->mft_items[j]->parent_ID;
@@ -300,7 +300,7 @@ void Functions::Move_To_Path(VFS* vfs, std::string path, std::vector<Mft_Item*> 
         
     }
     tok = path.substr(0,i);
-    for(size_t j = 0; j < vfs->mft_items.size(); j++){
+    for(j = 0; j < vfs->mft_items.size(); j++){
         if((vfs->mft_items[j]->parent_ID == item->uid)
            &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
             item->uid = vfs->mft_items[j]->uid;
