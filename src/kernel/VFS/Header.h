@@ -104,9 +104,6 @@ public:
 	static void Save_VFS_MFT_Item(VFS*, size_t);
 
 	static void Process_Sectors(kiv_hal::NDisk_IO operation, int drive_id, size_t count, size_t lba_index, void* sector);
-
-	static void Print_Bitmap(VFS*);
-	static void Print_MFT(VFS*);
     
 };
 

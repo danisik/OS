@@ -78,7 +78,7 @@ bool Functions::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_It
 		Functions::Move_To_Path(vfs, path, current_path);
 		return true;
 	}
-	else if (!item->exists || !item->path_exists) {
+	else {
 		return false;
 	}
 }
@@ -159,7 +159,7 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
 	size_t jump_back = 0;
 
 	if (strcmp(path.c_str(), "../") == 0 || strcmp(path.c_str(), "..") == 0) {
-		item->is_directory == kiv_os::NFile_Attributes::Directory;
+		item->is_directory = kiv_os::NFile_Attributes::Directory;
 		item->exists = true;
 		item->path_exists = true;
 		return item;
@@ -431,42 +431,4 @@ void Functions::Process_Sectors(kiv_hal::NDisk_IO operation, int drive_id, size_
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(&dap);
 
 	kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Disk_IO, regs);
-}
-
-void  Functions::Print_MFT(VFS* vfs) {
-	for (size_t i = 0; i < vfs->mft_items.size(); i++) {
-		if (vfs->mft_items[i]->is_directory == kiv_os::NFile_Attributes::Directory) {
-			std::cout << "+";
-		}
-		else {
-			std::cout << "-";
-		}
-		std::cout << vfs->mft_items[i]->item_name
-			<< ": "
-			<< "UID: " << vfs->mft_items[i]->uid
-			<< " "
-			<< "PUID: " << vfs->mft_items[i]->parent_ID
-			<< " "
-			<< "SIZE: " << vfs->mft_items[i]->item_size;
-
-		for (size_t j = 0; j < MFT_FRAGMENTS_COUNT; j++) {
-			if (vfs->mft_items[i]->fragment_cluster_count[j] == 0) {
-				continue;
-			}
-			else printf("\t fragment %zd is: %zd %zd %zd\n", j, vfs->mft_items[i]->fragment_cluster_count[j], vfs->mft_items[i]->fragment_start_cluster[j], vfs->mft_items[i]->bitmap_start_ID[j]);
-		}
-	}
-	std::cout << std::endl;
-}
-
-void Functions::Print_Bitmap(VFS * vfs) {
-	for (int i = 0; i < vfs->boot_record->cluster_count; i++) {
-		if (vfs->bitmap[i]) {
-			std::cout << "1";
-		}
-		else {
-			std::cout << "0";
-		}
-	}
-	std::cout << std::endl << std::endl;
 }
