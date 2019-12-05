@@ -27,10 +27,12 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 	kiv_os_rtl::Write_File(std_out, welcome_message, strlen(welcome_message), counter);
 	kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 
+	bool ctrl_z = false;
+
 	// While cycle for commands.
 	while(1) {
 
-		if (echo_on) {
+		if (echo_on && !ctrl_z) {
 			char working_dir[PATH_MAX];
 			size_t working_dir_size = 0;
 			kiv_os_rtl::Get_Working_Dir(working_dir, PATH_MAX, working_dir_size);
@@ -39,14 +41,21 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			kiv_os_rtl::Write_File(std_out, working_dir, working_dir_size, counter);
 			kiv_os_rtl::Write_File(std_out, beak, strlen(beak), counter);
 		}
+		else if (ctrl_z) {
+			ctrl_z = false;
+		}
 
-		if (kiv_os_rtl::Read_File(std_in, buffer, buffer_size, counter) && (counter > 0)) {
+		if (kiv_os_rtl::Read_File(std_in, buffer, buffer_size, counter)) {
 			
 			if (counter == buffer_size) {
 				counter--;
 			}
+			else if (counter == 0) {
+				ctrl_z = true;
+				continue;
+			}
 
-			buffer[counter] = 0;
+			buffer[--counter] = 0;
 
 			if (strcmp(buffer, "exit") == 0) {
 				break;

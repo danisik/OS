@@ -95,14 +95,6 @@ void Shell_Wait(kiv_os::THandle handle) {
 
 void Shell_Close(kiv_os::THandle shell_handle) {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Close_Handle));
-	
-	// Close std_in handle.
-	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_in_shell);
-	io->Handle_IO(regs);
-
-	// Close std_out handle.
-	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(std_out_shell);
-	io->Handle_IO(regs);
 
 	// Delete shell process.
 	regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
