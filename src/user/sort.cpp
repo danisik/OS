@@ -56,7 +56,6 @@ size_t __stdcall sort(const kiv_hal::TRegisters &regs) {
 
 	size_t count = 0;
 	for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); ++it) {
-		/* std::cout << *it; ... */
 		complete.append(*it);
 		if (count < lines.size() - 1) {
 			complete.append("\n");

@@ -70,8 +70,6 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			if (shutdown_signalized == true) {
 				break;
 			}
-
-			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 		}
 		else {
 			break;	// EOF.

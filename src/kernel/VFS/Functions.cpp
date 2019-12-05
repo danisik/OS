@@ -90,6 +90,14 @@ Mft_Item* Get_Last_Item(VFS *vfs) {
 	return nullptr;
 }
 
+void Functions::Update_Parent_ID(VFS *vfs, size_t old_id, size_t new_id) {
+	for (size_t i = 0; i < vfs->mft_items.size(); i++) {
+		if (vfs->mft_items[i]->parent_ID == old_id) {
+			vfs->mft_items[i]->parent_ID = new_id;
+		}
+	}
+}
+
 void Functions::Remove_Item(VFS * vfs, std::string path, std::vector<Mft_Item*> &current_path) {
 	vfs->mft->size = vfs->mft_items.size();
 	vfs->mft->UID_counter = vfs->mft_items.size();
@@ -110,6 +118,7 @@ void Functions::Remove_Item(VFS * vfs, std::string path, std::vector<Mft_Item*> 
 						Mft_Item* last_item = Get_Last_Item(vfs);
 
 						if (last_item->uid > item->uid) {
+							if (last_item->is_directory == kiv_os::NFile_Attributes::Directory) Update_Parent_ID(vfs, last_item->uid, item->uid);
 							vfs->mft_items.erase(last_item->uid);
 							last_item->uid = item->uid;
 							vfs->mft_items.insert(std::pair<size_t, Mft_Item*>(last_item->uid, last_item));

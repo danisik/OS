@@ -73,14 +73,14 @@ size_t STD_Handle_In::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Proc
 
 		case kiv_hal::NControl_Codes::LF:  break;		// Jenom pohltime, ale necteme.
 		case kiv_hal::NControl_Codes::NUL: return 0;	// CTRL+Z.
-		case kiv_hal::NControl_Codes::CR: {
+		case kiv_hal::NControl_Codes::CR: {				// Add new line if enter is pressed.
 			buffer[pos] = '\n';
 			registers.rax.h = static_cast<decltype(registers.rax.l)>(kiv_hal::NVGA_BIOS::Write_String);
 			registers.rdx.r = reinterpret_cast<decltype(registers.rdx.r)>(&buffer[pos]);
 			registers.rcx.r = 1;
 			kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
 			pos++;
-			return pos;	// Docetli jsme az po Enter.
+			return pos;
 		}
 		default: {
 			buffer[pos] = ch;

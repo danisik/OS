@@ -90,6 +90,7 @@ public:
 	static size_t Create_Item(VFS*, std::string, std::vector<Mft_Item*>, kiv_os::NFile_Attributes);
 	static bool Move_To_Directory(VFS*, std::string, std::vector<Mft_Item*>&);
 	static void Remove_Item(VFS*, std::string, std::vector<Mft_Item*> &);
+	static void Update_Parent_ID(VFS *vfs, size_t old_id, size_t new_id);
     static Exist_Item* Check_Path(VFS*, std::string, std::vector<Mft_Item*>);
     static bool Is_Directory_Empty(VFS*, Exist_Item*);
     static void Move_To_Path(VFS*, std::string, std::vector<Mft_Item*>&);
