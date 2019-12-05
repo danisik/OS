@@ -20,27 +20,29 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\api\api.cpp" />
+    <ClCompile Include="..\..\src\kernel\boot_record.cpp" />
+    <ClCompile Include="..\..\src\kernel\Functions.cpp" />
     <ClCompile Include="..\..\src\kernel\handles.cpp" />
     <ClCompile Include="..\..\src\kernel\io.cpp" />
     <ClCompile Include="..\..\src\kernel\io_handle.cpp" />
     <ClCompile Include="..\..\src\kernel\io_process.cpp" />
     <ClCompile Include="..\..\src\kernel\kernel.cpp" />
+    <ClCompile Include="..\..\src\kernel\MFT.cpp" />
+    <ClCompile Include="..\..\src\kernel\Mft_fragment.cpp" />
+    <ClCompile Include="..\..\src\kernel\Mft_item.cpp" />
     <ClCompile Include="..\..\src\kernel\pipe.cpp" />
     <ClCompile Include="..\..\src\kernel\process.cpp" />
     <ClCompile Include="..\..\src\kernel\semaphore.cpp" />
     <ClCompile Include="..\..\src\kernel\thread.cpp" />
-    <ClCompile Include="..\..\src\kernel\VFS\boot_record.cpp" />
-    <ClCompile Include="..\..\src\kernel\VFS\functions.cpp" />
-    <ClCompile Include="..\..\src\kernel\VFS\mft.cpp" />
-    <ClCompile Include="..\..\src\kernel\VFS\mft_fragment.cpp" />
-    <ClCompile Include="..\..\src\kernel\VFS\mft_item.cpp" />
-    <ClCompile Include="..\..\src\kernel\VFS\vfs.cpp" />
+    <ClCompile Include="..\..\src\kernel\Vfs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\api\api.h" />
     <ClInclude Include="..\..\src\api\hal.h" />
+    <ClInclude Include="..\..\src\kernel\Constants.hpp" />
     <ClInclude Include="..\..\src\kernel\globals.h" />
     <ClInclude Include="..\..\src\kernel\handles.h" />
+    <ClInclude Include="..\..\src\kernel\Header.h" />
     <ClInclude Include="..\..\src\kernel\io.h" />
     <ClInclude Include="..\..\src\kernel\io_handle.h" />
     <ClInclude Include="..\..\src\kernel\io_process.h" />
@@ -50,8 +52,6 @@
     <ClInclude Include="..\..\src\kernel\semaphore.h" />
     <ClInclude Include="..\..\src\kernel\state.h" />
     <ClInclude Include="..\..\src\kernel\thread.h" />
-    <ClInclude Include="..\..\src\kernel\VFS\constants.hpp" />
-    <ClInclude Include="..\..\src\kernel\VFS\header.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B4305463-59C5-40C3-9A1A-92976A40562D}</ProjectGuid>

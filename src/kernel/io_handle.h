@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../kernel/VFS/header.h"
+#include "header.h"
 #include "io_process.h"
 #include <algorithm>
 #include <sstream>

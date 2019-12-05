@@ -9,8 +9,8 @@
 #include <math.h>
 #include <map>
 #include "Constants.hpp"
-#include "../../api/hal.h"
-#include "../../api/api.h"
+#include "../api/hal.h"
+#include "../api/api.h"
 
 class Mft_Fragment {
 public:

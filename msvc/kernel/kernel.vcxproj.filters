@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\VFS">
-      <UniqueIdentifier>{1f8e7b75-acd4-499b-a334-9ce3c12ad1f6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\VFS">
-      <UniqueIdentifier>{b56a3169-8940-49fe-9d63-97c8de2944b0}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\kernel\kernel.cpp">
@@ -42,24 +36,6 @@
     <ClCompile Include="..\..\src\kernel\io_process.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\boot_record.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\mft_fragment.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\mft_item.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\functions.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\mft.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\kernel\VFS\vfs.cpp">
-      <Filter>Source Files\VFS</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\kernel\io_handle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -67,6 +43,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\kernel\pipe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\boot_record.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\Functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\MFT.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\Mft_fragment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\Mft_item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\kernel\Vfs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -101,12 +95,6 @@
     <ClInclude Include="..\..\src\kernel\globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\constants.hpp">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\kernel\VFS\header.h">
-      <Filter>Header Files\VFS</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\kernel\io_handle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -114,6 +102,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\kernel\pipe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\kernel\Constants.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\kernel\Header.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

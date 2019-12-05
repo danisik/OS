@@ -6,7 +6,7 @@
 
 #include "io.h"
 #include "io_process.h"
-#include "VFS/header.h"
+#include "header.h"
 
 #define NUMBER_OF_SECTORS 2880
 
