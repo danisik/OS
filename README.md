@@ -2,34 +2,20 @@
 
 IDE: MS Visual Studio 2017 (MS Visual C++)
 
-## Hotové commandy:
-
-  ✔ echo
+## Hotové:
   
-  ✔ cd
+  ✔ Commandy.
   
-  ✔ find /v /c
+  ✔ Pipe.
   
-  ✔ shutdown
+  ✔ Redirecting.
   
-  ✔ rgen
+  ✔ VFS (pseudoNTFS).
   
-  ✔ dir
-  
-  ✔ freq
-  
-  ✔ md
-  
-  ✔ rd
-  
-  ✔ type
-  
-  ✔ tasklist
+  ✔ Dokumentace.
 
 ## In Progress:
 
 
-## Nevytvořené commandy:
-
-  ✘ sort
+## Nevytvořené:
   
