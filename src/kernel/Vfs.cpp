@@ -30,13 +30,13 @@ bool VFS::Load_MFT() {
 }
 
 VFS::VFS(uint64_t cluster_count, uint16_t cluster_size, int v_drive_id) {
-    this->boot_record = new Boot_Record(cluster_count, cluster_size);
+	this->boot_record = std::make_unique<Boot_Record>(cluster_count, cluster_size);
 	this->drive_id = v_drive_id;
 
 	//uint64_t count = this->boot_record->Get_Cluster_Count();
 	uint64_t count = 2880;
 
-	this->bitmap = new bool[count];
+	this->bitmap.resize(count);
 	for (uint64_t i = 0; i < count; i++) {
 		this->bitmap[i] = false;
 	}

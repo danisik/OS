@@ -95,6 +95,9 @@ void IO::Write_File(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	auto file_handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
+	if (file_handle == INVALID_HANDLE_VALUE) {
+		return;
+	}
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
 	size_t buffer_length = regs.rcx.r;	
 
@@ -103,6 +106,9 @@ void IO::Write_File(kiv_hal::TRegisters &regs) {
 
 void IO::Read_File(kiv_hal::TRegisters &regs) {
 	auto file_handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
+	if (file_handle == INVALID_HANDLE_VALUE) {
+		return;
+	}
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
 	size_t buffer_length = regs.rcx.r;
 
@@ -143,8 +149,10 @@ void IO::Seek(kiv_hal::TRegisters &regs) {
 
 void IO::Close_Handle(kiv_hal::TRegisters &regs) {
 	auto handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
-	handle->Close();
-	Remove_Handle(regs.rdx.x);
+	if (handle != INVALID_HANDLE_VALUE) {
+		handle->Close();
+		Remove_Handle(regs.rdx.x);
+	}
 }
 
 void IO::Delete_File(kiv_hal::TRegisters &regs) {

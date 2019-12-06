@@ -49,10 +49,10 @@ size_t STD_Handle_In::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Proc
 
 	size_t pos = 0;
 	while (pos < buffer_length) {
-		//read char
 		registers.rax.h = static_cast<decltype(registers.rax.l)>(kiv_hal::NKeyboard::Read_Char);
 		kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Keyboard, registers);
 
+		
 		if (!registers.flags.non_zero) break;	// Nic jsme neprecetli, 
 												// pokud je rax.l EOT, pak byl zrejme vstup korektne ukoncen
 												// jinak zrejme doslo k chybe zarizeni.

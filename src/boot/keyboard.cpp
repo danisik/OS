@@ -9,7 +9,7 @@ bool Std_In_Is_Open = true;
 
 bool Init_Keyboard() {
 	//pokusime se vypnout echo na konzoli
-	//mj. na Win prestanou detekovat a "krast" napr. Ctrl+C
+	//mj. Win prestanou detekovat a "krast" napr. Ctrl+C
 
 	if (Std_In_Redirected) return true;	//neni co prepinat s presmerovanym vstupem
 		
@@ -21,7 +21,7 @@ bool Init_Keyboard() {
 
 bool Peek_Char() {
 	if (Std_In_Redirected) {		
-		return Std_In_Is_Open;	//vracime globalni vlajku, protoze nemam jak otestovat znak v presmerovanem vstupu, aniz bychom ho precetli a tudi znicili
+		return Std_In_Is_Open;	//vracime globalni vlajku, protoze nemame jak otestovat znak v presmerovanem vstupu, aniz bychom ho precetli a tudi znicili
 								//takze signalizujeme pritomnost EOT vraceneho v Read_Char se shozenym ZF, po kterem uz vzdy vratime false
 	}
 
@@ -44,9 +44,9 @@ bool Read_Char(decltype(kiv_hal::TRegisters::rax.x) &result_ch) {
 	Std_In_Is_Open = ReadFile(hConsoleInput, &ch, 1, &read, NULL);
 
 	if (Std_In_Is_Open)	//ReadConsoleA by neprecetlo presmerovany vstup ze souboru 
-		result_ch = read > 0 ? ch : kiv_hal::NControl_Codes::NUL;
+		result_ch = read > 0 ? ch : static_cast<std::remove_reference<decltype(result_ch)>::type>(kiv_hal::NControl_Codes::NUL);
 	else 
-		result_ch = kiv_hal::NControl_Codes::EOT;	//chyba, patrne je zavren vstupni handle			
+		result_ch = static_cast<std::remove_reference<decltype(result_ch)>::type>(kiv_hal::NControl_Codes::EOT);	//chyba, patrne je zavren vstupni handle			
 	
 	return Std_In_Is_Open;
 }

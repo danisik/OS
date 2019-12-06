@@ -37,8 +37,8 @@ class IO_Process {
 		kiv_os::THandle Get_THandle_From_Thread_ID(size_t thread_ID);
 
 		void Clone(kiv_hal::TRegisters &regs);
-		void Clone_Process(kiv_hal::TRegisters &regs);
-		void Clone_Thread(kiv_hal::TRegisters &regs);
+		void Create_Process(kiv_hal::TRegisters &regs);
+		void Create_Thread(kiv_hal::TRegisters &regs);
 
 		void Wait_For(kiv_hal::TRegisters &regs); 
 		void Read_Exit_Code(kiv_hal::TRegisters &regs);

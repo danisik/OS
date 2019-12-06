@@ -73,10 +73,10 @@ public:
 class VFS{
 public:
     VFS(uint64_t, uint16_t, int);
-    Boot_Record* boot_record;
+	std::unique_ptr<Boot_Record> boot_record;
     MFT* mft;
 	std::map<size_t, Mft_Item*> mft_items;
-    bool* bitmap;
+    std::vector<bool> bitmap;
 	int drive_id;
 
 	bool Load_MFT();

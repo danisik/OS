@@ -12,22 +12,16 @@ size_t Eof_Checker(const kiv_hal::TRegisters &regs) {
 
 	bool *eof = reinterpret_cast<bool *>(regs.rdi.r);
 
-	kiv_os::NSignal_Id signal = kiv_os::NSignal_Id::Terminate;
-	kiv_os::TThread_Proc handler = reinterpret_cast<kiv_os::TThread_Proc>(Terminated_Checker);
-
-	kiv_os_rtl::Register_Signal_Handler(signal, handler);
-
 	char buffer[1];
-	size_t read;
-
-	kiv_os_rtl::Read_File(std_in, buffer, 1, read);
-	
+	size_t read = 1;
 	while (read && !terminated) {
 		kiv_os_rtl::Read_File(std_in, buffer, 1, read);
+		if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
+			break;
+		}
 	}
 
 	*eof = true;
-
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	kiv_os_rtl::Exit(exit_code);
 	return 0;
@@ -59,15 +53,7 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 
 	kiv_os::THandle handle;
 	bool eof = false;
-	
-	if (terminated) {
-		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
-		kiv_os_rtl::Exit(exit_code);
-		return exit_code;
-	}
-
-	kiv_os_rtl::Clone_Thread(&Eof_Checker, &eof, std_in, std_out, handle);
-
+	kiv_os_rtl::Clone(kiv_os::NClone::Create_Thread, &Eof_Checker, &eof, std_in, std_out, handle);
 	while (!eof && !terminated) {
 		float ran_number = static_cast <float> (rand());
 		output = std::to_string(ran_number);
@@ -82,9 +68,10 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 	single_handle[0] = handle;
 	kiv_os::THandle signalized_handler;
 
-	kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
+	//kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
 	
 	if (terminated) {
+		kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
 		kiv_os_rtl::Read_Exit_Code(handle, checker_exit_code);
 	}
 

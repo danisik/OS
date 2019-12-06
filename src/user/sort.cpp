@@ -1,8 +1,20 @@
 #include "sort.h"
 
+bool sort_terminated = false;
+
+size_t Sort_Terrminated_Checker(const kiv_hal::TRegisters &regs) {
+	sort_terminated = true;
+	return 0;
+}
+
 size_t __stdcall sort(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);
+
+	kiv_os::NSignal_Id signal = kiv_os::NSignal_Id::Terminate;
+	kiv_os::TThread_Proc handler = reinterpret_cast<kiv_os::TThread_Proc>(Sort_Terrminated_Checker);
+
+	kiv_os_rtl::Register_Signal_Handler(signal, handler);
 
 	const char *arguments = reinterpret_cast<const char *>(regs.rdi.r);
 
@@ -29,8 +41,13 @@ size_t __stdcall sort(const kiv_hal::TRegisters &regs) {
 	char buffer[512];
 	std::string complete = "";
 
-	while (read) {
+	while (read && !sort_terminated) {
 		kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
+
+		if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
+			break;
+		}
+
 		complete.append(buffer, 0, read);
 
 		if (is_file) {

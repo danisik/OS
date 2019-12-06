@@ -69,12 +69,10 @@ void IO_Process::Notify(size_t sleeped_thread_ID, size_t waiting_thread_ID) {
 // Notify all waited threads that this thread done his work and will be deleted.
 void IO_Process::Notify_All(size_t thread_ID) {
 
-
 	if (processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.size() > 0) {
 		std::map<size_t, size_t>::iterator it_thread_sleeped_handlers = processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.begin();
-
 		while (it_thread_sleeped_handlers != processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers.end()) {
-
+			
 			Notify(processes[thread_ID_to_process_ID[thread_ID]]->threads[thread_ID]->sleeped_handlers[it_thread_sleeped_handlers->second], thread_ID);
 
 			it_thread_sleeped_handlers++;
@@ -90,15 +88,15 @@ void IO_Process::Clone(kiv_hal::TRegisters &regs) {
 
 	switch (clone_type) {
 		case kiv_os::NClone::Create_Process:
-			Clone_Process(regs);
+			Create_Process(regs);
 			break;
 		case kiv_os::NClone::Create_Thread:
-			Clone_Thread(regs);
+			Create_Thread(regs);
 			break;
 	}
 }
 
-void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
+void IO_Process::Create_Process(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
 	char *export_name = reinterpret_cast<char*>(regs.rdx.r);
@@ -140,7 +138,7 @@ void IO_Process::Clone_Process(kiv_hal::TRegisters &regs) {
 	regs.rax.x = cloned_handler;
 }
 
-void IO_Process::Clone_Thread(kiv_hal::TRegisters &regs) {
+void IO_Process::Create_Thread(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
 	kiv_os::TThread_Proc entry_point = reinterpret_cast<kiv_os::TThread_Proc>(regs.rdx.r);
@@ -181,7 +179,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 			size_t waiting_thread_ID = t_handle_to_thread_ID[handles[i]];
 			size_t waiting_process_ID = thread_ID_to_process_ID[waiting_thread_ID];
 
-			if (processes[waiting_process_ID]->state == State::Exited) {
+			if (processes[waiting_process_ID]->state == State::Exited || processes[waiting_process_ID]->threads[waiting_thread_ID]->state == State::Exited) {
 				regs.rax.x = Get_THandle_From_Thread_ID(waiting_thread_ID);
 				return;
 			}
@@ -203,6 +201,10 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 
 void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
+
+	if (processes.size() == 0) {
+		return;
+	}
 
 	kiv_os::THandle thread_handler = static_cast<kiv_os::THandle>(regs.rdx.x);
 	size_t thread_ID = t_handle_to_thread_ID[thread_handler];
@@ -236,8 +238,16 @@ void IO_Process::Exit(kiv_hal::TRegisters &regs) {
 
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
+	if (processes.size() == 0) {
+		return;
+	}
+
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
+
+	if (processes.find(process_ID) == processes.end()) {
+		return;
+	}
 	
 	if (current_thread_ID == processes[process_ID]->process_thread_ID) {
 		// Thread is process thread -> kill entire process.
@@ -253,7 +263,6 @@ void IO_Process::Exit(kiv_hal::TRegisters &regs) {
 	}
 	else {
 		// Simple thread -> kill only this thread.
-
 		Notify_All(current_thread_ID);
 		processes[process_ID]->Join_Thread(current_thread_ID, 0);
 	}
@@ -270,13 +279,9 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 
 	while (it_process != processes.rend()) {
 
-		if (it_process->first == 0) {
-			break;
-		}
-
 		it_thread = it_process->second->threads.begin();
 
-		while (it_thread != it_process->second->threads.end()) {			
+		while (it_thread != it_process->second->threads.end()) {				
 			std::map<kiv_os::NSignal_Id, kiv_os::TThread_Proc>::iterator it_handler = it_thread->second->terminate_handlers.begin();
 
 			kiv_hal::TRegisters terminate_registers;
@@ -289,12 +294,20 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs) {
 				it_handler++;
 			}
 
+			// Destroy all threads except kernel and shell. 
+			if (strcmp(it_process->second->name, "kernel") != 0 && strcmp(it_process->second->name, "shell") != 0) {
+				Notify_All(it_thread->first);
+				it_process->second->Join_Thread(it_thread->first, 0);
+			}
+			
 			it_thread++;
 		}
 
 		it_process++;
 	}
 	shutdown_lock.unlock();
+
+
 }
 
 void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) {

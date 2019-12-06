@@ -70,16 +70,13 @@ void Remove_Kernel_Process(kiv_os::THandle kernel_handler) {
 kiv_os::THandle Shell_Clone() {
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 
-	std_in_shell = Convert_Native_Handle(new STD_Handle_In());
-	std_out_shell = Convert_Native_Handle(new STD_Handle_Out());
-
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>("shell");
 	regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>("");
 
 	regs.rbx.e = (std_in_shell << 16) | std_out_shell;
 
 	// Create shell process.
-	io_process->Clone_Process(regs);
+	io_process->Create_Process(regs);
 	return static_cast<kiv_os::THandle>(regs.rax.x);
 }
 
@@ -129,6 +126,10 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 	Initialize_Kernel();
 	kiv_hal::Set_Interrupt_Handler(kiv_os::System_Int_Number, Sys_Call);
 	kiv_hal::TRegisters regs;
+
+	std_in_shell = Convert_Native_Handle(new STD_Handle_In());
+	std_out_shell = Convert_Native_Handle(new STD_Handle_Out());
+
 	for (regs.rdx.l = 0; ; regs.rdx.l++) {
 
 		// Get Drive parameters.
@@ -141,7 +142,6 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 
 			// Load boot block.
 			uint16_t bytes_per_sector = params.bytes_per_sector;
-			//uint64_t number_of_sectors = NUMBER_OF_SECTORS;		 // We cant use absolute_number_of_sectors -> because bitmap init will end in next century.
 			uint64_t number_of_sectors = params.absolute_number_of_sectors;
 
 			io = new IO(io_process, number_of_sectors, bytes_per_sector, regs.rdx.l);
