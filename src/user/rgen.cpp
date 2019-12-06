@@ -24,6 +24,7 @@ size_t Eof_Checker(const kiv_hal::TRegisters &regs) {
 	*eof = true;
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	kiv_os_rtl::Exit(exit_code);
+	printf("exited");
 	return 0;
 }
 
@@ -53,7 +54,7 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 
 	kiv_os::THandle handle;
 	bool eof = false;
-	kiv_os_rtl::Clone(kiv_os::NClone::Create_Thread, &Eof_Checker, &eof, std_in, std_out, handle);
+	kiv_os_rtl::Create_Thread(&Eof_Checker, &eof, std_in, std_out, handle);
 	while (!eof && !terminated) {
 		float ran_number = static_cast <float> (rand());
 		output = std::to_string(ran_number);
@@ -67,8 +68,6 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 	kiv_os::THandle single_handle[1];
 	single_handle[0] = handle;
 	kiv_os::THandle signalized_handler;
-
-	//kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
 	
 	if (terminated) {
 		kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);

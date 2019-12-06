@@ -1,22 +1,11 @@
 #include "freq.h"
 
-bool freq_terminated = false;
-
-size_t Freq_Terminated_Checker(const kiv_hal::TRegisters &regs) {
-	freq_terminated = true;
-	return 0;
-}
 
 size_t __stdcall freq(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);
 
 	const char *arguments = reinterpret_cast<const char *>(regs.rdi.r);
-
-	kiv_os::NSignal_Id signal = kiv_os::NSignal_Id::Terminate;
-	kiv_os::TThread_Proc handler = reinterpret_cast<kiv_os::TThread_Proc>(Freq_Terminated_Checker);
-
-	kiv_os_rtl::Register_Signal_Handler(signal, handler);
 
 	std::string output_string;
 	size_t written;
@@ -40,13 +29,12 @@ size_t __stdcall freq(const kiv_hal::TRegisters &regs) {
 
 	Assign_Frequencies(freq_array, buffer, read);
 
-	while (read && !freq_terminated) {
+	while (read) {
 		kiv_os_rtl::Read_File(std_in, buffer, 1, read);
 
 		if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
 			break;
 		}
-
 		Assign_Frequencies(freq_array, buffer, read);
 	}
 

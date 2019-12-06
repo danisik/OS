@@ -46,7 +46,6 @@ size_t __stdcall dir(const kiv_hal::TRegisters &regs) {
 			output.append("\t\t");
 			output.append(entry->file_name);
 			output.append("\n");
-
 			current_index++;
 		}
 		index += current_index;

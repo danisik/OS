@@ -1,22 +1,10 @@
 #include "find.h"
 
-bool find_terminated = false;
-
-size_t Find_Terminated_Checker(const kiv_hal::TRegisters &regs) {
-	find_terminated = true;
-	return 0;
-}
-
 size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
 	const kiv_os::THandle std_out = static_cast<kiv_os::THandle>(regs.rbx.x);
 
 	const char *arguments = reinterpret_cast<const char *>(regs.rdi.r);
-
-	kiv_os::NSignal_Id signal = kiv_os::NSignal_Id::Terminate;
-	kiv_os::TThread_Proc handler = reinterpret_cast<kiv_os::TThread_Proc>(Find_Terminated_Checker);
-
-	kiv_os_rtl::Register_Signal_Handler(signal, handler);
 
 	std::string output;
 	size_t written;
@@ -63,7 +51,7 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 		char buffer[512];
 		std::string complete = "";
 
-		while (read && !find_terminated) {
+		while (read) {
 			kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
 			complete.append(buffer, 0, read);
 

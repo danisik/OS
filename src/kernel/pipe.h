@@ -17,7 +17,6 @@ class Pipe {
 		std::list<char> pipe_buffer;
 		std::mutex mutual_exclusion;
 		
-		bool closed_in;
 		bool closed_out;
 
 		Pipe(int p_buffer_size);

@@ -63,7 +63,8 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 				}
 
 				// Create process for new command.
-				kiv_os_rtl::Clone(kiv_os::NClone::Create_Process, command.base.data(), command.parameters.data(), in_handle, out_handle, handle);
+				kiv_os_rtl::Create_Process(command.base.data(), command.parameters.data(), in_handle, out_handle, handle);
+
 				handless.push_back(handle);
 				current_command_position++;
 			}
