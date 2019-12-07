@@ -168,6 +168,14 @@ Exist_Item* Functions::Check_Path(VFS* vfs, std::string path, std::vector<Mft_It
 	while ((j = path_tmp.find(FOLDER_SPLIT)) != std::string::npos) {
 		tok_tmp = path_tmp.substr(0, j);
 		path_tmp = path_tmp.substr(j + 1);
+
+		if (current_path.size() <= jump_back) {
+			item->is_directory = kiv_os::NFile_Attributes::Directory;
+			item->exists = false;
+			item->path_exists = false;
+			return item;
+		}
+
 		if (strcmp(tok_tmp.c_str(), "..") == 0) {
 			jump_back++;
 			item->uid = current_path[current_path.size() - jump_back - 1]->uid;
