@@ -18,34 +18,33 @@ size_t __stdcall freq(const kiv_hal::TRegisters &regs) {
 		return 0;
 	}
 
-	int freq_array[256];
+	const int freq_buffer_size = 256;
+
+	std::vector<int> freq_array(freq_buffer_size);
 
 	Init_Freq_Array(freq_array);
 	
-	char buffer[1];
-	size_t read;
-
-	kiv_os_rtl::Read_File(std_in, buffer, 1, read);
-
-	Assign_Frequencies(freq_array, buffer, read);
+	const int buffer_size = 1;
+	std::vector<char> buffer(buffer_size);
+	size_t read = 1;
 
 	while (read) {
-		kiv_os_rtl::Read_File(std_in, buffer, 1, read);
+		kiv_os_rtl::Read_File(std_in, buffer.data(), 1, read);
 
 		if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
 			break;
 		}
-		Assign_Frequencies(freq_array, buffer, read);
+		Assign_Frequencies(freq_array, buffer.data(), read);
 	}
 
 	output_string = "\n";
 	kiv_os_rtl::Write_File(std_out, output_string.data(), output_string.size(), written);
 
-	char output_buffer[256];
+	char output_buffer[freq_buffer_size];
 	int size;
-	for (int i = 0; i < 256; i++) {
-		if (freq_array[i] > 0) {
-			size = sprintf_s(output_buffer, "0x%hhx : %d\n", (unsigned char) i, freq_array[i]);
+	for (int i = 0; i < freq_buffer_size; i++) {
+		if (freq_array.data()[i] > 0) {
+			size = sprintf_s(output_buffer, "0x%hhx : %d\n", (unsigned char) i, freq_array.data()[i]);
 			kiv_os_rtl::Write_File(std_out, output_buffer, size, written);
 		}
 	}
@@ -56,7 +55,7 @@ size_t __stdcall freq(const kiv_hal::TRegisters &regs) {
 	return 0;
 }
 
-void Assign_Frequencies(int *freq_array, char buffer[], size_t count) {
+void Assign_Frequencies(std::vector<int> &freq_array, char buffer[], size_t count) {
 	unsigned int index;
 	for (int i = 0; i < count; i++) {
 		index = (unsigned char)buffer[i];
@@ -65,8 +64,8 @@ void Assign_Frequencies(int *freq_array, char buffer[], size_t count) {
 	}
 }
 
-void Init_Freq_Array(int *freq_array) {
-	for (int i = 0; i < 256; i++) {
+void Init_Freq_Array(std::vector<int> &freq_array) {
+	for (int i = 0; i < freq_array.size(); i++) {
 		freq_array[i] = 0;
 	}
 }

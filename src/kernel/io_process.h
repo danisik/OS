@@ -18,7 +18,6 @@ class IO_Process {
 		kiv_os::THandle first_free_thread_ID = MIN_THREAD_THANDLE;
 
 		std::mutex io_process_mutex;
-		std::mutex shutdown_mutex;
 
 		// Index -> process_ID; Value -> Process.
 		std::map<size_t, std::unique_ptr<Process>> processes;
@@ -50,6 +49,4 @@ class IO_Process {
 
 		void Notify(size_t sleeped_thread_ID, size_t waiting_thread_ID);
 		void Notify_All(size_t thread_ID);
-
-		void Clear_Processes();
 };

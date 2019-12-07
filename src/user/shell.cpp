@@ -18,8 +18,8 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 
 	kiv_os_rtl::Register_Signal_Handler(kiv_os::NSignal_Id::Terminate, reinterpret_cast<kiv_os::TThread_Proc>(Signalize_Shutdown));
 
-	const size_t buffer_size = 256;
-	char buffer[buffer_size];
+	const int buffer_size = 256;
+	std::vector<char> buffer(buffer_size);
 	size_t counter;
 
 	// Print welcome message.
@@ -45,7 +45,7 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			ctrl_z = false;
 		}
 
-		if (kiv_os_rtl::Read_File(std_in, buffer, buffer_size, counter)) {
+		if (kiv_os_rtl::Read_File(std_in, buffer.data(), buffer_size, counter)) {
 			
 			if (counter == buffer_size) {
 				counter--;
@@ -57,13 +57,13 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 
 			buffer[--counter] = 0;
 
-			if (strcmp(buffer, "exit") == 0) {
+			if (strcmp(buffer.data(), "exit") == 0) {
 				break;
 			}
 
 			kiv_os_rtl::Write_File(std_out, new_line, strlen(new_line), counter);
 			
-			std::vector<command_parser::Command> commands = command_parser::Find_Commands(buffer);
+			std::vector<command_parser::Command> commands = command_parser::Find_Commands(buffer.data());
 			
 			command_exe::Execute_Commands(commands, std_in, std_out);
 		

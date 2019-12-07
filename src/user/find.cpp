@@ -48,12 +48,14 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 			return 0;
 		}
 		size_t read = 1;
-		char buffer[512];
+
+		const int buffer_size = 512;
+		std::vector<char> buffer(buffer_size);
 		std::string complete = "";
 
 		while (read) {
-			kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
-			complete.append(buffer, 0, read);
+			kiv_os_rtl::Read_File(in_handle, buffer.data(), sizeof(buffer), read);
+			complete.append(buffer.data(), 0, read);
 
 			if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
 				break;

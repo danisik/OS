@@ -8,9 +8,11 @@ size_t __stdcall dir(const kiv_hal::TRegisters &regs) {
 
 	size_t written;
 	size_t read;
-	char buffer[1024];
-	
-	strcpy_s(buffer, arguments);
+
+	const int buffer_size = 1024;
+	std::vector<char> buffer(buffer_size);
+
+	memcpy(buffer.data(), arguments, sizeof(arguments));
 	
 	size_t current_index = 0;
 	size_t index = 0;
@@ -21,7 +23,7 @@ size_t __stdcall dir(const kiv_hal::TRegisters &regs) {
 	char entries[sizeof(kiv_os::TDir_Entry) * max_item_count];
 	kiv_os::THandle handle;
 	std::string output = "";
-	kiv_os_rtl::Open_File(buffer, kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::Directory, handle);
+	kiv_os_rtl::Open_File(buffer.data(), kiv_os::NOpen_File::fmOpen_Always, kiv_os::NFile_Attributes::Directory, handle);
 	if (handle == static_cast<kiv_os::THandle>(-1)) {
 		uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::File_Not_Found);
 		kiv_os_rtl::Exit(exit_code);

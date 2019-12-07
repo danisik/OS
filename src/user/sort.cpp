@@ -25,16 +25,18 @@ size_t __stdcall sort(const kiv_hal::TRegisters &regs) {
 		kiv_os_rtl::Exit(exit_code);
 		return 0;
 	}
+	
+	const int buffer_size = 512;
 	size_t read = 1;
-	char buffer[512];
+	std::vector<char> buffer(buffer_size);
 	std::string complete = "";
 
 	while (read) {
-		kiv_os_rtl::Read_File(in_handle, buffer, sizeof(buffer), read);
+		kiv_os_rtl::Read_File(in_handle, buffer.data(), sizeof(buffer), read);
 		if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
 			break;
 		}
-		complete.append(buffer, 0, read);
+		complete.append(buffer.data(), 0, read);
 
 		if (is_file) {
 			actual_position += read;

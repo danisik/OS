@@ -10,7 +10,7 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 	size_t written = 0;
 	const size_t buffer_size = 1024;
 	size_t actual_position = 0;
-	char buffer[buffer_size];
+	std::vector<char> buffer(buffer_size);
 	kiv_os::THandle in_handle;
 	std::string output = "";
 
@@ -35,8 +35,8 @@ size_t __stdcall type(const kiv_hal::TRegisters &regs) {
 	kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
 
 	while (read) {
-		kiv_os_rtl::Read_File(in_handle, buffer, buffer_size, read);
-		if (read > 0) output.append(buffer, read);
+		kiv_os_rtl::Read_File(in_handle, buffer.data(), buffer_size, read);
+		if (read > 0) output.append(buffer.data(), read);
 		actual_position += buffer_size;
 		kiv_os_rtl::Seek(in_handle, kiv_os::NFile_Seek::Set_Position, kiv_os::NFile_Seek::Beginning, actual_position);
 	}

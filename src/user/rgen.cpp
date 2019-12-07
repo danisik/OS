@@ -1,6 +1,7 @@
 #include "rgen.h"
 
 bool terminated = false;
+bool eof = false;
 
 size_t Terminated_Checker(const kiv_hal::TRegisters &regs) {
 	terminated = true;
@@ -10,21 +11,21 @@ size_t Terminated_Checker(const kiv_hal::TRegisters &regs) {
 size_t Eof_Checker(const kiv_hal::TRegisters &regs) {
 	const kiv_os::THandle std_in = static_cast<kiv_os::THandle>(regs.rax.x);
 
-	bool *eof = reinterpret_cast<bool *>(regs.rdi.r);
-
-	char buffer[1];
+	const int buffer_size = 1;
+	std::vector<char> buffer(buffer_size);
 	size_t read = 1;
 	while (read && !terminated) {
-		kiv_os_rtl::Read_File(std_in, buffer, 1, read);
+		kiv_os_rtl::Read_File(std_in, buffer.data(), 1, read);
 		if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
 			break;
 		}
 	}
 
-	*eof = true;
+	eof = true;
+
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	kiv_os_rtl::Exit(exit_code);
-	printf("exited");
+	
 	return 0;
 }
 
@@ -49,12 +50,13 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 		kiv_os_rtl::Exit(exit_code);
 		return 0;
 	}
+	kiv_os::THandle handle;
+
+	kiv_os_rtl::Create_Thread(&Eof_Checker, &eof, std_in, std_out, handle);
 
 	srand(static_cast <unsigned> (time(0)));
 
-	kiv_os::THandle handle;
-	bool eof = false;
-	kiv_os_rtl::Create_Thread(&Eof_Checker, &eof, std_in, std_out, handle);
+
 	while (!eof && !terminated) {
 		float ran_number = static_cast <float> (rand());
 		output = std::to_string(ran_number);
@@ -65,12 +67,12 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 
 	uint16_t checker_exit_code;
 
-	kiv_os::THandle single_handle[1];
-	single_handle[0] = handle;
+	std::vector<kiv_os::THandle> single_handle;
+	single_handle.push_back(handle);
 	kiv_os::THandle signalized_handler;
 	
 	if (terminated) {
-		kiv_os_rtl::Wait_For(single_handle, 1, signalized_handler);
+		kiv_os_rtl::Wait_For(single_handle.data(), 1, signalized_handler);
 		kiv_os_rtl::Read_Exit_Code(handle, checker_exit_code);
 	}
 
