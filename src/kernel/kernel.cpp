@@ -3,14 +3,12 @@
 #include "kernel.h"
 
 HMODULE User_Programs;
-IO_Process *io_process;
-IO *io;
+std::unique_ptr<IO> io;
 
 kiv_os::THandle std_in_shell;
 kiv_os::THandle std_out_shell;
 
 void Initialize_Kernel() {
-	io_process = new IO_Process();
 	User_Programs = LoadLibraryW(L"user.dll");
 }
 
@@ -28,11 +26,11 @@ kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uin
 kiv_os::THandle Create_Kernel_Process() {
 	char name[7] = "kernel";
 	// Create process and thread.
-	std::unique_ptr<Process> process = std::make_unique<Process>(io_process->Get_Free_Process_ID(), name);
+	std::unique_ptr<Process> process = std::make_unique<Process>(io->io_process->Get_Free_Process_ID(), name);
 	std::unique_ptr<Thread> thread = std::make_unique<Thread>(process->process_ID);
 	thread->thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
 	size_t thread_ID = thread->thread_ID;
-	kiv_os::THandle kernel_handler = io_process->Get_Free_Thread_ID();
+	kiv_os::THandle kernel_handler = io->io_process->Get_Free_Thread_ID();
 
 	// Set attributes.
 	process->state = State::Running;
@@ -43,28 +41,26 @@ kiv_os::THandle Create_Kernel_Process() {
 
 	size_t process_ID = process->process_ID;
 
-	io_process->t_handle_to_thread_ID.insert(std::pair<kiv_os::THandle, size_t>(kernel_handler, thread_ID));
-	io_process->thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(thread_ID, process->process_ID));
-	io_process->processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
+	io->io_process->t_handle_to_thread_ID.insert(std::pair<kiv_os::THandle, size_t>(kernel_handler, thread_ID));
+	io->io_process->thread_ID_to_process_ID.insert(std::pair<size_t, size_t>(thread_ID, process->process_ID));
+	io->io_process->processes.insert(std::pair<size_t, std::unique_ptr<Process>>(process->process_ID, std::move(process)));
 
 	return kernel_handler;
 }
 
 void Remove_Kernel_Process(kiv_os::THandle kernel_handler) {
-	size_t thread_ID = io_process->t_handle_to_thread_ID[kernel_handler];
-	size_t process_ID = io_process->thread_ID_to_process_ID[thread_ID];
+	size_t thread_ID = io->io_process->t_handle_to_thread_ID[kernel_handler];
+	size_t process_ID = io->io_process->thread_ID_to_process_ID[thread_ID];
 
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Exit));
 	regs.rcx.x = static_cast<decltype(regs.rcx.x)>(kiv_os::NOS_Error::Success);
 
-	io_process->Exit(regs);
+	io->io_process->Exit(regs);
 
 	regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
 	regs.rdx.x = kernel_handler;
 
-	io_process->Read_Exit_Code(regs);
-	delete io_process;
-	delete io;
+	io->io_process->Read_Exit_Code(regs);
 }
 
 kiv_os::THandle Shell_Clone() {
@@ -76,7 +72,7 @@ kiv_os::THandle Shell_Clone() {
 	regs.rbx.e = (std_in_shell << 16) | std_out_shell;
 
 	// Create shell process.
-	io_process->Create_Process(regs);
+	io->io_process->Create_Process(regs);
 	return static_cast<kiv_os::THandle>(regs.rax.x);
 }
 
@@ -87,7 +83,7 @@ void Shell_Wait(kiv_os::THandle handle) {
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>(&handle);
 	regs.rcx.r = static_cast<decltype(regs.rcx.r)>(1);
 
-	io_process->Handle_Process(regs);
+	io->io_process->Handle_Process(regs);
 }
 
 void Shell_Close(kiv_os::THandle shell_handle) {
@@ -104,7 +100,7 @@ void Shell_Close(kiv_os::THandle shell_handle) {
 	// Delete shell process.
 	regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Read_Exit_Code));
 	regs.rdx.x = static_cast<decltype(regs.rdx.r)>(shell_handle);
-	io_process->Handle_Process(regs);
+	io->io_process->Handle_Process(regs);
 }
 
 void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
@@ -116,7 +112,7 @@ void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
 		break;
 
 	case kiv_os::NOS_Service_Major::Process:
-		io_process->Handle_Process(regs);
+		io->io_process->Handle_Process(regs);
 		break;
 	}
 
@@ -144,7 +140,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 			uint16_t bytes_per_sector = params.bytes_per_sector;
 			uint64_t number_of_sectors = params.absolute_number_of_sectors;
 
-			io = new IO(io_process, number_of_sectors, bytes_per_sector, regs.rdx.l);
+			io = std::make_unique<IO>(number_of_sectors, bytes_per_sector, regs.rdx.l);
 			break;
 		}
 
@@ -164,6 +160,9 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 	Shell_Close(handle);
 
 	Remove_Kernel_Process(kernel_handler);
+
+	io->Delete_IO();
+	io.release();
 
 	// Shutdown kernel.
 	Shutdown_Kernel();

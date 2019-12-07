@@ -4,12 +4,12 @@
 //-----Handle methods-----
 //------------------------
 
-size_t IO_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
+size_t IO_Handle::Read(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 	// Do nothing.
 	return 0;
 }
 
-size_t IO_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
+size_t IO_Handle::Write(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 	// Do nothing.
 	return 0;
 }
@@ -44,7 +44,7 @@ size_t IO_Handle::Seek(kiv_os::NFile_Seek new_position, size_t position, size_t 
 //---STD handle methods---
 //------------------------
 
-size_t STD_Handle_In::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
+size_t STD_Handle_In::Read(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 	kiv_hal::TRegisters registers;
 
 	size_t pos = 0;
@@ -97,7 +97,7 @@ size_t STD_Handle_In::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Proc
 	return pos;
 }
 
-size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
+size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 	kiv_hal::TRegisters registers;
 	registers.rax.h = static_cast<decltype(registers.rax.h)>(kiv_hal::NVGA_BIOS::Write_String);
 	registers.rdx.r = reinterpret_cast<decltype(registers.rdx.r)>(buffer);
@@ -121,13 +121,13 @@ Pipe_Handle::Pipe_Handle(int p_buffer_size) {
 	function = Pipe_Function::Read;
 }
 
-size_t Pipe_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
+size_t Pipe_Handle::Read(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 	size_t read = 0;
 	read = pipe->Consume(buffer, buffer_length);
 	return read;
 }
 
-size_t Pipe_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
+size_t Pipe_Handle::Write(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 	size_t written = 0;
 	written = pipe->Produce(buffer, buffer_length);
 	return written;
@@ -135,13 +135,19 @@ size_t Pipe_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Proce
 
 void Pipe_Handle::Close() {
 	pipe->Close(function);
+
+	if (pipe->closed_out && pipe->closed_in) {
+		delete pipe->consumer;
+		delete pipe->producer;
+		delete pipe;
+	}
 }
 
 //------------------------
 //---File handle methods--
 //------------------------
 
-size_t File_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
+size_t File_Handle::Read(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 
 	if ((seek - 1) >= item->item_size) {
 		return 0;
@@ -216,7 +222,7 @@ size_t File_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Proces
 	return actual_buffer_position;
 }
 
-size_t File_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
+size_t File_Handle::Write(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 	size_t actual_buffer_position = 0;
 	seek = 1;
 
@@ -263,7 +269,7 @@ size_t File_Handle::Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Proce
 //Direcotry handle methods
 //------------------------
 
-size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {
+size_t Directory_Handle::Read(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 	std::vector<Mft_Item*> directory_items = Functions::Get_Items_In_Directory(vfs, this->item->uid);
 
 	size_t actual_buffer_position = 0;
@@ -291,7 +297,7 @@ size_t Directory_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_P
 //--Procfs handle methods-
 //------------------------
 
-size_t Procfs_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Process *io_process) {	
+size_t Procfs_Handle::Read(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process) {
 	std::map<size_t, std::unique_ptr<Process>>::iterator it_process = io_process->processes.begin();
 	
 	size_t actual_buffer_position = 0;

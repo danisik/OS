@@ -12,12 +12,13 @@
 #define PIPE_SIZE 4096
 
 class IO {
-private:
-	IO_Process* io_process;
 public:
-	VFS *vfs;
+	std::unique_ptr<VFS> vfs;
+	std::unique_ptr<IO_Process> io_process;
+	IO(uint64_t cluster_count, uint16_t cluster_size, int v_drive_i);
 
-	IO(IO_Process *i_io_process, uint64_t cluster_count, uint16_t cluster_size, int v_drive_i);
+
+	void Delete_IO();
 	void Handle_IO(kiv_hal::TRegisters &regs);
 
 	void Open_File(kiv_hal::TRegisters &regs); // Tested.

@@ -240,6 +240,9 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 	size_t process_ID = thread_ID_to_process_ID.find(thread_ID)->second;
 	uint16_t exit_code = 0;
 
+	t_handle_to_thread_ID.erase(thread_handler);
+	
+
 	
 	std::map<size_t, size_t>::iterator thread_ID_it = thread_ID_to_process_ID.find(thread_ID);
 	if (thread_ID_it == thread_ID_to_process_ID.end()) {
@@ -272,9 +275,22 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 			return;
 		}
 
+		process_it = processes.find(process->process_ID);
+		if (process_it == processes.end()) {
+			return;
+		}
+
+		for (auto it = process->threads.begin(); it != process->threads.end(); ++it)
+		{
+			thread_ID_to_process_ID.erase(it->second->thread_ID);
+		}
+
 		processes.erase(process->process_ID);
+		
 	}
 	else {
+		thread_ID_to_process_ID.erase(thread_ID);
+
 		std::map<size_t, std::unique_ptr<Thread>>::iterator thread_it = process_it->second->threads.find(thread_ID);
 		if (thread_it == process_it->second->threads.end()) {
 			return;
@@ -284,9 +300,8 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 		exit_code = process_it->second->threads[thread_ID]->exit_code;
 		Set_Free_Thread_ID(thread_handler);
 		processes[process_ID]->threads.erase(thread_ID);
+		thread_ID_to_process_ID.erase(thread_ID);
 	}
-
-	t_handle_to_thread_ID.erase(thread_handler);
 
 	regs.rcx.x = exit_code;
 	
@@ -391,6 +406,11 @@ void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) {
 	}
 
 	size_t process_ID = thread_process_ID_it->second;
+
+	std::map<size_t, std::unique_ptr<Process>>::iterator process_ID_it = processes.find(process_ID);
+	if (process_ID_it == processes.end()) {
+		return;
+	}
 
 	std::map<size_t, std::unique_ptr<Thread>>::iterator current_thread_it = processes[process_ID]->threads.find(current_thread_ID);
 	if (current_thread_it == processes[process_ID]->threads.end()) {

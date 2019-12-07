@@ -79,6 +79,10 @@ namespace command_parser {
 			commands.push_back(command);
 		}
 
+		token.clear();
+		stream.clear();
+		file_name.clear();
+
 		return commands;
 	}
 }

@@ -76,7 +76,8 @@ public:
     std::vector<bool> bitmap;
 	int drive_id;
 
-	bool Load_MFT();
+	bool Load_MFT(std::unique_ptr<VFS>&);
+	void Init_VFS(std::unique_ptr<VFS>&);
 };
 
 class Exist_Item{
@@ -90,21 +91,21 @@ public:
 
 class Functions{
 public:
-	static size_t Create_Item(VFS*, std::string, std::vector<Mft_Item*>, kiv_os::NFile_Attributes);
-	static bool Move_To_Directory(VFS*, std::string, std::vector<Mft_Item*>&);
-	static void Remove_Item(VFS*, std::string, std::vector<Mft_Item*> &);
-	static void Update_Parent_ID(VFS *vfs, size_t old_id, size_t new_id);
-    static Exist_Item* Check_Path(VFS*, std::string, std::vector<Mft_Item*>);
-    static bool Is_Directory_Empty(VFS*, Exist_Item*);
-    static void Move_To_Path(VFS*, std::string, std::vector<Mft_Item*>&);
-    static bool Is_Bitmap_Writable(VFS*, size_t);
-    static void Write_To_Data_Block(VFS*, Mft_Item*);
-    static void Remove_From_Data_Block(VFS*, Mft_Item*);
-    static Mft_Item* Get_Mft_Item(VFS*, size_t);
-	static std::vector<Mft_Item*> Get_Items_In_Directory(VFS*, size_t);
+	static size_t Create_Item(std::unique_ptr<VFS>&, std::string, std::vector<Mft_Item*>, kiv_os::NFile_Attributes);
+	static bool Move_To_Directory(std::unique_ptr<VFS>&, std::string, std::vector<Mft_Item*>&);
+	static void Remove_Item(std::unique_ptr<VFS>&, std::string, std::vector<Mft_Item*> &);
+	static void Update_Parent_ID(std::unique_ptr<VFS>&, size_t old_id, size_t new_id);
+    static Exist_Item* Check_Path(std::unique_ptr<VFS>&, std::string, std::vector<Mft_Item*>);
+    static bool Is_Directory_Empty(std::unique_ptr<VFS>&, Exist_Item*);
+    static void Move_To_Path(std::unique_ptr<VFS>&, std::string, std::vector<Mft_Item*>&);
+    static bool Is_Bitmap_Writable(std::unique_ptr<VFS>&, size_t);
+    static void Write_To_Data_Block(std::unique_ptr<VFS>&, Mft_Item*);
+    static void Remove_From_Data_Block(std::unique_ptr<VFS>&, Mft_Item*);
+    static Mft_Item* Get_Mft_Item(std::unique_ptr<VFS>&, size_t);
+	static std::vector<Mft_Item*> Get_Items_In_Directory(std::unique_ptr<VFS>&, size_t);
 
-	static void Save_VFS_MFT(VFS*);
-	static void Save_VFS_MFT_Item(VFS*, size_t);
+	static void Save_VFS_MFT(std::unique_ptr<VFS>&);
+	static void Save_VFS_MFT_Item(std::unique_ptr<VFS>&, size_t);
 
 	static void Process_Sectors(kiv_hal::NDisk_IO operation, int drive_id, size_t count, size_t lba_index, void* sector);
     

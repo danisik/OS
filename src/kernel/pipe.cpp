@@ -9,6 +9,7 @@ Pipe::Pipe(int p_buffer_size) {
 	consumer = new Semaphore(0);
 
 	closed_out = false;
+	closed_in = false;
 }
 
 void Pipe::Close(Pipe_Function function) {
@@ -17,8 +18,11 @@ void Pipe::Close(Pipe_Function function) {
 	case Pipe_Function::Write:
 		closed_out = true;
 		consumer->cv.notify_one();
+		//delete producer;
 		break;
 	case Pipe_Function::Read:
+		closed_in = true;
+		//delete consumer;
 		break;
 	}
 }
@@ -27,6 +31,10 @@ size_t Pipe::Produce(char *buffer, size_t buffer_length) {
 	size_t produced = 0;
 
 	for (size_t i = 0; i < buffer_length; i++) {
+
+		if (closed_in) {
+			return produced;
+		}
 
 		producer->P();
 		std::unique_lock<std::mutex> locker(mutual_exclusion);

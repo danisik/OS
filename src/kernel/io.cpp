@@ -5,9 +5,35 @@
 std::mutex working_directory_mutex;
 std::mutex io_mutex;
 
-IO::IO(IO_Process *i_io_process, uint64_t cluster_count, uint16_t cluster_size, int v_drive_i) {
-	io_process = i_io_process;
-	vfs = new VFS(cluster_count, cluster_size, v_drive_i);
+IO::IO(uint64_t cluster_count, uint16_t cluster_size, int v_drive_i) {
+	io_process = std::make_unique<IO_Process>();
+	vfs = std::make_unique<VFS>(cluster_count, cluster_size, v_drive_i);
+
+	bool success = false;
+	success = vfs->Load_MFT(vfs);
+	if (!success) {
+		vfs->Init_VFS(vfs);
+	}
+}
+
+void IO::Delete_IO() {
+
+	io_process.release();
+
+	vfs->bitmap.clear();
+	vfs->boot_record.release();
+	//delete vfs->mft;
+
+	
+	std::map<size_t, Mft_Item*>::iterator it = vfs->mft_items.begin();
+
+	while (it != vfs->mft_items.end()) {		
+		delete it->second;
+		it++;
+	}
+	
+	vfs->mft_items.clear();
+	vfs.release();
 }
 
 void IO::Open_File(kiv_hal::TRegisters &regs) {

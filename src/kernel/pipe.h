@@ -18,6 +18,7 @@ class Pipe {
 		std::mutex mutual_exclusion;
 		
 		bool closed_out;
+		bool closed_in;
 
 		Pipe(int p_buffer_size);
 

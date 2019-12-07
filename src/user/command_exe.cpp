@@ -7,10 +7,11 @@ void cd(const char *new_directory, kiv_os::THandle out) {
 
 	kiv_os_rtl::Set_Working_Dir(new_directory, setted);
 	if (!setted) {
-		char *error_message = "The system cannot find the listed path.";
+		char *error_message = "The system cannot find the listed path.\n";
 
 		size_t written = 0;
 		kiv_os_rtl::Write_File(out, error_message, strlen(error_message), written);
+		printf("%s\n", new_directory);
 	}
 }
 
@@ -98,4 +99,5 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> commands
 
 	pipes_in.clear();
 	pipes_out.clear();
+	handless.clear();
 }
