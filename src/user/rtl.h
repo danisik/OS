@@ -4,6 +4,8 @@
 #include <atomic>
 #include <vector>
 
+#include <string>
+
 enum class Exit_Codes {
 	EXIT_CODE_SUCCESS = 0,
 	EXIT_CODE_FAILURE,

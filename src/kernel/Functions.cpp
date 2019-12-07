@@ -39,7 +39,7 @@ size_t Functions::Create_Item(VFS* vfs, std::string path, std::vector<Mft_Item*>
 
 bool Functions::Move_To_Directory(VFS* vfs, std::string path, std::vector<Mft_Item*> &current_path) {
 	if (path.size() == 0) {
-		for (int i = 0; i < current_path.size(); i++) {
+		for (size_t i = 0; i < current_path.size(); i++) {
 			printf(current_path[i]->item_name);
 			if (i < current_path.size() - 1) {
 				printf("\\");
@@ -356,7 +356,7 @@ void Functions::Write_To_Data_Block(VFS * vfs, Mft_Item * mftItem){
 
 void Functions::Remove_From_Data_Block(VFS* vfs, Mft_Item* mftItem){
     for (int i = 0; i < MFT_FRAGMENTS_COUNT; i++) {
-        for (int j = 0; j<mftItem->fragment_cluster_count[i]; j++) {
+        for (size_t j = 0; j<mftItem->fragment_cluster_count[i]; j++) {
             vfs->bitmap[mftItem->bitmap_start_ID[i]+j] = false;
 			mftItem->fragment_cluster_count[i] = 0;
 			mftItem->fragment_start_cluster[i] = 0;

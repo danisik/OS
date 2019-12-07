@@ -39,7 +39,6 @@ public:
     int item_order_total;                            //celkovy pocet polozek v MFT
     char item_name[12];                                 //8+3 + /0 C/C++ ukoncovaci string znak
 	size_t item_size;                                  //velikost souboru v bytech
-    //Mft_Fragment* fragments[MFT_FRAGMENTS_COUNT]; //fragmenty souboru
 	size_t fragment_start_cluster[MFT_FRAGMENTS_COUNT];			//start adresa
 	size_t fragment_cluster_count[MFT_FRAGMENTS_COUNT];             //pocet clusteru ve fragmentu
 	int bitmap_start_ID[MFT_FRAGMENTS_COUNT];
@@ -50,8 +49,6 @@ class Boot_Record{
 public:
     Boot_Record(uint64_t, uint16_t);
 	uint64_t Get_Cluster_Count() { return this->cluster_count;};
-    char signature[9];              //login autora FS
-    char volume_descriptor[251];    //popis vygenerovaného FS
 	size_t disk_size;              //celkova velikost VFS			bytes_per_sector * absolute_number_of_sectors
     uint16_t cluster_size;           //velikost clusteru			TDrive_Parameters::bytes_per_sector
     uint64_t cluster_count;          //pocet clusteru				TDrive_Parameters::absolute_number_of_sectors

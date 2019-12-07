@@ -11,7 +11,6 @@ Mft_Item::Mft_Item(size_t uid, kiv_os::NFile_Attributes is_directory, std::strin
     this->parent_ID = parent_ID;
 	
 	for (int i = 0; i < MFT_FRAGMENTS_COUNT; i++) {
-		//this->fragments[i] = new Mft_Fragment(0, 0, 0);
 		this->bitmap_start_ID[i] = 0;
 		this->fragment_start_cluster[i] = 0;
 		this->fragment_cluster_count[i] = 0;

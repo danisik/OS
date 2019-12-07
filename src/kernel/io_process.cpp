@@ -201,7 +201,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs) {
 	
 	{
 		std::unique_lock<std::mutex> lock_mutex(io_process_mutex);		
-		for (int i = 0; i < handles_count; i++) {
+		for (size_t i = 0; i < handles_count; i++) {
 			size_t waiting_thread_ID = t_handle_to_thread_ID[handles[i]];
 			size_t waiting_process_ID = thread_ID_to_process_ID[waiting_thread_ID];
 

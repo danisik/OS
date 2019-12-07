@@ -33,7 +33,7 @@ size_t __stdcall sort(const kiv_hal::TRegisters &regs) {
 
 	while (read) {
 		kiv_os_rtl::Read_File(in_handle, buffer.data(), sizeof(buffer), read);
-		if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
+		if (buffer[0] == 4) {
 			break;
 		}
 		complete.append(buffer.data(), 0, read);

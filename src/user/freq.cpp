@@ -31,7 +31,7 @@ size_t __stdcall freq(const kiv_hal::TRegisters &regs) {
 	while (read) {
 		kiv_os_rtl::Read_File(std_in, buffer.data(), 1, read);
 
-		if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
+		if (buffer[0] == 4) {
 			break;
 		}
 		Assign_Frequencies(freq_array, buffer.data(), read);

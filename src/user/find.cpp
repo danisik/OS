@@ -57,7 +57,7 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 			kiv_os_rtl::Read_File(in_handle, buffer.data(), sizeof(buffer), read);
 			complete.append(buffer.data(), 0, read);
 
-			if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
+			if (buffer[0] == 4) {
 				break;
 			}
 

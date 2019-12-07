@@ -41,7 +41,7 @@ class Pipe_Handle : public IO_Handle {
 
 class Item_Handle : public IO_Handle {
 	public:
-		Mft_Item *item;
+		Mft_Item *item = nullptr;
 };
 
 class File_Handle : public Item_Handle {

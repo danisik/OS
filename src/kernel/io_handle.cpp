@@ -104,7 +104,7 @@ size_t STD_Handle_Out::Write(char *buffer, size_t buffer_length, VFS *vfs, IO_Pr
 	registers.rcx.r = buffer_length;
 	kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
 
-	return registers.rcx.r;
+	return (size_t)registers.rcx.r;
 }
 
 //------------------------
@@ -302,7 +302,7 @@ size_t Procfs_Handle::Read(char *buffer, size_t buffer_length, VFS *vfs, IO_Proc
 		it_process++;
 	}
 
-	memcpy(buffer, ss.str().data(), ss.tellp());
+	memcpy(buffer, ss.str().data(), (size_t)ss.tellp());
 
-	return ss.tellp();
+	return (size_t)ss.tellp();
 }

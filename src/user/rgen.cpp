@@ -51,7 +51,7 @@ size_t __stdcall rgen(const kiv_hal::TRegisters &regs) {
 		return 0;
 	}
 	kiv_os::THandle handle;
-
+	eof = false;
 	kiv_os_rtl::Create_Thread(&Eof_Checker, &eof, std_in, std_out, handle);
 
 	srand(static_cast <unsigned> (time(0)));

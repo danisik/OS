@@ -1,9 +1,6 @@
 #include "header.h"
 
-Boot_Record::Boot_Record(uint64_t cluster_count, uint16_t cluster_size){
-    strcpy_s(signature, 8, "Danisik");
-    strcpy_s(volume_descriptor, 16, "Jsem deskriptor");
-    
+Boot_Record::Boot_Record(uint64_t cluster_count, uint16_t cluster_size){ 
     this->cluster_size = cluster_size;
     this->cluster_count = cluster_count;
 	this->disk_size = cluster_size * cluster_count;
