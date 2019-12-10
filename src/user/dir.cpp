@@ -9,7 +9,7 @@ size_t __stdcall dir(const kiv_hal::TRegisters &regs) {
 	size_t written;
 	size_t read;
 
-	const int buffer_size = 1024;
+	const int buffer_size = 512;
 	std::vector<char> buffer(buffer_size);
 
 	memcpy(buffer.data(), arguments, sizeof(arguments));

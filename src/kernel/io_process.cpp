@@ -241,9 +241,7 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 	uint16_t exit_code = 0;
 
 	t_handle_to_thread_ID.erase(thread_handler);
-	
 
-	
 	std::map<size_t, size_t>::iterator thread_ID_it = thread_ID_to_process_ID.find(thread_ID);
 	if (thread_ID_it == thread_ID_to_process_ID.end()) {
 		return;
@@ -253,8 +251,6 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 	if (process_it == processes.end()) {
 		return;
 	}
-
-
 	
 	if (thread_ID == process_it->second->process_thread_ID) {
 		// Kill process thread.          
@@ -289,8 +285,6 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs) {
 		
 	}
 	else {
-		thread_ID_to_process_ID.erase(thread_ID);
-
 		std::map<size_t, std::unique_ptr<Thread>>::iterator thread_it = process_it->second->threads.find(thread_ID);
 		if (thread_it == process_it->second->threads.end()) {
 			return;

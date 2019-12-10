@@ -11,7 +11,6 @@ void cd(const char *new_directory, kiv_os::THandle out) {
 
 		size_t written = 0;
 		kiv_os_rtl::Write_File(out, error_message, strlen(error_message), written);
-		printf("%s\n", new_directory);
 	}
 }
 

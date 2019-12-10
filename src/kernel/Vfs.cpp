@@ -15,7 +15,7 @@ bool VFS::Load_MFT(std::unique_ptr<VFS>& vfs) {
 		return false;
 	}
 	
-	this->mft_items;
+	this->mft_items = std::map<size_t, Mft_Item*>();
 
 	for (size_t i = 0; i < this->mft->size; i++) {
 		Functions::Process_Sectors(kiv_hal::NDisk_IO::Read_Sectors, this->drive_id, 1, this->boot_record->mft_start_cluster + i + 1, static_cast<void*>(sector.data()));

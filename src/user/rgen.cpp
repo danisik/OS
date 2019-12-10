@@ -16,7 +16,7 @@ size_t Eof_Checker(const kiv_hal::TRegisters &regs) {
 	size_t read = 1;
 	while (read && !terminated) {
 		kiv_os_rtl::Read_File(std_in, buffer.data(), 1, read);
-		if (buffer[0] == kiv_hal::NControl_Codes::EOT) {
+		if (buffer[0] == 4) {
 			break;
 		}
 	}

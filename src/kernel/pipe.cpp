@@ -18,11 +18,9 @@ void Pipe::Close(Pipe_Function function) {
 	case Pipe_Function::Write:
 		closed_out = true;
 		consumer->cv.notify_one();
-		//delete producer;
 		break;
 	case Pipe_Function::Read:
 		closed_in = true;
-		//delete consumer;
 		break;
 	}
 }

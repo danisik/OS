@@ -191,12 +191,19 @@ size_t File_Handle::Read(char *buffer, size_t buffer_length, std::unique_ptr<VFS
 		auto read_buffer = reinterpret_cast<char*>(read_buffer_vector.data());
 
 		// Move to next sector.
-		item_current_sector_count++;
+		if ((seek - 1) + buffer_length > vfs->boot_record->cluster_size) item_current_sector_count++;
 
 		// If current sector count is more or equal of current_fragment_sector_count, move to next fragment.
 		if (item_current_sector_count >= item->fragment_cluster_count[item_current_sector_position]) {
 			item_current_sector_position++;
 			item_current_sector_count = 0;
+		}
+
+		if (item->item_size < buffer_length) {
+			memcpy(buffer + actual_buffer_position, read_buffer, item->item_size);
+
+			actual_buffer_position += item->item_size;
+			break;
 		}
 
 		if (actual_buffer_position + vfs->boot_record->cluster_size > buffer_length) {

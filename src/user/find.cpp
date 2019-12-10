@@ -49,12 +49,12 @@ size_t __stdcall find(const kiv_hal::TRegisters &regs) {
 		}
 		size_t read = 1;
 
-		const int buffer_size = 512;
+		const int buffer_size = 256;
 		std::vector<char> buffer(buffer_size);
 		std::string complete = "";
 
 		while (read) {
-			kiv_os_rtl::Read_File(in_handle, buffer.data(), sizeof(buffer), read);
+			kiv_os_rtl::Read_File(in_handle, buffer.data(), buffer_size, read);
 			complete.append(buffer.data(), 0, read);
 
 			if (buffer[0] == 4) {
