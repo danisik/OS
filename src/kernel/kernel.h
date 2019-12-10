@@ -7,6 +7,7 @@
 #include "io.h"
 #include "io_process.h"
 #include "Header.h"
+#include <Windows.h>
 
 #define NUMBER_OF_SECTORS 2880
 

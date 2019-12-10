@@ -5,7 +5,6 @@
 
 #include "hal.h"
 
-
 namespace kiv_os {
 	const kiv_hal::NInterrupt System_Int_Number = kiv_hal::NInterrupt(0x21);
 			//je to libovolne arbitrarni cislo, ktere neni uz obsazene v kiv_hal::NInterrupt
@@ -55,9 +54,9 @@ namespace kiv_os {
 										//		Current : od aktualni pozice v souboru
 										//		End : od konce souboru
 
-										//cl == Set_Position jenom nastavi pozici
-										//cl == Set_Size nastav pozici a nastav velikost souboru na tuto pozici 
-										//cl == Get_Position => OUT: rax je pozice v souboru od jeho zacatku
+										//ch == Set_Position jenom nastavi pozici
+										//ch == Set_Size nastav pozici a nastav velikost souboru na tuto pozici 
+										//ch == Get_Position => OUT: rax je pozice v souboru od jeho zacatku
 
 		Close_Handle,					//IN : dx  je handle libovolneho typu k zavreni
 
