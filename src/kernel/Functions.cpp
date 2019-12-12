@@ -1,6 +1,7 @@
 #include "header.h"
 
-size_t Functions::Create_Item(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> current_path, kiv_os::NFile_Attributes is_directory) {
+size_t Functions::Create_Item(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> current_path, kiv_os::NFile_Attributes is_directory) 
+{
 	Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
 	size_t i = path.find_last_of(FOLDER_SPLIT);
 	path = path.substr(i + 1);
@@ -11,11 +12,14 @@ size_t Functions::Create_Item(std::unique_ptr<VFS>& vfs, std::string path, std::
 	if (!item->path_exists) {
 		printf("Path not found.\n");
 	}
-	else if (!item->exists && item->path_exists) {
+	else if (!item->exists && item->path_exists) 
+	{
 		int size = 1;
-		if (Functions::Is_Bitmap_Writable(vfs, size)) {
+		if (Functions::Is_Bitmap_Writable(vfs, size)) 
+		{
 
-			while (vfs->mft_items.find(vfs->mft->UID_counter) != vfs->mft_items.end()) {
+			while (vfs->mft_items.find(vfs->mft->UID_counter) != vfs->mft_items.end()) 
+			{
 				vfs->mft->UID_counter++;
 			}
 
@@ -31,15 +35,19 @@ size_t Functions::Create_Item(std::unique_ptr<VFS>& vfs, std::string path, std::
 			return mftItem->uid;
 		}
 	}
-	else if (item->exists) {
+	else if (item->exists) 
+	{
 		printf("Item already exists.\n");
 	}
 	return 0;
 }
 
-bool Functions::Move_To_Directory(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> &current_path) {
-	if (path.size() == 0) {
-		for (size_t i = 0; i < current_path.size(); i++) {
+bool Functions::Move_To_Directory(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> &current_path) 
+{
+	if (path.size() == 0) 
+	{
+		for (size_t i = 0; i < current_path.size(); i++)
+		{
 			printf(current_path[i]->item_name);
 			if (i < current_path.size() - 1) {
 				printf("\\");
@@ -51,26 +59,31 @@ bool Functions::Move_To_Directory(std::unique_ptr<VFS>& vfs, std::string path, s
 
 	path.push_back('\0');
 
-	if (strcmp(path.c_str(), ".") == 0) {
+	if (strcmp(path.c_str(), ".") == 0) 
+	{
 		return true;
 	}
 	// Convert '\' to '/'.
-	if (path.find("\\") != std::string::npos) {
+	if (path.find("\\") != std::string::npos) 
+	{
 		size_t pos;
-		while ((pos = path.find("\\")) != std::string::npos) {
+		while ((pos = path.find("\\")) != std::string::npos)
+		{
 			path.replace(pos, 1, "/");
 		}
 	}
 
 	// Remove '/' from string if it is in last position.
-	if (path[path.size() - 2] == '/') {
+	if (path[path.size() - 2] == '/')
+	{
 		path = path.substr(0, path.size() - 1);
 	}
 
 	Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
 
 	if (item->path_exists && item->exists) {
-		if (item->is_directory != kiv_os::NFile_Attributes::Directory) {
+		if (item->is_directory != kiv_os::NFile_Attributes::Directory) 
+		{
 			printf("Item is not directory.\n");
 			return false;
 		}
@@ -78,35 +91,47 @@ bool Functions::Move_To_Directory(std::unique_ptr<VFS>& vfs, std::string path, s
 		Functions::Move_To_Path(vfs, path, current_path);
 		return true;
 	}
-	else {
+	else 
+	{
 		return false;
 	}
 }
 
-Mft_Item* Get_Last_Item(std::unique_ptr<VFS>& vfs) {
-	if (!vfs->mft_items.empty()) {
+Mft_Item* Get_Last_Item(std::unique_ptr<VFS>& vfs) 
+{
+	if (!vfs->mft_items.empty()) 
+	{
 		return (--vfs->mft_items.end())->second;
 	}
 	return nullptr;
 }
 
-void Functions::Update_Parent_ID(std::unique_ptr<VFS>& vfs, size_t old_id, size_t new_id) {
-	for (size_t i = 0; i < vfs->mft_items.size(); i++) {
-		if (vfs->mft_items[i]->parent_ID == old_id) {
+void Functions::Update_Parent_ID(std::unique_ptr<VFS>& vfs, size_t old_id, size_t new_id)
+{
+	for (size_t i = 0; i < vfs->mft_items.size(); i++) 
+	{
+		if (vfs->mft_items[i]->parent_ID == old_id)
+		{
 			vfs->mft_items[i]->parent_ID = new_id;
 		}
 	}
 }
 
-void Functions::Remove_Item(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> &current_path) {
+void Functions::Remove_Item(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> &current_path)
+{
 	vfs->mft->size = vfs->mft_items.size();
 	vfs->mft->UID_counter = vfs->mft_items.size();
 	Exist_Item* item = Functions::Check_Path(vfs, path, current_path);
-	if (item->exists && item->path_exists) {
-		if (Functions::Is_Directory_Empty(vfs, item)) {
-			for (size_t i = 0; i < vfs->mft_items.size(); i++) {
-				if (vfs->mft_items[i]->uid == item->uid) {
-					if (item->uid == 0) {
+	if (item->exists && item->path_exists)
+	{
+		if (Functions::Is_Directory_Empty(vfs, item))
+		{
+			for (size_t i = 0; i < vfs->mft_items.size(); i++)
+			{
+				if (vfs->mft_items[i]->uid == item->uid)
+				{
+					if (item->uid == 0)
+					{
 						printf("Item is root directory.\n");
 						return;
 					}
@@ -114,11 +139,16 @@ void Functions::Remove_Item(std::unique_ptr<VFS>& vfs, std::string path, std::ve
 					Functions::Remove_From_Data_Block(vfs, vfs->mft_items[item->uid]);
 					vfs->mft_items.erase(item->uid);
 
-					if (vfs->mft->size >= 2) {						
+					if (vfs->mft->size >= 2)
+					{						
 						Mft_Item* last_item = Get_Last_Item(vfs);
 
-						if (last_item->uid > item->uid) {
-							if (last_item->is_directory == kiv_os::NFile_Attributes::Directory) Update_Parent_ID(vfs, last_item->uid, item->uid);
+						if (last_item->uid > item->uid)
+						{
+							if (last_item->is_directory == kiv_os::NFile_Attributes::Directory)
+							{
+								Update_Parent_ID(vfs, last_item->uid, item->uid);
+							}
 							vfs->mft_items.erase(last_item->uid);
 							last_item->uid = item->uid;
 							vfs->mft_items.insert(std::pair<size_t, Mft_Item*>(last_item->uid, last_item));
@@ -134,16 +164,19 @@ void Functions::Remove_Item(std::unique_ptr<VFS>& vfs, std::string path, std::ve
 				}
 			}
 		}
-		else {
+		else 
+		{
 			printf("Directory not empty.\n");			
 		}
 	}
-	else if (!item->exists || !item->path_exists) {
+	else if (!item->exists || !item->path_exists)
+	{
 		printf("Item not found.\n");
 	}
 }
 
-Exist_Item* Functions::Check_Path(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> current_path){
+Exist_Item* Functions::Check_Path(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> current_path)
+{
     Exist_Item* item = new Exist_Item;
     item->uid = current_path[current_path.size()-1]->uid;
     item->parent_ID = current_path[current_path.size()-1]->parent_ID;
@@ -158,23 +191,27 @@ Exist_Item* Functions::Check_Path(std::unique_ptr<VFS>& vfs, std::string path, s
 	std::string tok_tmp;
 	size_t jump_back = 0;
 
-	if (strcmp(path.c_str(), "../") == 0 || strcmp(path.c_str(), "..") == 0) {
+	if (strcmp(path.c_str(), "../") == 0 || strcmp(path.c_str(), "..") == 0) 
+	{
 		item->is_directory = kiv_os::NFile_Attributes::Directory;
 		item->exists = true;
 		item->path_exists = true;
 		return item;
 	}
 
-	while ((j = path_tmp.find(FOLDER_SPLIT)) != std::string::npos) {
+	while ((j = path_tmp.find(FOLDER_SPLIT)) != std::string::npos) 
+	{
 		tok_tmp = path_tmp.substr(0, j);
 		path_tmp = path_tmp.substr(j + 1);
 
 
 
-		if (strcmp(tok_tmp.c_str(), "..") == 0) {
+		if (strcmp(tok_tmp.c_str(), "..") == 0)
+		{
 			jump_back++;
 
-			if (current_path.size() <= jump_back) {
+			if (current_path.size() <= jump_back)
+			{
 				item->is_directory = kiv_os::NFile_Attributes::Directory;
 				item->exists = false;
 				item->path_exists = false;
@@ -185,32 +222,39 @@ Exist_Item* Functions::Check_Path(std::unique_ptr<VFS>& vfs, std::string path, s
 		}
 	}
 
-	if (jump_back >= current_path.size()) {
+	if (jump_back >= current_path.size()) 
+	{
 		item->path_exists = false;
 		item->exists = false;
 		return item;
 	}
 
-    while((i = path.find(FOLDER_SPLIT)) != std::string::npos){
+    while((i = path.find(FOLDER_SPLIT)) != std::string::npos)
+	{
         item->path_exists = false;
         tok = path.substr(0, i);
         path = path.substr(i+1);
 
-		if (jump_back > 0) {
+		if (jump_back > 0)
+		{
 			jump_back--;
 			continue;
 		}
 
-        for(j = 0; j < vfs->mft_items.size(); j++) {
-            if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
+        for(j = 0; j < vfs->mft_items.size(); j++)
+		{
+            if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0))
+			{
                 item->uid = vfs->mft_items[j]->uid;
                 item->parent_ID = vfs->mft_items[j]->parent_ID;
                 item->path_exists = true;
-                if(vfs->mft_items[j]->is_directory == kiv_os::NFile_Attributes::Directory){
+                if(vfs->mft_items[j]->is_directory == kiv_os::NFile_Attributes::Directory)
+				{
                     item->path_exists = true;
                     item->is_directory = kiv_os::NFile_Attributes::Directory;
                 }
-                else {
+                else 
+				{
 					printf("Item is not a directory.\n");
                     item->path_exists = false;
                     item->is_directory = kiv_os::NFile_Attributes::System_File;
@@ -219,7 +263,8 @@ Exist_Item* Functions::Check_Path(std::unique_ptr<VFS>& vfs, std::string path, s
                 break;
             }
         }
-        if(!item->path_exists){
+        if(!item->path_exists)
+		{
             return item;
         }
         
@@ -228,18 +273,27 @@ Exist_Item* Functions::Check_Path(std::unique_ptr<VFS>& vfs, std::string path, s
     item->path_exists = true;
 	const char *name = tok.c_str();
 
-    for(j = 0; j < vfs->mft_items.size(); j++){
-        if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, name)==0)){
+    for(j = 0; j < vfs->mft_items.size(); j++)
+	{
+        if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, name)==0))
+		{
             item->uid = vfs->mft_items[j]->uid;
             item->parent_ID = vfs->mft_items[j]->parent_ID;
             item->exists = true;
-            if(vfs->mft_items[j]->is_directory == kiv_os::NFile_Attributes::Directory) item->is_directory = kiv_os::NFile_Attributes::Directory;
-            else item->is_directory = kiv_os::NFile_Attributes::System_File;
+			if (vfs->mft_items[j]->is_directory == kiv_os::NFile_Attributes::Directory)
+			{
+				item->is_directory = kiv_os::NFile_Attributes::Directory;
+			}
+			else
+			{
+				item->is_directory = kiv_os::NFile_Attributes::System_File;
+			}
             return item;
         }
     }
 
-	if (path.size() == 0 && item->path_exists == true && !item->exists && item->is_directory == kiv_os::NFile_Attributes::Directory) {
+	if (path.size() == 0 && item->path_exists == true && !item->exists && item->is_directory == kiv_os::NFile_Attributes::Directory)
+	{
 		// Item is actual directory.
 		item->parent_ID = current_path.back()->parent_ID;
 		item->uid = current_path.back()->uid;
@@ -252,26 +306,32 @@ Exist_Item* Functions::Check_Path(std::unique_ptr<VFS>& vfs, std::string path, s
     return item;
 }
 
-bool Functions::Is_Directory_Empty(std::unique_ptr<VFS>& vfs, Exist_Item * item){
-	if (item->is_directory != kiv_os::NFile_Attributes::Directory) {
+bool Functions::Is_Directory_Empty(std::unique_ptr<VFS>& vfs, Exist_Item * item)
+{
+	if (item->is_directory != kiv_os::NFile_Attributes::Directory) 
+	{
 		return true;
 	}
-    for(size_t i = 1; i < vfs->mft_items.size(); i++){
+    for(size_t i = 1; i < vfs->mft_items.size(); i++)
+	{
 		// tady to crashovalo pøi remove TODO
-        if(vfs->mft_items[i]->parent_ID == item->uid){
+        if(vfs->mft_items[i]->parent_ID == item->uid)
+		{
             return false;
         }
     }
     return true;
 }
-void Functions::Move_To_Path(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> &current_path){
+void Functions::Move_To_Path(std::unique_ptr<VFS>& vfs, std::string path, std::vector<Mft_Item*> &current_path)
+{
     Exist_Item* item = new Exist_Item;
     item->uid = current_path[current_path.size()-1]->uid;
     item->parent_ID = current_path[current_path.size()-1]->parent_ID;
     size_t i;
 	std::string tok;
 
-	if (strcmp(path.c_str(), "../") == 0 || strcmp(path.c_str(), "..") == 0) {
+	if (strcmp(path.c_str(), "../") == 0 || strcmp(path.c_str(), "..") == 0) 
+	{
 		if (current_path.size() > 1) current_path.pop_back();
 		return;
 	}
@@ -281,27 +341,33 @@ void Functions::Move_To_Path(std::unique_ptr<VFS>& vfs, std::string path, std::v
 	std::string tok_tmp;
 	size_t jump_back = 0;
 
-	while ((j = path_tmp.find(FOLDER_SPLIT)) != std::string::npos) {
+	while ((j = path_tmp.find(FOLDER_SPLIT)) != std::string::npos) 
+	{
 		tok_tmp = path_tmp.substr(0, j);
 		path_tmp = path_tmp.substr(j + 1);
-		if (strcmp(tok_tmp.c_str(), "..") == 0) {
+		if (strcmp(tok_tmp.c_str(), "..") == 0)
+		{
 			jump_back++;
 		}
 	}
 
-    while((i = path.find(FOLDER_SPLIT)) != std::string::npos){
+    while((i = path.find(FOLDER_SPLIT)) != std::string::npos)
+	{
         tok = path.substr(0, i);
         path = path.substr(i+1);
 
-		if (jump_back > 0) {			
+		if (jump_back > 0) 
+		{			
 			current_path.pop_back();
 			item->uid = current_path[current_path.size() - 1]->uid;
 			jump_back--;
 			continue;
 		}
 
-        for(j = 0; j < vfs->mft_items.size(); j++){
-            if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
+        for(j = 0; j < vfs->mft_items.size(); j++)
+		{
+            if((vfs->mft_items[j]->parent_ID == item->uid) &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0))
+			{
                 item->uid = vfs->mft_items[j]->uid;
                 item->parent_ID = vfs->mft_items[j]->parent_ID;
 				current_path.push_back(vfs->mft_items[j]);
@@ -311,9 +377,11 @@ void Functions::Move_To_Path(std::unique_ptr<VFS>& vfs, std::string path, std::v
         
     }
     tok = path.substr(0,i);
-    for(j = 0; j < vfs->mft_items.size(); j++){
+    for(j = 0; j < vfs->mft_items.size(); j++)
+	{
         if((vfs->mft_items[j]->parent_ID == item->uid)
-           &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0)){
+           &&(strcmp(vfs->mft_items[j]->item_name, tok.c_str())==0))
+		{
             item->uid = vfs->mft_items[j]->uid;
             item->parent_ID = vfs->mft_items[j]->parent_ID;
             item->exists = true;
@@ -323,51 +391,72 @@ void Functions::Move_To_Path(std::unique_ptr<VFS>& vfs, std::string path, std::v
     }
 }
 
-bool Functions::Is_Bitmap_Writable(std::unique_ptr<VFS>& vfs, size_t size){
+bool Functions::Is_Bitmap_Writable(std::unique_ptr<VFS>& vfs, size_t size)
+{
 	size_t neededBitCount = size/vfs->boot_record->cluster_size;
     if(size % vfs->boot_record->cluster_size != 0) neededBitCount++;
     long bitCount = 0;
-    for(int i = 0; i < vfs->boot_record->cluster_count; i++){
-        if(!vfs->bitmap[i]) bitCount++;
-        if(bitCount==neededBitCount) return true;
+    for(int i = 0; i < vfs->boot_record->cluster_count; i++)
+	{
+		if (!vfs->bitmap[i])
+		{
+			bitCount++;
+		}
+		if (bitCount == neededBitCount)
+		{
+			return true;
+		}
     }
     return false;
 }
 
-void Functions::Write_To_Data_Block(std::unique_ptr<VFS>& vfs, Mft_Item * mftItem){
+void Functions::Write_To_Data_Block(std::unique_ptr<VFS>& vfs, Mft_Item * mftItem)
+{
 	size_t size = mftItem->item_size;
 	size_t neededBitCount = size/vfs->boot_record->cluster_size;
-    if(size % vfs->boot_record->cluster_size != 0) neededBitCount++;
+	if (size % vfs->boot_record->cluster_size != 0)
+	{
+		neededBitCount++;
+	}
     long writtenBitCount = 0;
     int fragmentID = 0;
     
-    for (int i = 0; i < vfs->boot_record->cluster_count; i++) {
+    for (int i = 0; i < vfs->boot_record->cluster_count; i++)
+	{
         if(writtenBitCount == neededBitCount) break;
         
-        if(!vfs->bitmap[i]){
-            if(mftItem->fragment_cluster_count[fragmentID] <1){
+        if(!vfs->bitmap[i])
+		{
+            if(mftItem->fragment_cluster_count[fragmentID] <1)
+			{
                 mftItem->bitmap_start_ID[fragmentID] = i;
                 mftItem->fragment_start_cluster[fragmentID] = vfs->boot_record->data_start_cluster + i;
                 mftItem->fragment_cluster_count[fragmentID]++;
                 vfs->bitmap[i] = true;
             }
-            else{
+            else
+			{
                 mftItem->fragment_cluster_count[fragmentID]++;
                 vfs->bitmap[i] = true;
             }
             writtenBitCount++;
         }
-        else{
-            if(mftItem->fragment_cluster_count[fragmentID] > 0){
+        else
+		{
+            if(mftItem->fragment_cluster_count[fragmentID] > 0)
+			{
                 fragmentID++;
             }
         }
     }
 }
 
-void Functions::Remove_From_Data_Block(std::unique_ptr<VFS>& vfs, Mft_Item* mftItem){
-    for (int i = 0; i < MFT_FRAGMENTS_COUNT; i++) {
-        for (size_t j = 0; j<mftItem->fragment_cluster_count[i]; j++) {
+void Functions::Remove_From_Data_Block(std::unique_ptr<VFS>& vfs, Mft_Item* mftItem)
+{
+    for (int i = 0; i < MFT_FRAGMENTS_COUNT; i++) 
+	{
+        for (size_t j = 0; j<mftItem->fragment_cluster_count[i]; j++)
+		{
             vfs->bitmap[mftItem->bitmap_start_ID[i]+j] = false;
 			mftItem->fragment_cluster_count[i] = 0;
 			mftItem->fragment_start_cluster[i] = 0;
@@ -376,35 +465,44 @@ void Functions::Remove_From_Data_Block(std::unique_ptr<VFS>& vfs, Mft_Item* mftI
     }
 }
 
-Mft_Item* Functions::Get_Mft_Item(std::unique_ptr<VFS>& vfs, size_t uid){
-    for (size_t i = 0; i<vfs->mft_items.size(); i++) {
-        if(vfs->mft_items[i]->uid == uid){
+Mft_Item* Functions::Get_Mft_Item(std::unique_ptr<VFS>& vfs, size_t uid)
+{
+    for (size_t i = 0; i<vfs->mft_items.size(); i++)
+	{
+        if(vfs->mft_items[i]->uid == uid)
+		{
             return vfs->mft_items[i];
         }
     }
     return NULL;
 }
 
-std::vector<Mft_Item*> Functions::Get_Items_In_Directory(std::unique_ptr<VFS>& vfs, size_t directory_id) {
+std::vector<Mft_Item*> Functions::Get_Items_In_Directory(std::unique_ptr<VFS>& vfs, size_t directory_id)
+{
 	std::map<size_t, Mft_Item*> directory_items;
 
 	size_t position = 0;
 
-	for (size_t i = 0; i < vfs->mft_items.size(); i++) {
-		if (vfs->mft_items[i]->parent_ID == directory_id) {
+	for (size_t i = 0; i < vfs->mft_items.size(); i++)
+	{
+		if (vfs->mft_items[i]->parent_ID == directory_id)
+		{
 			directory_items.insert(std::pair<size_t, Mft_Item*>(position, vfs->mft_items[i]));
 			position++;
 		}
 	}
 
-	for (size_t i = 0; i < directory_items.size(); i++) {
-		for (size_t j = 0; j < directory_items.size(); j++) {
+	for (size_t i = 0; i < directory_items.size(); i++) 
+	{
+		for (size_t j = 0; j < directory_items.size(); j++) 
+		{
 
 
 			std::string s1 = std::string(directory_items[i]->item_name);
 			std::string s2 = std::string(directory_items[j]->item_name);
 
-			if (s1.at(0) < s2.at(0)) {
+			if (s1.at(0) < s2.at(0)) 
+			{
 				Mft_Item *tmp = directory_items[i];
 				directory_items[i] = directory_items[j];
 				directory_items[j] = tmp;
@@ -414,22 +512,26 @@ std::vector<Mft_Item*> Functions::Get_Items_In_Directory(std::unique_ptr<VFS>& v
 	}
 
 	std::vector<Mft_Item*> sorted_uid;
-	for (size_t i = 0; i < directory_items.size(); i++) {
+	for (size_t i = 0; i < directory_items.size(); i++) 
+	{
 		sorted_uid.push_back(directory_items[i]);
 	}
 
 	return sorted_uid;
 }
 
-void Functions::Save_VFS_MFT(std::unique_ptr<VFS>& vfs) {
+void Functions::Save_VFS_MFT(std::unique_ptr<VFS>& vfs)
+{
 	Process_Sectors(kiv_hal::NDisk_IO::Write_Sectors, vfs->drive_id, 1, vfs->boot_record->mft_start_cluster, static_cast<void*>(vfs->mft));
 }
 
-void Functions::Save_VFS_MFT_Item(std::unique_ptr<VFS>& vfs, size_t uid) {
+void Functions::Save_VFS_MFT_Item(std::unique_ptr<VFS>& vfs, size_t uid) 
+{
 	Process_Sectors(kiv_hal::NDisk_IO::Write_Sectors, vfs->drive_id, 1, vfs->boot_record->mft_start_cluster + uid + 1, static_cast<void*>(vfs->mft_items[uid]));
 }
 
-void Functions::Process_Sectors(kiv_hal::NDisk_IO operation, int drive_id, size_t count, size_t lba_index, void* sector) {
+void Functions::Process_Sectors(kiv_hal::NDisk_IO operation, int drive_id, size_t count, size_t lba_index, void* sector) 
+{
 	kiv_hal::TDisk_Address_Packet dap;
 
 	dap.count = count;

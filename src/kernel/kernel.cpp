@@ -8,22 +8,26 @@ std::unique_ptr<IO> io;
 kiv_os::THandle std_in_shell;
 kiv_os::THandle std_out_shell;
 
-void Initialize_Kernel() {
+void Initialize_Kernel() 
+{
 	User_Programs = LoadLibraryW(L"user.dll");
 }
 
-void Shutdown_Kernel() {
+void Shutdown_Kernel() 
+{
 	FreeLibrary(User_Programs);
 }
 
-kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uint8_t minor) {
+kiv_hal::TRegisters Prepare_SysCall_Context(kiv_os::NOS_Service_Major major, uint8_t minor)
+{
 	kiv_hal::TRegisters regs;
 	regs.rax.h = static_cast<uint8_t>(major);
 	regs.rax.l = minor;
 	return regs;
 }
 
-kiv_os::THandle Create_Kernel_Process() {
+kiv_os::THandle Create_Kernel_Process() 
+{
 	char name[7] = "kernel";
 	// Create process and thread.
 	std::unique_ptr<Process> process = std::make_unique<Process>(io->io_process->Get_Free_Process_ID(), name);
@@ -48,7 +52,8 @@ kiv_os::THandle Create_Kernel_Process() {
 	return kernel_handler;
 }
 
-void Remove_Kernel_Process(kiv_os::THandle kernel_handler) {
+void Remove_Kernel_Process(kiv_os::THandle kernel_handler) 
+{
 	size_t thread_ID = io->io_process->t_handle_to_thread_ID[kernel_handler];
 	size_t process_ID = io->io_process->thread_ID_to_process_ID[thread_ID];
 
@@ -63,7 +68,8 @@ void Remove_Kernel_Process(kiv_os::THandle kernel_handler) {
 	io->io_process->Read_Exit_Code(regs);
 }
 
-kiv_os::THandle Shell_Clone() {
+kiv_os::THandle Shell_Clone() 
+{
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Clone));
 
 	regs.rdx.r = reinterpret_cast<decltype(regs.rdx.r)>("shell");
@@ -76,7 +82,8 @@ kiv_os::THandle Shell_Clone() {
 	return static_cast<kiv_os::THandle>(regs.rax.x);
 }
 
-void Shell_Wait(kiv_os::THandle handle) {
+void Shell_Wait(kiv_os::THandle handle) 
+{
 	// Wait for shell to be closed.
 
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::Process, static_cast<uint8_t>(kiv_os::NOS_Process::Wait_For));
@@ -86,7 +93,8 @@ void Shell_Wait(kiv_os::THandle handle) {
 	io->io_process->Handle_Process(regs);
 }
 
-void Shell_Close(kiv_os::THandle shell_handle) {
+void Shell_Close(kiv_os::THandle shell_handle)
+{
 	kiv_hal::TRegisters regs = Prepare_SysCall_Context(kiv_os::NOS_Service_Major::File_System, static_cast<uint8_t>(kiv_os::NOS_File_System::Close_Handle));
 
 	// Close std_in handle.
@@ -103,22 +111,25 @@ void Shell_Close(kiv_os::THandle shell_handle) {
 	io->io_process->Handle_Process(regs);
 }
 
-void __stdcall Sys_Call(kiv_hal::TRegisters &regs) {
+void __stdcall Sys_Call(kiv_hal::TRegisters &regs)
+{
 
-	switch (static_cast<kiv_os::NOS_Service_Major>(regs.rax.h)) {
+	switch (static_cast<kiv_os::NOS_Service_Major>(regs.rax.h)) 
+	{
 
-	case kiv_os::NOS_Service_Major::File_System:
-		io->Handle_IO(regs);
-		break;
+		case kiv_os::NOS_Service_Major::File_System:
+			io->Handle_IO(regs);
+			break;
 
-	case kiv_os::NOS_Service_Major::Process:
-		io->io_process->Handle_Process(regs);
-		break;
+		case kiv_os::NOS_Service_Major::Process:
+			io->io_process->Handle_Process(regs);
+			break;
 	}
 
 }
 
-void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
+void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context)
+{
 	Initialize_Kernel();
 	kiv_hal::Set_Interrupt_Handler(kiv_os::System_Int_Number, Sys_Call);
 	kiv_hal::TRegisters regs;
@@ -126,7 +137,8 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 	std_in_shell = Convert_Native_Handle(new STD_Handle_In());
 	std_out_shell = Convert_Native_Handle(new STD_Handle_Out());
 
-	for (regs.rdx.l = 0; ; regs.rdx.l++) {
+	for (regs.rdx.l = 0; ; regs.rdx.l++) 
+	{
 
 		// Get Drive parameters.
 		kiv_hal::TDrive_Parameters params;
@@ -134,7 +146,8 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 		regs.rdi.r = reinterpret_cast<decltype(regs.rdi.r)>(&params);
 		kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::Disk_IO, regs);
 		
-		if (!regs.flags.carry) {
+		if (!regs.flags.carry) 
+		{
 
 			// Load boot block.
 			uint16_t bytes_per_sector = params.bytes_per_sector;
@@ -144,7 +157,10 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 			break;
 		}
 
-		if (regs.rdx.l == 255) break;
+		if (regs.rdx.l == 255)
+		{
+			break;
+		}
 	}
 
 	kiv_os::THandle kernel_handler = 0;
@@ -169,13 +185,17 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context) {
 }
 
 
-void Set_Error(const bool failed, kiv_hal::TRegisters &regs) {
-	if (failed) {
+void Set_Error(const bool failed, kiv_hal::TRegisters &regs) 
+{
+	if (failed)
+	{
 		regs.flags.carry = true;
 		regs.rax.r = GetLastError();
 	}
 	else
+	{
 		regs.flags.carry = false;
+	}
 }
 
 

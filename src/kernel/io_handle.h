@@ -8,7 +8,8 @@
 #include "pipe.h"
 
 
-class IO_Handle {
+class IO_Handle 
+{
 	
 	public:
 		size_t seek = 1;
@@ -18,17 +19,20 @@ class IO_Handle {
 		virtual void Close();
 };
 
-class STD_Handle_In : public IO_Handle {
+class STD_Handle_In : public IO_Handle 
+{
 	public:
 		size_t Read(char *buffer, size_t buffer_lengthm, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process);
 };
 
-class STD_Handle_Out : public IO_Handle {
+class STD_Handle_Out : public IO_Handle 
+{
 	public:
 		size_t Write(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process);
 };
 
-class Pipe_Handle : public IO_Handle {
+class Pipe_Handle : public IO_Handle 
+{
 	public:
 		Pipe *pipe;
 		Pipe_Function function;
@@ -39,23 +43,27 @@ class Pipe_Handle : public IO_Handle {
 		void Close();
 };
 
-class Item_Handle : public IO_Handle {
+class Item_Handle : public IO_Handle 
+{
 	public:
 		Mft_Item *item = nullptr;
 };
 
-class File_Handle : public Item_Handle {
+class File_Handle : public Item_Handle 
+{
 	public:
 		size_t Read(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process);
 		size_t Write(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process);
 };
 
-class Directory_Handle : public Item_Handle {
+class Directory_Handle : public Item_Handle 
+{
 	public:
 		size_t Read(char *buffer, size_t buffer_length, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process);
 };
 
-class Procfs_Handle : public Item_Handle {
+class Procfs_Handle : public Item_Handle 
+{
 	public:
 		size_t Read(char *buffer, size_t buffer_lengthm, std::unique_ptr<VFS>& vfs, std::unique_ptr<IO_Process>& io_process);
 };

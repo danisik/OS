@@ -1,6 +1,7 @@
 #include "header.h"
 
-Boot_Record::Boot_Record(uint64_t cluster_count, uint16_t cluster_size){ 
+Boot_Record::Boot_Record(uint64_t cluster_count, uint16_t cluster_size)
+{ 
     this->cluster_size = cluster_size;
     this->cluster_count = cluster_count;
 	this->disk_size = cluster_size * cluster_count;

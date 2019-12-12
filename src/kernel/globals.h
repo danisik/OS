@@ -2,4 +2,4 @@
 
 #include <Windows.h>
 
-extern "C" HMODULE User_Programs;
+extern HMODULE User_Programs;

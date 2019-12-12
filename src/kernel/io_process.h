@@ -11,7 +11,8 @@
 #define MIN_THREAD_THANDLE 10000
 
 
-class IO_Process {
+class IO_Process 
+{
 
 	public:
 		size_t first_free_process_ID = 0;

@@ -2,13 +2,15 @@
 
 #include "semaphore.h"
 
-Semaphore::Semaphore(int s_value = 0) {
+Semaphore::Semaphore(int s_value = 0)
+{
 	value = s_value;
 	waiting = 0;
 }
 
 
-void Semaphore::P() {
+void Semaphore::P() 
+{
 	std::unique_lock<std::mutex> lock(mtx);
 	
 	if (value <= 0)
@@ -20,7 +22,8 @@ void Semaphore::P() {
 	value--;
 }
 
-void Semaphore::V() {
+void Semaphore::V() 
+{
 	std::unique_lock<std::mutex> lock(mtx);
 	
 	if (waiting > 0)

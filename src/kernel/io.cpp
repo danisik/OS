@@ -5,29 +5,31 @@
 std::mutex working_directory_mutex;
 std::mutex io_mutex;
 
-IO::IO(uint64_t cluster_count, uint16_t cluster_size, int v_drive_i) {
+IO::IO(uint64_t cluster_count, uint16_t cluster_size, int v_drive_i)
+{
 	io_process = std::make_unique<IO_Process>();
 	vfs = std::make_unique<VFS>(cluster_count, cluster_size, v_drive_i);
 
 	bool success = false;
 	success = vfs->Load_MFT(vfs);
-	if (!success) {
+	if (!success)
+	{
 		vfs->Init_VFS(vfs);
 	}
 }
 
-void IO::Delete_IO() {
+void IO::Delete_IO() 
+{
 
 	io_process.release();
 
 	vfs->bitmap.clear();
 	vfs->boot_record.release();
-	//delete vfs->mft;
 
-	
 	std::map<size_t, Mft_Item*>::iterator it = vfs->mft_items.begin();
 
-	while (it != vfs->mft_items.end()) {		
+	while (it != vfs->mft_items.end())
+	{		
 		delete it->second;
 		it++;
 	}
@@ -36,13 +38,15 @@ void IO::Delete_IO() {
 	vfs.release();
 }
 
-void IO::Open_File(kiv_hal::TRegisters &regs) {
+void IO::Open_File(kiv_hal::TRegisters &regs)
+{
 	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 	std::lock_guard<std::mutex> lock_mutex_process(io_process->io_process_mutex);
 
 	char* file_name = reinterpret_cast<char*>(regs.rdx.r);
 
-	if (strcmp(file_name, "procfs") == 0) {
+	if (strcmp(file_name, "procfs") == 0)
+	{
 		Procfs_Handle *handle = new Procfs_Handle();
 		regs.rax.x = Convert_Native_Handle(static_cast<Procfs_Handle*>(handle));
 		return;
@@ -56,44 +60,53 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 	
 	Exist_Item* item = Functions::Check_Path(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
 
-		if (!item->path_exists) {
+	if (!item->path_exists) 
+		{
 		printf("Path did not exists.\n");
 		regs.rax.x = -1;
 		return;
 	}
 
-	if (flags == kiv_os::NOpen_File::fmOpen_Always) {
+	if (flags == kiv_os::NOpen_File::fmOpen_Always)
+	{
 
-		if (!item->exists) {
+		if (!item->exists) 
+		{
 			printf("File did not exists.\n");
 			regs.rax.x = -1;
 			return;
 		}
 
-		if (attributes == kiv_os::NFile_Attributes::Directory && item->is_directory == kiv_os::NFile_Attributes::Directory) {
+		if (attributes == kiv_os::NFile_Attributes::Directory && item->is_directory == kiv_os::NFile_Attributes::Directory)
+		{
 			Directory_Handle *dir_handle = new Directory_Handle();
 			dir_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(dir_handle));
 		}
-		else if (attributes == kiv_os::NFile_Attributes::System_File && item->is_directory == kiv_os::NFile_Attributes::System_File){
+		else if (attributes == kiv_os::NFile_Attributes::System_File && item->is_directory == kiv_os::NFile_Attributes::System_File)
+		{
 			File_Handle *file_handle = new File_Handle();
 			file_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(file_handle));
 		}
-		else if (attributes == kiv_os::NFile_Attributes::Directory && item->is_directory == kiv_os::NFile_Attributes::System_File) {
+		else if (attributes == kiv_os::NFile_Attributes::Directory && item->is_directory == kiv_os::NFile_Attributes::System_File) 
+		{
 			printf("Expected directory but item is file.\n");
 			regs.rax.x = -1;
 			return;
 		}
-		else {
+		else 
+		{
 			printf("Expected file but item is directory.\n");
 			regs.rax.x = -1;
 			return;
 		}
 	}
-	else {
+	else 
+	{
 
-		if (item->exists && attributes == kiv_os::NFile_Attributes::System_File) {
+		if (item->exists && attributes == kiv_os::NFile_Attributes::System_File)
+		{
 			File_Handle *file_handle = new File_Handle();
 			file_handle->item = Functions::Get_Mft_Item(vfs, item->uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(file_handle));
@@ -102,12 +115,14 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 
 		size_t item_uid = Functions::Create_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir, attributes);
 
-		if (attributes == kiv_os::NFile_Attributes::Directory) {
+		if (attributes == kiv_os::NFile_Attributes::Directory)
+		{
 			Directory_Handle *dir_handle = new Directory_Handle();
 			dir_handle->item = Functions::Get_Mft_Item(vfs, item_uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(dir_handle));
 		}
-		else {
+		else 
+		{
 			File_Handle *file_handle = new File_Handle();
 			file_handle->item = Functions::Get_Mft_Item(vfs, item_uid);
 			regs.rax.x = Convert_Native_Handle(static_cast<Item_Handle*>(file_handle));
@@ -117,11 +132,13 @@ void IO::Open_File(kiv_hal::TRegisters &regs) {
 	return;
 }
 
-void IO::Write_File(kiv_hal::TRegisters &regs) {
+void IO::Write_File(kiv_hal::TRegisters &regs) 
+{
 	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 
 	auto file_handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
-	if (file_handle == INVALID_HANDLE_VALUE) {
+	if (file_handle == INVALID_HANDLE_VALUE)
+	{
 		return;
 	}
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
@@ -130,9 +147,11 @@ void IO::Write_File(kiv_hal::TRegisters &regs) {
 	regs.rax.r = file_handle->Write(buffer, buffer_length, vfs, io_process);
 }
 
-void IO::Read_File(kiv_hal::TRegisters &regs) {
+void IO::Read_File(kiv_hal::TRegisters &regs) 
+{
 	auto file_handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
-	if (file_handle == INVALID_HANDLE_VALUE) {
+	if (file_handle == INVALID_HANDLE_VALUE)
+	{
 		return;
 	}
 	char *buffer = reinterpret_cast<char*>(regs.rdi.r);
@@ -141,9 +160,11 @@ void IO::Read_File(kiv_hal::TRegisters &regs) {
 	regs.rax.r = file_handle->Read(buffer, buffer_length, vfs, io_process);
 }
 
-void IO::Seek(kiv_hal::TRegisters &regs) {
+void IO::Seek(kiv_hal::TRegisters &regs) 
+{
 	auto file_handle = static_cast<Item_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
-	if (file_handle == INVALID_HANDLE_VALUE) {
+	if (file_handle == INVALID_HANDLE_VALUE) 
+	{
 		return;
 	}
 
@@ -152,8 +173,10 @@ void IO::Seek(kiv_hal::TRegisters &regs) {
 	Mft_Item *item = file_handle->item;
 	size_t item_size = item->item_size;
 
-	if (new_position == kiv_os::NFile_Seek::Set_Size) {
-		if (position == 0) {
+	if (new_position == kiv_os::NFile_Seek::Set_Size) 
+	{
+		if (position == 0)
+		{
 			position = 1;
 		}
 		item->item_size = position;
@@ -163,25 +186,30 @@ void IO::Seek(kiv_hal::TRegisters &regs) {
 		Functions::Save_VFS_MFT_Item(vfs, item->uid);
 		return;
 	}
-	else if (new_position == kiv_os::NFile_Seek::Get_Position) {
+	else if (new_position == kiv_os::NFile_Seek::Get_Position)
+	{
 		regs.rax.r = file_handle->seek;
 		return;
 	}
-	else {
+	else 
+	{
 		file_handle->Seek(new_position, position, item->item_size);
 		return;
 	}
 }
 
-void IO::Close_Handle(kiv_hal::TRegisters &regs) {
+void IO::Close_Handle(kiv_hal::TRegisters &regs) 
+{
 	auto handle = static_cast<IO_Handle*>(Resolve_kiv_os_Handle(regs.rdx.x));
-	if (handle != INVALID_HANDLE_VALUE) {
+	if (handle != INVALID_HANDLE_VALUE)
+	{
 		handle->Close();
 		Remove_Handle(regs.rdx.x);
 	}
 }
 
-void IO::Delete_File(kiv_hal::TRegisters &regs) {
+void IO::Delete_File(kiv_hal::TRegisters &regs)
+{
 	std::lock_guard<std::mutex> lock_mutex(io_mutex);
 	std::lock_guard<std::mutex> lock_mutex_process(io_process->io_process_mutex);
 
@@ -193,7 +221,8 @@ void IO::Delete_File(kiv_hal::TRegisters &regs) {
 	Functions::Remove_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
 }
 
-void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) {
+void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) 
+{
 	std::lock_guard<std::mutex> lock_mutex(working_directory_mutex);
 	char *new_directory = reinterpret_cast<char*>(regs.rdx.r);
 
@@ -205,7 +234,8 @@ void IO::Set_Working_Dir(kiv_hal::TRegisters &regs) {
 	regs.rax.x = static_cast<decltype(regs.rax.x)>(success);
 }
 
-void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
+void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) 
+{
 	std::lock_guard<std::mutex> lock_mutex(working_directory_mutex);
 	char *path = reinterpret_cast<char*>(regs.rdx.r);
 	size_t path_size = static_cast<size_t>(regs.rcx.r);
@@ -218,9 +248,11 @@ void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
 
 	std::string path_string;
 
-	for (int i = 0; i < current_path.size(); i++) {
+	for (int i = 0; i < current_path.size(); i++)
+	{
 		path_string += io_process->processes[current_process_ID]->working_dir[i]->item_name;
-		if (i < current_path.size() - 1) {
+		if (i < current_path.size() - 1)
+		{
 			path_string += '\\';
 			written_chars++;
 		}
@@ -232,7 +264,8 @@ void IO::Get_Working_Dir(kiv_hal::TRegisters &regs) {
 	regs.rax.r = written_chars;
 }
 
-void IO::Create_Pipe(kiv_hal::TRegisters &regs) {
+void IO::Create_Pipe(kiv_hal::TRegisters &regs)
+{
 	Pipe_Handle *pipein_handle = new Pipe_Handle(PIPE_SIZE);
 
 	Pipe_Handle *pipeout_handle = new Pipe_Handle(pipein_handle->pipe);
@@ -243,9 +276,11 @@ void IO::Create_Pipe(kiv_hal::TRegisters &regs) {
 }
 
 
-void IO::Handle_IO(kiv_hal::TRegisters &regs) {
+void IO::Handle_IO(kiv_hal::TRegisters &regs)
+{
 
-	switch (static_cast<kiv_os::NOS_File_System>(regs.rax.l)) {
+	switch (static_cast<kiv_os::NOS_File_System>(regs.rax.l))
+	{
 
 		case kiv_os::NOS_File_System::Open_File:
 			Open_File(regs);		

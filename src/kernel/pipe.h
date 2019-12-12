@@ -4,12 +4,14 @@
 
 #include <list>
 
-enum class Pipe_Function {
+enum class Pipe_Function 
+{
 	Read = 0,
 	Write
 };
 
-class Pipe {
+class Pipe 
+{
 	public:
 		Semaphore *producer; // píše, pipe write
 		Semaphore *consumer; // ète, pipe read

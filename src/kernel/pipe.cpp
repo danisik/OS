@@ -2,7 +2,8 @@
 
 #include "pipe.h"
 
-Pipe::Pipe(int p_buffer_size) {
+Pipe::Pipe(int p_buffer_size)
+{
 	buffer_size = p_buffer_size;
 
 	producer = new Semaphore(p_buffer_size);
@@ -12,25 +13,30 @@ Pipe::Pipe(int p_buffer_size) {
 	closed_in = false;
 }
 
-void Pipe::Close(Pipe_Function function) {
+void Pipe::Close(Pipe_Function function) 
+{
 
-	switch (function) {
-	case Pipe_Function::Write:
-		closed_out = true;
-		consumer->cv.notify_one();
-		break;
-	case Pipe_Function::Read:
-		closed_in = true;
-		break;
+	switch (function) 
+	{
+		case Pipe_Function::Write:
+			closed_out = true;
+			consumer->cv.notify_one();
+			break;
+		case Pipe_Function::Read:
+			closed_in = true;
+			break;
 	}
 }
 
-size_t Pipe::Produce(char *buffer, size_t buffer_length) {
+size_t Pipe::Produce(char *buffer, size_t buffer_length) 
+{
 	size_t produced = 0;
 
-	for (size_t i = 0; i < buffer_length; i++) {
+	for (size_t i = 0; i < buffer_length; i++) 
+	{
 
-		if (closed_in) {
+		if (closed_in)
+		{
 			return produced;
 		}
 
@@ -48,18 +54,22 @@ size_t Pipe::Produce(char *buffer, size_t buffer_length) {
 	return produced;
 }
 
-size_t Pipe::Consume(char *buffer, size_t buffer_length) {
+size_t Pipe::Consume(char *buffer, size_t buffer_length)
+{
 	size_t consumed = 0;
 
-	for (size_t i = 0; i < buffer_length; i++) {
+	for (size_t i = 0; i < buffer_length; i++) 
+	{
 
-		if (closed_out && pipe_buffer.empty()) {
+		if (closed_out && pipe_buffer.empty())
+		{
 			return consumed;
 		}
 
 		consumer->P();
 
-		if (closed_out && pipe_buffer.empty()) {
+		if (closed_out && pipe_buffer.empty()) 
+		{
 			return consumed;
 		}
 

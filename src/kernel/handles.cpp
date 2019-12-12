@@ -14,7 +14,8 @@ std::uniform_int_distribution<> dis(1, 6);
 
 
 
-kiv_os::THandle Convert_Native_Handle(const HANDLE hnd) {
+kiv_os::THandle Convert_Native_Handle(const HANDLE hnd)
+{
 	std::lock_guard<std::mutex> guard(Handles_Guard);
 
 	Last_Handle += dis(gen);	//vygenerujeme novy interni handle s nahodnou hodnotou
@@ -24,18 +25,23 @@ kiv_os::THandle Convert_Native_Handle(const HANDLE hnd) {
 	return Last_Handle;
 }
 
-HANDLE Resolve_kiv_os_Handle(const kiv_os::THandle hnd) {
+HANDLE Resolve_kiv_os_Handle(const kiv_os::THandle hnd) 
+{
 	std::lock_guard<std::mutex> guard(Handles_Guard);
 
 	auto resolved = Handles.find(hnd);
-	if (resolved != Handles.end()) {
+	if (resolved != Handles.end()) 
+	{
 		return resolved->second;
 	}
 	else
+	{
 		return INVALID_HANDLE_VALUE;
+	}
 }
 
-bool Remove_Handle(const kiv_os::THandle hnd) {
+bool Remove_Handle(const kiv_os::THandle hnd) 
+{
 	std::lock_guard<std::mutex> guard(Handles_Guard);
 
 	return Handles.erase(hnd) == 1;
