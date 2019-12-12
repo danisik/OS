@@ -165,12 +165,13 @@ void IO_Process::Create_Thread(kiv_hal::TRegisters &regs) {
 
 	// Get current process and create new thread.
 	size_t current_thread_ID = Thread::Get_Thread_ID(std::this_thread::get_id());
-	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
 
 	std::map<size_t, size_t>::iterator thread_ID_it = thread_ID_to_process_ID.find(current_thread_ID);
 	if (thread_ID_it == thread_ID_to_process_ID.end()) {
 		return;
 	}
+
+	size_t process_ID = thread_ID_to_process_ID.find(current_thread_ID)->second;
 
 	std::map<size_t, std::unique_ptr<Process>>::iterator process_it = processes.find(thread_ID_it->second);
 	if (process_it == processes.end()) {
