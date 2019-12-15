@@ -14,7 +14,7 @@ void cd(const char *new_directory, kiv_os::THandle out) {
 	}
 }
 
-void command_exe::Execute_Commands(std::vector<command_parser::Command> commands, kiv_os::THandle in, kiv_os::THandle out) {
+void command_exe::Execute_Commands(std::vector<command_parser::Command> &commands, kiv_os::THandle in, kiv_os::THandle out) {
 	std::vector<kiv_os::THandle> handless;
 	std::map<size_t, kiv_os::THandle> pipes_in;
 	std::map<size_t, kiv_os::THandle> pipes_out;

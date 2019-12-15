@@ -130,12 +130,16 @@ void __stdcall Sys_Call(kiv_hal::TRegisters &regs)
 
 void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context)
 {
+	printf("initialize kernel\n");
 	Initialize_Kernel();
+	printf("end_initialize kernel\n");
 	kiv_hal::Set_Interrupt_Handler(kiv_os::System_Int_Number, Sys_Call);
+	printf("handler setted\n");
 	kiv_hal::TRegisters regs;
 
 	std_in_shell = Convert_Native_Handle(new STD_Handle_In());
 	std_out_shell = Convert_Native_Handle(new STD_Handle_Out());
+	printf("std in handlers created\n");
 
 	for (regs.rdx.l = 0; ; regs.rdx.l++) 
 	{
@@ -154,6 +158,7 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context)
 			uint64_t number_of_sectors = params.absolute_number_of_sectors;
 
 			io = std::make_unique<IO>(number_of_sectors, bytes_per_sector, regs.rdx.l);
+			printf("io created\n");
 			break;
 		}
 
@@ -162,13 +167,16 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context)
 			break;
 		}
 	}
+	
 
 	kiv_os::THandle kernel_handler = 0;
+	printf("create kernel process\n");
 	kernel_handler = Create_Kernel_Process();	
 
 	// Create shell.
+	printf("clone shell\n");
 	kiv_os::THandle handle = Shell_Clone();
-
+	printf("shell wait\n");
 	// Wait for shell to be closed.
 	Shell_Wait(handle);
 

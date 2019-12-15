@@ -13,7 +13,7 @@ class Process
 		size_t process_ID;
 		size_t process_thread_ID;
 		State state;
-		std::vector<std::string> name;
+		std::vector<char> name;
 		std::vector<Mft_Item*> working_dir;
 		std::map<size_t, std::unique_ptr<Thread>> threads;
 		kiv_os::THandle handle_in;

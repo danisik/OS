@@ -140,6 +140,11 @@ void IO_Process::Create_Process(kiv_hal::TRegisters &regs)
 {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
+	if (shutdown_signalized) 
+	{
+		return;
+	}
+
 	char *export_name = reinterpret_cast<char*>(regs.rdx.r);
 	char *arguments = reinterpret_cast<char*>(regs.rdi.r);
 
@@ -183,6 +188,10 @@ void IO_Process::Create_Thread(kiv_hal::TRegisters &regs)
 {
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
+	if (shutdown_signalized)
+	{
+		return;
+	}
 
 	kiv_os::TThread_Proc entry_point = reinterpret_cast<kiv_os::TThread_Proc>(regs.rdx.r);
 
@@ -425,7 +434,9 @@ void IO_Process::Exit(kiv_hal::TRegisters &regs)
 
 void IO_Process::Shutdown(kiv_hal::TRegisters &regs)
 {
-	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
+	std::unique_lock<std::mutex> lock_mutex(io_process_mutex);
+
+	shutdown_signalized = true;
 
 	auto it_process = processes.rbegin();
 	std::map<size_t, std::unique_ptr<Thread>>::iterator it_thread;
@@ -437,6 +448,7 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs)
 
 		while (it_thread != it_process->second->threads.end())
 		{				
+
 			std::map<kiv_os::NSignal_Id, kiv_os::TThread_Proc>::iterator it_handler = it_thread->second->terminate_handlers.begin();
 
 			kiv_hal::TRegisters terminate_registers;
@@ -446,15 +458,13 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs)
 
 				// Call terminate handler.
 				it_handler->second(terminate_registers);
-
 				it_handler++;
-			}
+			}		
 
-			// Destroy all threads except kernel and shell. 
-			if (strcmp(it_process->second->name.data()->data(), "kernel") != 0 && strcmp(it_process->second->name.data()->data(), "shell") != 0)
+			if (it_thread->first != it_process->second->process_thread_ID)
 			{
-				Notify_All(it_thread->first);
 				it_process->second->Join_Thread(it_thread->first, 0);
+				Notify_All(it_thread->first);
 			}
 			
 			it_thread++;
@@ -462,6 +472,8 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs)
 
 		it_process++;
 	}
+
+	lock_mutex.unlock();
 }
 
 void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs) 
@@ -493,38 +505,44 @@ void IO_Process::Register_Signal_Handler(kiv_hal::TRegisters &regs)
 		return;
 	}
 
+	if (shutdown_signalized) {
+		kiv_hal::TRegisters terminate_registers;
+		process_handle(terminate_registers);
+		return;
+	}
+	
+
 	current_thread_it->second->terminate_handlers.insert(std::pair<kiv_os::NSignal_Id, kiv_os::TThread_Proc>(signal, process_handle));
 }
 
-void IO_Process::Handle_Process(kiv_hal::TRegisters &regs)
+void IO_Process::Handle_Process(kiv_hal::TRegisters& regs)
 {
 
-	switch (static_cast<kiv_os::NOS_Process>(regs.rax.l)) 
+	switch (static_cast<kiv_os::NOS_Process>(regs.rax.l))
 	{
 
-		case kiv_os::NOS_Process::Clone:
-			Clone(regs);
-			break;
+	case kiv_os::NOS_Process::Clone:
+		Clone(regs);
+		break;
 
-		case kiv_os::NOS_Process::Wait_For:
-			Wait_For(regs);
-			break;
+	case kiv_os::NOS_Process::Wait_For:
+		Wait_For(regs);
+		break;
 
-		case kiv_os::NOS_Process::Read_Exit_Code:
-			Read_Exit_Code(regs);
-			break;
+	case kiv_os::NOS_Process::Read_Exit_Code:
+		Read_Exit_Code(regs);
+		break;
 
-		case kiv_os::NOS_Process::Exit:
-			Exit(regs);
-			break;
+	case kiv_os::NOS_Process::Exit:
+		Exit(regs);
+		break;
 
-		case kiv_os::NOS_Process::Shutdown:
-			Shutdown(regs);
-			break;
+	case kiv_os::NOS_Process::Shutdown:
+		Shutdown(regs);
+		break;
 
-		case kiv_os::NOS_Process::Register_Signal_Handler:
-			Register_Signal_Handler(regs);
-			break;
+	case kiv_os::NOS_Process::Register_Signal_Handler:
+		Register_Signal_Handler(regs);
+		break;
 	}
-
 }

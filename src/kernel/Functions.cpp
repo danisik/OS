@@ -9,8 +9,9 @@ size_t Functions::Create_Item(std::unique_ptr<VFS>& vfs, std::string path, std::
 	vfs->mft->size = vfs->mft_items.size();
 	vfs->mft->UID_counter = vfs->mft_items.size();
 
-	if (!item->path_exists) {
-		printf("Path not found.\n");
+	if (!item->path_exists) 
+	{
+		return -1;
 	}
 	else if (!item->exists && item->path_exists) 
 	{
@@ -37,7 +38,7 @@ size_t Functions::Create_Item(std::unique_ptr<VFS>& vfs, std::string path, std::
 	}
 	else if (item->exists) 
 	{
-		printf("Item already exists.\n");
+		return -2;
 	}
 	return 0;
 }

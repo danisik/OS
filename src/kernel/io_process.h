@@ -17,6 +17,7 @@ class IO_Process
 	public:
 		size_t first_free_process_ID = 0;
 		kiv_os::THandle first_free_thread_ID = MIN_THREAD_THANDLE;
+		bool shutdown_signalized = false;
 
 		std::mutex io_process_mutex;
 

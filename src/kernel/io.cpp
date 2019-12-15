@@ -8,6 +8,7 @@ std::mutex io_mutex;
 IO::IO(uint64_t cluster_count, uint16_t cluster_size, int v_drive_i)
 {
 	io_process = std::make_unique<IO_Process>();
+	io_process->shutdown_signalized = false;
 	vfs = std::make_unique<VFS>(cluster_count, cluster_size, v_drive_i);
 
 	bool success = false;
@@ -16,6 +17,17 @@ IO::IO(uint64_t cluster_count, uint16_t cluster_size, int v_drive_i)
 	{
 		vfs->Init_VFS(vfs);
 	}
+}
+
+void IO::Print_To_Console(const char* message)
+{
+	std::string str = std::string(message);
+	kiv_hal::TRegisters registers;
+
+	registers.rax.h = static_cast<decltype(registers.rax.l)>(kiv_hal::NVGA_BIOS::Write_String);
+	registers.rdx.r = reinterpret_cast<decltype(registers.rdx.r)>(message);
+	registers.rcx.r = str.length();
+	kiv_hal::Call_Interrupt_Handler(kiv_hal::NInterrupt::VGA_BIOS, registers);
 }
 
 void IO::Open_File(kiv_hal::TRegisters &regs)
@@ -41,8 +53,8 @@ void IO::Open_File(kiv_hal::TRegisters &regs)
 	Exist_Item* item = Functions::Check_Path(vfs, file_name, io_process->processes[current_process_ID]->working_dir);
 
 	if (!item->path_exists) 
-		{
-		printf("Path did not exists.\n");
+	{
+		Print_To_Console("Path did not exists.\n");
 		regs.rax.x = -1;
 		return;
 	}
@@ -52,7 +64,7 @@ void IO::Open_File(kiv_hal::TRegisters &regs)
 
 		if (!item->exists) 
 		{
-			printf("File did not exists.\n");
+			Print_To_Console("File did not exists.\n");
 			regs.rax.x = -1;
 			return;
 		}
@@ -71,13 +83,13 @@ void IO::Open_File(kiv_hal::TRegisters &regs)
 		}
 		else if (attributes == kiv_os::NFile_Attributes::Directory && item->is_directory == kiv_os::NFile_Attributes::System_File) 
 		{
-			printf("Expected directory but item is file.\n");
+			Print_To_Console("Expected directory but item is file.\n");
 			regs.rax.x = -1;
 			return;
 		}
 		else 
 		{
-			printf("Expected file but item is directory.\n");
+			Print_To_Console("Expected file but item is directory.\n");
 			regs.rax.x = -1;
 			return;
 		}
@@ -94,6 +106,16 @@ void IO::Open_File(kiv_hal::TRegisters &regs)
 		}
 
 		size_t item_uid = Functions::Create_Item(vfs, file_name, io_process->processes[current_process_ID]->working_dir, attributes);
+
+		if (item_uid == (size_t)(-1)) 
+		{
+			Print_To_Console("Path not found.\n");
+		}
+
+		if (item_uid == (size_t)(-2))
+		{
+			Print_To_Console("Item already exists.\n");
+		}
 
 		if (attributes == kiv_os::NFile_Attributes::Directory)
 		{
