@@ -9,9 +9,8 @@
 class CDisk_Drive {
 protected:
 	size_t mBytes_Per_Sector;
-	size_t mDisk_Size;
-	void Set_Status(kiv_hal::TRegisters &context, const kiv_hal::NDisk_Status status);
-		bool Check_DAP(kiv_hal::TRegisters &context);	
+	size_t mDisk_Size;	
+	bool Check_DAP(kiv_hal::TRegisters &context);	
 		//vrati true, pokud by cteni/zapis nezpusobilo pristup za velikost disku
 		//v takovem pripade vraci false a nastavi chybu
 public:
@@ -20,7 +19,8 @@ public:
 
 	virtual void Read_Sectors(kiv_hal::TRegisters &context) = 0;
 	virtual void Write_Sectors(kiv_hal::TRegisters &context) = 0;	
-	
+
+	static void Set_Status(kiv_hal::TRegisters& context, const kiv_hal::NDisk_Status status);	
 };
 
 class CDisk_Image : public CDisk_Drive {

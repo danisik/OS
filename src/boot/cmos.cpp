@@ -7,14 +7,14 @@ CCMOS cmos{};
 extern "C" char __ImageBase;
 
 
-std::experimental::filesystem::path Get_Application_Dir() {
+std::filesystem::path Get_Application_Dir() {
 	const size_t bufsize = 1024;
 	wchar_t ModuleFileName[bufsize];
 	
 
 	GetModuleFileNameW(((HINSTANCE)&__ImageBase), ModuleFileName, bufsize);
 
-	std::experimental::filesystem::path exePath{ ModuleFileName };
+	std::filesystem::path exePath{ ModuleFileName };
 	return exePath.parent_path();
 }
 

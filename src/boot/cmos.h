@@ -9,7 +9,7 @@ struct TCMOS_Drive_Parameters {
 	bool is_present = false;
 	bool is_ram_disk = true;												//bud vytvorime neformatovany RAM disk
 	bool read_only = true;
-	std::experimental::filesystem::path disk_image = "";					//anebo pouzijeme soubor z disku
+	std::filesystem::path disk_image = "";									//anebo pouzijeme soubor z disku
 	const static size_t bytes_per_sector = 512;
 	size_t RAM_Disk_Size = 0;
 };

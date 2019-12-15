@@ -4,8 +4,8 @@
         <tr><th>Library     <td>SimpleIni
         <tr><th>File        <td>SimpleIni.h
         <tr><th>Author      <td>Brodie Thiesfield [code at jellycan dot com]
-        <tr><th>Source      <td>http://code.jellycan.com/simpleini/
-        <tr><th>Version     <td>4.15
+        <tr><th>Source      <td>https://github.com/brofield/simpleini
+        <tr><th>Version     <td>4.17, with modifications for the SmartCGMS project - https:://diabetes.zcu.cz
     </table>
 
     Jump to the @link CSimpleIniTempl CSimpleIni @endlink interface documentation.
@@ -161,6 +161,7 @@
       SI_STRLESS class, or by sorting the strings external to this library.
     - Usage of the <mbstring.h> header on Windows can be disabled by defining
       SI_NO_MBCS. This is defined automatically on Windows CE platforms.
+    - Not thread-safe so manage your own locking
 
     @section contrib CONTRIBUTIONS
     
@@ -213,6 +214,7 @@
 #endif
 
 #include <cstring>
+#include <cstdlib>
 #include <string>
 #include <map>
 #include <list>
@@ -232,7 +234,7 @@
 # define SI_ASSERT(x)
 #endif
 
-enum SI_Error {
+enum class SI_Error : int {
     SI_OK       =  0,   //!< No error
     SI_UPDATED  =  1,   //!< An existing value was updated
     SI_INSERTED =  2,   //!< A new value was inserted
@@ -240,8 +242,15 @@ enum SI_Error {
     // note: test for any error with (retval < 0)
     SI_FAIL     = -1,   //!< Generic failure
     SI_NOMEM    = -2,   //!< Out of memory error
-    SI_FILE     = -3    //!< File error (see errno for detail error)
+    SI_FILE     = -3,    //!< File error (see errno for detail error)	
 };
+
+template<typename T>
+bool operator<(const T& er, const int ref) {	
+	return static_cast<int> (er) < ref;
+}
+
+
 
 #define SI_UTF8_SIGNATURE     "\xEF\xBB\xBF"
 
@@ -293,6 +302,8 @@ template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER>
 class CSimpleIniTempl
 {
 public:
+    typedef SI_CHAR SI_CHAR_T;
+
     /** key entry */
     struct Entry {
         const SI_CHAR * pItem;
@@ -324,7 +335,7 @@ public:
 #endif
 
         /** Strict less ordering by name of key only */
-        struct KeyOrder : std::binary_function<Entry, Entry, bool> {
+        struct KeyOrder  {
             bool operator()(const Entry & lhs, const Entry & rhs) const {
                 const static SI_STRLESS isLess = SI_STRLESS();
                 return isLess(lhs.pItem, rhs.pItem);
@@ -332,7 +343,7 @@ public:
         };
 
         /** Strict less ordering by order, and then name of key */
-        struct LoadOrder : std::binary_function<Entry, Entry, bool> {
+        struct LoadOrder {
             bool operator()(const Entry & lhs, const Entry & rhs) const {
                 if (lhs.nOrder != rhs.nOrder) {
                     return lhs.nOrder < rhs.nOrder;
@@ -421,7 +432,7 @@ public:
             return *this;
         }
         bool ConvertToStore(const SI_CHAR * a_pszString) {
-            size_t uLen = SizeToStore(a_pszString);
+            size_t uLen = SI_CONVERTER::SizeToStore(a_pszString);
             if (uLen == (size_t)(-1)) {
                 return false;
             }
@@ -1062,8 +1073,8 @@ public:
         data returned by GetSection is invalid and must not be used after
         anything has been deleted from that section using this method.
         Note when multiple keys is enabled, this will delete all keys with
-        that name; there is no way to selectively delete individual key/values
-        in this situation.
+        that name; to selectively delete individual key/values, use
+        DeleteValue.
 
         @param a_pSection       Section to delete key from, or if
                                 a_pKey is NULL, the section to remove.
@@ -1079,6 +1090,33 @@ public:
     bool Delete(
         const SI_CHAR * a_pSection,
         const SI_CHAR * a_pKey,
+        bool            a_bRemoveEmpty = false
+        );
+
+    /** Delete an entire section, or a key from a section. If value is
+        provided, only remove keys with the value. Note that the data
+        returned by GetSection is invalid and must not be used after
+        anything has been deleted from that section using this method.
+        Note when multiple keys is enabled, all keys with the value will
+        be deleted.
+
+        @param a_pSection       Section to delete key from, or if
+                                a_pKey is NULL, the section to remove.
+        @param a_pKey           Key to remove from the section. Set to
+                                NULL to remove the entire section.
+        @param a_pValue         Value of key to remove from the section.
+                                Set to NULL to remove all keys.
+        @param a_bRemoveEmpty   If the section is empty after this key has
+                                been deleted, should the empty section be
+                                removed?
+
+        @return true            Key/value or section was deleted.
+        @return false           Key/value or section was not found.
+     */
+    bool DeleteValue(
+        const SI_CHAR * a_pSection,
+        const SI_CHAR * a_pKey,
+        const SI_CHAR * a_pValue,
         bool            a_bRemoveEmpty = false
         );
 
@@ -1354,10 +1392,15 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::LoadFile(
     if (lSize == 0) {
         return SI_OK;
     }
-    char * pData = new char[lSize];
+    
+    // allocate and ensure NULL terminated
+    char * pData = new(std::nothrow) char[lSize+1];
     if (!pData) {
         return SI_NOMEM;
     }
+    pData[lSize] = 0;
+    
+    // load data into buffer
     fseek(a_fpFile, 0, SEEK_SET);
     size_t uRead = fread(pData, sizeof(char), lSize, a_fpFile);
     if (uRead != (size_t) lSize) {
@@ -1380,10 +1423,6 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::LoadData(
 {
     SI_CONVERTER converter(m_bStoreIsUtf8);
 
-    if (a_uDataLen == 0) {
-        return SI_OK;
-    }
-
     // consume the UTF-8 BOM if it exists
     if (m_bStoreIsUtf8 && a_uDataLen >= 3) {
         if (memcmp(a_pData, SI_UTF8_SIGNATURE, 3) == 0) {
@@ -1392,24 +1431,28 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::LoadData(
         }
     }
 
+    if (a_uDataLen == 0) {
+        return SI_Error::SI_OK;
+    }
+
     // determine the length of the converted data
     size_t uLen = converter.SizeFromStore(a_pData, a_uDataLen);
     if (uLen == (size_t)(-1)) {
-        return SI_FAIL;
+        return SI_Error::SI_FAIL;
     }
 
     // allocate memory for the data, ensure that there is a NULL
     // terminator wherever the converted data ends
-    SI_CHAR * pData = new SI_CHAR[uLen+1];
+    SI_CHAR * pData = new(std::nothrow) SI_CHAR[uLen+1];
     if (!pData) {
-        return SI_NOMEM;
+        return SI_Error::SI_NOMEM;
     }
     memset(pData, 0, sizeof(SI_CHAR)*(uLen+1));
 
     // convert the data
     if (!converter.ConvertFromStore(a_pData, a_uDataLen, pData, uLen)) {
         delete[] pData;
-        return SI_FAIL;
+        return SI_Error::SI_FAIL;
     }
 
     // parse it
@@ -1444,7 +1487,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::LoadData(
         m_uDataLen = uLen+1;
     }
 
-    return SI_OK;
+    return SI_Error::SI_OK;
 }
 
 #ifdef SI_SUPPORT_IOSTREAMS
@@ -1474,13 +1517,13 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::FindFileComment(
 {
     // there can only be a single file comment
     if (m_pFileComment) {
-        return SI_OK;
+        return SI_Error::SI_OK;
     }
 
     // Load the file comment as multi-line text, this will modify all of
     // the newline characters to be single \n chars
     if (!LoadMultiLineText(a_pData, m_pFileComment, NULL, false)) {
-        return SI_OK;
+        return SI_Error::SI_OK;
     }
 
     // copy the string if necessary
@@ -1489,7 +1532,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::FindFileComment(
         if (rc < 0) return rc;
     }
 
-    return SI_OK;
+    return SI_Error::SI_OK;
 }
 
 template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER>
@@ -1825,14 +1868,14 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::CopyString(
         for ( ; a_pString[uLen]; ++uLen) /*loop*/ ;
     }
     ++uLen; // NULL character
-    SI_CHAR * pCopy = new SI_CHAR[uLen];
+    SI_CHAR * pCopy = new(std::nothrow) SI_CHAR[uLen];
     if (!pCopy) {
-        return SI_NOMEM;
+        return SI_Error::SI_NOMEM;
     }
     memcpy(pCopy, a_pString, sizeof(SI_CHAR)*uLen);
     m_strings.push_back(pCopy);
     a_pString = pCopy;
-    return SI_OK;
+    return SI_Error::SI_OK;
 }
 
 template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER>
@@ -1882,7 +1925,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::AddEntry(
     }
     if (!a_pKey || !a_pValue) {
         // section only entries are specified with pItem and pVal as NULL
-        return bInserted ? SI_INSERTED : SI_UPDATED;
+        return bInserted ? SI_Error::SI_INSERTED : SI_Error::SI_UPDATED;
     }
 
     // check for existence of the key
@@ -1937,7 +1980,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::AddEntry(
         bInserted = true;
     }
     iKey->second = a_pValue;
-    return bInserted ? SI_INSERTED : SI_UPDATED;
+    return bInserted ? SI_Error::SI_INSERTED : SI_Error::SI_UPDATED;
 }
 
 template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER>
@@ -2521,6 +2564,18 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::Delete(
     bool            a_bRemoveEmpty
     )
 {
+    return DeleteValue(a_pSection, a_pKey, NULL, a_bRemoveEmpty);
+}
+
+template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER>
+bool
+CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::DeleteValue(
+    const SI_CHAR * a_pSection,
+    const SI_CHAR * a_pKey,
+    const SI_CHAR * a_pValue,
+    bool            a_bRemoveEmpty
+    )
+{
     if (!a_pSection) {
         return false;
     }
@@ -2537,17 +2592,29 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::Delete(
             return false;
         }
 
+        const static SI_STRLESS isLess = SI_STRLESS();
+
         // remove any copied strings and then the key
         typename TKeyVal::iterator iDelete;
+        bool bDeleted = false;
         do {
             iDelete = iKeyVal++;
 
-            DeleteString(iDelete->first.pItem);
-            DeleteString(iDelete->second);
-            iSection->second.erase(iDelete);
+            if(a_pValue == NULL ||
+            (isLess(a_pValue, iDelete->second) == false &&
+            isLess(iDelete->second, a_pValue) == false)) {
+                DeleteString(iDelete->first.pItem);
+                DeleteString(iDelete->second);
+                iSection->second.erase(iDelete);
+                bDeleted = true;
+            }
         }
         while (iKeyVal != iSection->second.end()
             && !IsLess(a_pKey, iKeyVal->first.pItem));
+
+        if(!bDeleted) {
+            return false;
+        }
 
         // done now if the section is not empty or we are not pruning away
         // the empty sections. Otherwise let it fall through into the section
@@ -2830,9 +2897,16 @@ public:
             // the source text.
             return a_uInputDataLen;
         }
-        else {
-            return mbstowcs(NULL, a_pInputData, a_uInputDataLen);
-        }
+
+#if defined(SI_NO_MBSTOWCS_NULL) || (!defined(_MSC_VER) && !defined(_linux))
+        // fall back processing for platforms that don't support a NULL dest to mbstowcs
+        // worst case scenario is 1:1, this will be a sufficient buffer size
+        (void)a_pInputData;
+        return a_uInputDataLen;
+#else
+        // get the actual required buffer size
+        return mbstowcs(NULL, a_pInputData, a_uInputDataLen);
+#endif
     }
 
     /** Convert the input string from the storage format to SI_CHAR.
@@ -2878,11 +2952,11 @@ public:
             }
             return retval == conversionOK;
         }
-        else {
-            size_t retval = mbstowcs(a_pOutputData,
-                a_pInputData, a_uOutputDataSize);
-            return retval != (size_t)(-1);
-        }
+
+        // convert to wchar_t
+        size_t retval = mbstowcs(a_pOutputData,
+            a_pInputData, a_uOutputDataSize);
+        return retval != (size_t)(-1);
     }
 
     /** Calculate the number of char required by the storage format of this
