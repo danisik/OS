@@ -3,7 +3,7 @@
 size_t __stdcall md(const kiv_hal::TRegisters &regs) {
 	uint16_t exit_code = static_cast<uint16_t>(kiv_os::NOS_Error::Success);
 	
-	const char *file_name = reinterpret_cast<const char*>(regs.rdi.r);
+	char *file_name = reinterpret_cast<char*>(regs.rdi.r);
 	kiv_os::NOpen_File flags = static_cast<kiv_os::NOpen_File>(0);
 
 	kiv_os::THandle handle;

@@ -1,6 +1,6 @@
 #include "process.h"
 
-Process::Process(size_t p_process_ID, char *p_name, std::vector<Mft_Item*> p_working_dir, kiv_os::THandle p_handle_in, kiv_os::THandle p_handle_out) 
+Process::Process(size_t p_process_ID, char *p_name, std::vector<Mft_Item*> p_working_dir, kiv_os::THandle p_handle_in, kiv_os::THandle p_handle_out)
 {
 	process_ID = p_process_ID;
 	strcpy_s(name, sizeof(name), p_name);
@@ -18,13 +18,13 @@ Process::Process(size_t p_process_ID, char *p_name)
 }
 
 
-size_t Process::Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegisters registers)
+size_t Process::Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegisters registers, const char* arguments)
 {
-	std::unique_ptr<Thread> thread = std::make_unique<Thread>(entry_point, registers, process_ID);
+	std::unique_ptr<Thread> thread = std::make_unique<Thread>(entry_point, registers, arguments, process_ID);
 	thread->Start();
 
 	state = State::Running;
-	
+
 	size_t thread_ID = thread->thread_ID;
 	threads.insert(std::pair<size_t, std::unique_ptr<Thread>>(thread->thread_ID, std::move(thread)));
 	return thread_ID;

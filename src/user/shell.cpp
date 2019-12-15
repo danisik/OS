@@ -66,8 +66,6 @@ size_t __stdcall shell(const kiv_hal::TRegisters &regs) {
 			std::vector<command_parser::Command> commands = command_parser::Find_Commands(buffer.data());
 			
 			command_exe::Execute_Commands(commands, std_in, std_out);
-
-			commands.clear();
 		
 			if (shutdown_signalized == true) {
 				break;

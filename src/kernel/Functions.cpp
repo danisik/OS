@@ -110,6 +110,7 @@ void Functions::Update_Parent_ID(std::unique_ptr<VFS>& vfs, size_t old_id, size_
 {
 	for (size_t i = 0; i < vfs->mft_items.size(); i++) 
 	{
+		//TODO
 		if (vfs->mft_items[i]->parent_ID == old_id)
 		{
 			vfs->mft_items[i]->parent_ID = new_id;
@@ -145,13 +146,14 @@ void Functions::Remove_Item(std::unique_ptr<VFS>& vfs, std::string path, std::ve
 
 						if (last_item->uid > item->uid)
 						{
+							vfs->mft_items.erase(last_item->uid);
+							vfs->mft_items.insert(std::pair<size_t, Mft_Item*>(item->uid, last_item));
 							if (last_item->is_directory == kiv_os::NFile_Attributes::Directory)
 							{
 								Update_Parent_ID(vfs, last_item->uid, item->uid);
-							}
-							vfs->mft_items.erase(last_item->uid);
+							}							
 							last_item->uid = item->uid;
-							vfs->mft_items.insert(std::pair<size_t, Mft_Item*>(last_item->uid, last_item));
+							
 							Functions::Save_VFS_MFT_Item(vfs, last_item->uid);
 						}
 					}

@@ -5,7 +5,16 @@ Mft_Item::Mft_Item(size_t uid, kiv_os::NFile_Attributes is_directory, std::strin
     
     this->uid = uid;
     this->is_directory = is_directory;
-    strcpy_s(this->item_name, 12, name.c_str());
+	if (name.size() >= 12) 
+	{
+		strncpy_s(this->item_name, name.c_str(), 11);
+		this->item_name[11] = '\0';
+	}
+	else
+	{
+		strncpy_s(this->item_name, name.c_str(), 12);
+	}
+
     this->item_order = 1;
     this->item_order_total = 1;
     this->item_size = item_size;

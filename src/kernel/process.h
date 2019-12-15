@@ -6,7 +6,7 @@
 
 #include <map>
 
-class Process 
+class Process
 {
 	public:
 		size_t process_ID;
@@ -20,6 +20,6 @@ class Process
 
 		Process(size_t p_process_ID, char *p_name, std::vector<Mft_Item*> p_working_dir, kiv_os::THandle p_handle_in, kiv_os::THandle p_handle_out);
 		Process(size_t p_process_ID, char *p_name);
-		size_t Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegisters registers);
+		size_t Create_Thread(kiv_os::TThread_Proc entry_point, kiv_hal::TRegisters registers, const char* arguments);
 		void Join_Thread(size_t thread_ID, uint16_t exit_code);
 };

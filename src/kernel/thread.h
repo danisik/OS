@@ -6,6 +6,7 @@
 #include <thread>
 #include <map>
 #include <condition_variable>
+#include <vector>
 
 class Thread 
 {
@@ -20,12 +21,13 @@ class Thread
 		std::map<kiv_os::NSignal_Id, kiv_os::TThread_Proc> terminate_handlers;
 		std::map<size_t, size_t> handlers_waiting_for;
 		std::map<size_t, size_t> sleeped_handlers;
+		std::vector<char> arguments;
 
 		std::condition_variable cv;
 		std::mutex mutex;
 		size_t waked_by_handler;
 
-		Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers, size_t t_parent_ID);
+		Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers, const char* t_arguments, size_t t_parent_ID);
 		Thread(size_t t_parent_ID);
 		void Start();
 		void Join(uint16_t t_exit_code);
