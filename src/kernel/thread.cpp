@@ -36,6 +36,13 @@ Thread::Thread(size_t t_parent_ID)
 	entry_point = nullptr;
 }
 
+Thread::~Thread() {
+	if (std_thread.joinable())
+	{
+		std_thread.detach();
+	}
+}
+
 void Thread::Start()
 {
 	state = State::Running;
@@ -43,6 +50,7 @@ void Thread::Start()
 	std_thread = std::thread(entry_point, registers);
 	thread_ID = Get_Thread_ID(std_thread.get_id());
 }
+
 
 void Thread::Join(uint16_t t_exit_code)
 {

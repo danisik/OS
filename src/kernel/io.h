@@ -18,8 +18,6 @@ class IO
 		std::unique_ptr<IO_Process> io_process;
 		IO(uint64_t cluster_count, uint16_t cluster_size, int v_drive_i);
 
-
-		void Delete_IO();
 		void Handle_IO(kiv_hal::TRegisters &regs);
 
 		void Open_File(kiv_hal::TRegisters &regs); // Tested.

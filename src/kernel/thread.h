@@ -29,6 +29,7 @@ class Thread
 
 		Thread(kiv_os::TThread_Proc t_entry_point, kiv_hal::TRegisters t_registers, const char* t_arguments, size_t t_parent_ID);
 		Thread(size_t t_parent_ID);
+		~Thread();
 		void Start();
 		void Join(uint16_t t_exit_code);
 		void Stop();

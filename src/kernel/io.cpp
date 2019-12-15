@@ -18,26 +18,6 @@ IO::IO(uint64_t cluster_count, uint16_t cluster_size, int v_drive_i)
 	}
 }
 
-void IO::Delete_IO() 
-{
-
-	io_process.release();
-
-	vfs->bitmap.clear();
-	vfs->boot_record.release();
-
-	std::map<size_t, Mft_Item*>::iterator it = vfs->mft_items.begin();
-
-	while (it != vfs->mft_items.end())
-	{		
-		delete it->second;
-		it++;
-	}
-	
-	vfs->mft_items.clear();
-	vfs.release();
-}
-
 void IO::Open_File(kiv_hal::TRegisters &regs)
 {
 	std::lock_guard<std::mutex> lock_mutex(io_mutex);

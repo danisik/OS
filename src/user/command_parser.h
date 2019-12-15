@@ -14,5 +14,5 @@ namespace command_parser {
 			bool is_red_in = false;
 		};
 
-	std::vector<Command> Find_Commands(char input[]);
+	std::vector<Command> Find_Commands(char *input);
 }

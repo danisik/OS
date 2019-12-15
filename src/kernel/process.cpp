@@ -1,20 +1,35 @@
 #include "process.h"
 
-Process::Process(size_t p_process_ID, char *p_name, std::vector<Mft_Item*> p_working_dir, kiv_os::THandle p_handle_in, kiv_os::THandle p_handle_out)
+Process::Process(size_t p_process_ID, const char *p_name, std::vector<Mft_Item*> p_working_dir, kiv_os::THandle p_handle_in, kiv_os::THandle p_handle_out)
 {
+	std::string str = std::string(p_name);
+
+	// We need + 1 because end char \0 is presented.
+	size_t new_size = str.length() + 1;
+	name.resize(new_size);
+
 	process_ID = p_process_ID;
-	strcpy_s(name, sizeof(name), p_name);
+	strcpy_s(name.data(), new_size, p_name);
 	state = State::Runnable;
 	working_dir = p_working_dir;
 	handle_in = p_handle_in;
 	handle_out = p_handle_out;
+	process_thread_ID = 0;
 }
 
-Process::Process(size_t p_process_ID, char *p_name)
+Process::Process(size_t p_process_ID, const char *p_name)
 {
+	std::string str = std::string(p_name);
+	size_t new_size = str.length() + 1;
+	name.resize(new_size);
+
 	process_ID = p_process_ID;
-	strcpy_s(name, sizeof(name), p_name);
+	strcpy_s(name.data(), new_size, p_name);
 	state = State::Runnable;
+
+	handle_in = 0;
+	handle_out = 0;
+	process_thread_ID = 0;
 }
 
 

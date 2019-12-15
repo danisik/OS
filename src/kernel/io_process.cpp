@@ -274,16 +274,18 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs)
 	
 	kiv_os::THandle thread_handler = static_cast<kiv_os::THandle>(regs.rdx.x);
 	size_t thread_ID = t_handle_to_thread_ID[thread_handler];
+
+	std::map<size_t, size_t>::iterator thread_ID_it = thread_ID_to_process_ID.find(thread_ID);
+	if (thread_ID_it == thread_ID_to_process_ID.end())
+	{
+		return;
+	}
+
 	size_t process_ID = thread_ID_to_process_ID.find(thread_ID)->second;
 	uint16_t exit_code = 0;
 
 	t_handle_to_thread_ID.erase(thread_handler);
 
-	std::map<size_t, size_t>::iterator thread_ID_it = thread_ID_to_process_ID.find(thread_ID);
-	if (thread_ID_it == thread_ID_to_process_ID.end()) 
-	{
-		return;
-	}
 
 	std::map<size_t, std::unique_ptr<Process>>::iterator process_it = processes.find(thread_ID_it->second);
 	if (process_it == processes.end()) 
@@ -304,8 +306,6 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs)
 		exit_code = process_it->second->threads[process_it->second->process_thread_ID]->exit_code;
 		Set_Free_Process_ID(process_it->second->process_ID);
 		Set_Free_Thread_ID(thread_handler);
-		
-		std::unique_ptr<Process> process = std::move(process_it->second);
 
 		process_it = processes.find(thread_ID_it->second);
 		if (process_it == processes.end())
@@ -313,18 +313,18 @@ void IO_Process::Read_Exit_Code(kiv_hal::TRegisters &regs)
 			return;
 		}
 
-		process_it = processes.find(process->process_ID);
+		process_it = processes.find(process_it->second->process_ID);
 		if (process_it == processes.end()) 
 		{
 			return;
 		}
 
-		for (auto it = process->threads.begin(); it != process->threads.end(); ++it)
+		for (auto it = process_it->second->threads.begin(); it != process_it->second->threads.end(); ++it)
 		{
 			thread_ID_to_process_ID.erase(it->second->thread_ID);
 		}
 
-		processes.erase(process->process_ID);
+		processes.erase(process_it->second->process_ID);
 		
 	}
 	else 
@@ -438,7 +438,7 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs)
 			}
 
 			// Destroy all threads except kernel and shell. 
-			if (strcmp(it_process->second->name, "kernel") != 0 && strcmp(it_process->second->name, "shell") != 0)
+			if (strcmp(it_process->second->name.data(), "kernel") != 0 && strcmp(it_process->second->name.data(), "shell") != 0)
 			{
 				Notify_All(it_thread->first);
 				it_process->second->Join_Thread(it_thread->first, 0);

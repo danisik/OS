@@ -1,7 +1,7 @@
 #include "command_parser.h"
 
 namespace command_parser {
-	std::vector<Command> Find_Commands(char input[]) {
+	std::vector<Command> Find_Commands(char *input) {
 		std::vector<Command> commands = std::vector<Command>();
 		std::stringstream stream(input);
 		std::string token;

@@ -177,9 +177,6 @@ void __stdcall Bootstrap_Loader(kiv_hal::TRegisters &context)
 
 	Remove_Kernel_Process(kernel_handler);
 
-	io->Delete_IO();
-	io.release();
-
 	// Shutdown kernel.
 	Shutdown_Kernel();
 }

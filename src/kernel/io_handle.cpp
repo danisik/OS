@@ -165,13 +165,6 @@ size_t Pipe_Handle::Write(char *buffer, size_t buffer_length, std::unique_ptr<VF
 void Pipe_Handle::Close() 
 {
 	pipe->Close(function);
-
-	if (pipe->closed_out && pipe->closed_in)
-	{
-		delete pipe->consumer;
-		delete pipe->producer;
-		delete pipe;
-	}
 }
 
 //------------------------
@@ -370,7 +363,7 @@ size_t Procfs_Handle::Read(char *buffer, size_t buffer_length, std::unique_ptr<V
 	std::stringstream ss;
 	while (it_process != io_process->processes.end())
 	{		
-		ss << it_process->second->name << " \t\t " << it_process->first << "\n";
+		ss << it_process->second->name.data() << " \t\t " << it_process->first << "\n";
 
 		it_process++;
 	}
