@@ -258,7 +258,20 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs)
 
 	kiv_os::THandle signalized_handler;
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
-	signalized_handler = Get_THandle_From_Thread_ID(processes[process_ID]->threads[current_thread_ID]->waked_by_handler);
+
+	std::map<size_t, std::unique_ptr<Process>>::iterator process_it = processes.find(current_thread_ID);
+	if (process_it == processes.end())
+	{
+		return;
+	}
+
+	std::map<size_t, std::unique_ptr<Thread>>::iterator thread_it = process_it->second->threads.find(current_thread_ID);
+	if (thread_it == process_it->second->threads.end())
+	{
+		return;
+	}
+
+	signalized_handler = Get_THandle_From_Thread_ID(thread_it->second->waked_by_handler);
 
 	regs.rax.x = signalized_handler;
 }
@@ -438,7 +451,7 @@ void IO_Process::Shutdown(kiv_hal::TRegisters &regs)
 			}
 
 			// Destroy all threads except kernel and shell. 
-			if (strcmp(it_process->second->name.data(), "kernel") != 0 && strcmp(it_process->second->name.data(), "shell") != 0)
+			if (strcmp(it_process->second->name.data()->data(), "kernel") != 0 && strcmp(it_process->second->name.data()->data(), "shell") != 0)
 			{
 				Notify_All(it_thread->first);
 				it_process->second->Join_Thread(it_thread->first, 0);

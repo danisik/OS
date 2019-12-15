@@ -3,13 +3,9 @@
 Process::Process(size_t p_process_ID, const char *p_name, std::vector<Mft_Item*> p_working_dir, kiv_os::THandle p_handle_in, kiv_os::THandle p_handle_out)
 {
 	std::string str = std::string(p_name);
-
-	// We need + 1 because end char \0 is presented.
-	size_t new_size = str.length() + 1;
-	name.resize(new_size);
-
+	name.insert(name.end(), str);
+	
 	process_ID = p_process_ID;
-	strcpy_s(name.data(), new_size, p_name);
 	state = State::Runnable;
 	working_dir = p_working_dir;
 	handle_in = p_handle_in;
@@ -20,11 +16,9 @@ Process::Process(size_t p_process_ID, const char *p_name, std::vector<Mft_Item*>
 Process::Process(size_t p_process_ID, const char *p_name)
 {
 	std::string str = std::string(p_name);
-	size_t new_size = str.length() + 1;
-	name.resize(new_size);
+	name.insert(name.end(), str);
 
 	process_ID = p_process_ID;
-	strcpy_s(name.data(), new_size, p_name);
 	state = State::Runnable;
 
 	handle_in = 0;
