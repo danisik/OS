@@ -42,9 +42,6 @@
     <ClCompile Include="..\..\src\kernel\MFT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\kernel\Mft_fragment.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\kernel\Mft_item.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

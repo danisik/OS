@@ -18,16 +18,6 @@
 const int32_t MFT_FRAGMENTS_COUNT = 32;
 const int32_t UID_ITEM_FREE = 0;
 
-class Mft_Fragment 
-{
-    public:
-        Mft_Fragment(int, size_t, size_t);
-        size_t fragment_start_cluster;			//start adresa
-        size_t fragment_cluster_count;             //pocet clusteru ve fragmentu
-        int bitmap_start_ID;
-};
-
-
 class Mft_Item 
 {
     
@@ -62,7 +52,6 @@ class Boot_Record
 	    size_t bitmap_start_cluster;   //cluster pocatku bitmapy			
 	    size_t data_start_cluster;     //cluster pocatku datovych bloku	
         long mft_max_fragment_count; //maximalni pocet fragmentu v jednom zaznamu v mft (pozor, ne souboru)
-    // stejne jako   MFT_FRAGMENTS_COUNT
 };
 
 class MFT

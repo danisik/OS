@@ -28,7 +28,6 @@
     <ClCompile Include="..\..\src\kernel\io_process.cpp" />
     <ClCompile Include="..\..\src\kernel\kernel.cpp" />
     <ClCompile Include="..\..\src\kernel\MFT.cpp" />
-    <ClCompile Include="..\..\src\kernel\Mft_fragment.cpp" />
     <ClCompile Include="..\..\src\kernel\Mft_item.cpp" />
     <ClCompile Include="..\..\src\kernel\pipe.cpp" />
     <ClCompile Include="..\..\src\kernel\process.cpp" />
