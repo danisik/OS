@@ -245,7 +245,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs)
 		size_t waiting_thread_ID = t_handle_to_thread_ID[handles[i]];
 		size_t waiting_process_ID = thread_ID_to_process_ID[waiting_thread_ID];
 
-		if (processes.find(waiting_process_ID) == processes.end() || processes[waiting_process_ID]->threads.find(waiting_thread_ID) == processes[waiting_process_ID]->threads.end()) 
+		if (processes.find(waiting_process_ID) == processes.end() || processes[waiting_process_ID]->threads.find(waiting_thread_ID) == processes[waiting_process_ID]->threads.end())
 		{
 			lock_mutexx.unlock();
 			return;
@@ -257,6 +257,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs)
 			lock_mutexx.unlock();
 			return;
 		}
+
 
 		processes[process_ID]->threads[current_thread_ID]->handlers_waiting_for.insert(std::pair<size_t, size_t>(waiting_thread_ID, i));
 		processes[waiting_process_ID]->threads[waiting_thread_ID]->sleeped_handlers.insert(std::pair<size_t, size_t>(current_thread_ID, current_thread_ID));

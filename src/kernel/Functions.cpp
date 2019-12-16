@@ -152,6 +152,7 @@ void Functions::Remove_Item(std::unique_ptr<VFS>& vfs, std::string path, std::ve
 							if (last_item->is_directory == kiv_os::NFile_Attributes::Directory)
 							{
 								Update_Parent_ID(vfs, last_item->uid, item->uid);
+								item->parent_ID = item->uid;
 							}							
 							last_item->uid = item->uid;
 							

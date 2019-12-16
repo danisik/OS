@@ -21,10 +21,13 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> &command
 	size_t current_command_position = 0;
 
 	for each (command_parser::Command command in commands) {
-		if (command.base != "cd" && command.base != "echo" && command.base != "tasklist" && command.base != "rd"
-			&& command.base != "md" && command.base != "type" && command.base != "find" && command.base != "sort"
-			&& command.base != "dir" && command.base != "rgen" && command.base != "freq" && command.base != "shell"
-			&& command.base != "shutdown" && command.base != "exit") {
+		if (strcmp(command.base.data(), "cd") != 0 && strcmp(command.base.data(), "echo") != 0 && 
+			strcmp(command.base.data(), "tasklist") != 0 && strcmp(command.base.data(), "rd") != 0
+			&& strcmp(command.base.data(), "md") != 0 && strcmp(command.base.data(), "type") != 0 
+			&& strcmp(command.base.data(), "find") != 0 && strcmp(command.base.data(), "sort") != 0
+			&& strcmp(command.base.data(), "dir") != 0 && strcmp(command.base.data(), "rgen") != 0 
+			&& strcmp(command.base.data(), "freq") != 0 && strcmp(command.base.data(), "shell") != 0
+			&& strcmp(command.base.data(), "shutdown") != 0 && strcmp(command.base.data(), "exit") != 0) {
 
 			std::string output = "Unknown command.\n";
 			size_t written;
@@ -33,7 +36,7 @@ void command_exe::Execute_Commands(std::vector<command_parser::Command> &command
 			return;
 		}
 		else {
-			if (command.base == "cd") {
+			if (strcmp(command.base.data(), "cd") == 0) {
 				cd(command.parameters.data(), out);
 				return;
 			}

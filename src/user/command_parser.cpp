@@ -34,7 +34,7 @@ namespace command_parser {
 				if(token == "|") {
 					// pipe
 					command.is_pipe = true;
-					first = true;
+					first = true;	
 
 					break;
 				}
