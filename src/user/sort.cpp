@@ -49,11 +49,13 @@ size_t __stdcall sort(const kiv_hal::TRegisters &regs) {
 	}
 
 	std::vector<std::string> lines;
+	std::string line;
 
-	std::istringstream iss(complete);
-	std::copy(std::istream_iterator<std::string>(iss),
-		std::istream_iterator<std::string>(),
-		std::back_inserter(lines));
+	std::stringstream ss(complete);
+
+	while (std::getline(ss, line)) {
+		lines.push_back(line);
+	}
 
 	std::sort(lines.begin(), lines.end());
 
