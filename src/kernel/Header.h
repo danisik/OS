@@ -73,7 +73,6 @@ class VFS
         std::vector<bool> bitmap;
     	int drive_id;
 
-    	bool Load_MFT(std::unique_ptr<VFS>&);
 	    void Init_VFS(std::unique_ptr<VFS>&);
 };
 

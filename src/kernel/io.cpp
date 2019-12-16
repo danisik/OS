@@ -11,12 +11,7 @@ IO::IO(uint64_t cluster_count, uint16_t cluster_size, int v_drive_i)
 	io_process->shutdown_signalized = false;
 	vfs = std::make_unique<VFS>(cluster_count, cluster_size, v_drive_i);
 
-	bool success = false;
-	success = vfs->Load_MFT(vfs);
-	if (!success)
-	{
-		vfs->Init_VFS(vfs);
-	}
+	vfs->Init_VFS(vfs);
 }
 
 void IO::Print_To_Console(const char* message)
