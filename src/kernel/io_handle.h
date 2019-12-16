@@ -7,6 +7,8 @@
 #include <iostream>
 #include "pipe.h"
 
+#include <iomanip>
+
 
 class IO_Handle 
 {

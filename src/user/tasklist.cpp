@@ -20,6 +20,7 @@ size_t __stdcall tasklist(const kiv_hal::TRegisters &regs) {
 
 	size_t writed = 0;
 	kiv_os_rtl::Write_File(std_out, buffer.data(), read, writed);
+	kiv_os_rtl::Write_File(std_out, "\n", 1, writed);
 
 	kiv_os_rtl::Close_Handle(handle);
 

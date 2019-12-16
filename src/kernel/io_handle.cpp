@@ -364,7 +364,7 @@ size_t Procfs_Handle::Read(char *buffer, size_t buffer_length, std::unique_ptr<V
 
 	while (it_process != io_process->processes.end())
 	{		
-		ss << it_process->second->name.data() << " \t\t " << it_process->first << "\n";
+		ss << it_process->second->name.data() << std::setw(30) << "\t\t" << it_process->first << "\n";
 
 		it_process++;
 	}
