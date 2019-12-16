@@ -268,7 +268,7 @@ void IO_Process::Wait_For(kiv_hal::TRegisters &regs)
 	kiv_os::THandle signalized_handler;
 	std::lock_guard<std::mutex> lock_mutex(io_process_mutex);
 
-	std::map<size_t, std::unique_ptr<Process>>::iterator process_it = processes.find(current_thread_ID);
+	std::map<size_t, std::unique_ptr<Process>>::iterator process_it = processes.find(process_ID);
 	if (process_it == processes.end())
 	{
 		return;

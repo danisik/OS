@@ -2,8 +2,10 @@
 
 Process::Process(size_t p_process_ID, const char *p_name, std::vector<Mft_Item*> p_working_dir, kiv_os::THandle p_handle_in, kiv_os::THandle p_handle_out)
 {
-	name = std::vector<char>(sizeof(p_name));
-	memcpy(name.data(), p_name, sizeof(p_name));
+	std::string str = std::string(p_name);
+	name = std::vector<char>(str.length());
+	memcpy(name.data(), p_name, str.length());
+	name.push_back('\0');
 
 	process_ID = p_process_ID;
 	state = State::Runnable;
@@ -15,9 +17,10 @@ Process::Process(size_t p_process_ID, const char *p_name, std::vector<Mft_Item*>
 
 Process::Process(size_t p_process_ID, const char *p_name)
 {
-	name = std::vector<char>(sizeof(p_name));
-	memcpy(name.data(), p_name, sizeof(p_name));
-
+	std::string str = std::string(p_name);
+	name = std::vector<char>(str.length());
+	memcpy(name.data(), p_name, str.length());
+	name.push_back('\0');
 	process_ID = p_process_ID;
 	state = State::Runnable;
 
